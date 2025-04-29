@@ -1,0 +1,55 @@
+/* MainLayout.css */
+
+/* Stili generali per il layout */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .appBar {
+    z-index: 1201; /* AppBar sopra il Drawer */
+    background-color: #1976d2; /* Colore di sfondo della barra superiore */
+  }
+  
+  .drawer {
+    width: 240px;
+    flex-shrink: 0;
+  }
+  
+  .drawer .MuiDrawer-paper {
+    width: 240px;
+    background-color: #f4f4f4;
+  }
+  
+  .mainContent {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 240px; /* Larghezza del Drawer */
+    transition: margin-left 0.3s ease; /* Transizione per spostare il contenuto quando il Drawer è aperto */
+  }
+  
+  /* Styling del contenuto quando il Drawer è aperto */
+  .mainContent.shifted {
+    margin-left: 0; /* Quando il drawer è aperto, rimuovi il margine */
+  }
+  
+  /* Stili per il Drawer e la navigazione */
+  .MuiListItem-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .MuiListItem-text {
+    font-size: 16px;
+  }
+  
+  /* Quando il menu è aperto, occorre spostare il contenuto */
+  @media (max-width: 768px) {
+    .mainContent {
+      margin-left: 0;
+    }
+  }
+  

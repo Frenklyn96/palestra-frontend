@@ -1,0 +1,28 @@
+/* ClienteDialog.css */
+
+/* Header con titolo + carica foto */
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  /* Contenitore bottone foto */
+  .photo-upload {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Riga doppia input (es. telefono + dataNascita) */
+  .form-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .form-row > .MuiTextField-root {
+    flex: 1;
+  }
+  

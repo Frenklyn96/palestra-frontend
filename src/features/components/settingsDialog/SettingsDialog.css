@@ -1,0 +1,25 @@
+.tariffa-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .tariffa-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .durata-unita-row {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .durata-unita-row .tariffa-field {
+    flex: 1; /* Fare in modo che Durata e Unità occupino lo stesso spazio */
+  }
+  
+  .durata-unita-row .tariffa-field:first-child {
+    margin-right: 8px;
+  }
+  

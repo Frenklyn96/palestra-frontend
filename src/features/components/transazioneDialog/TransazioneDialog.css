@@ -1,0 +1,18 @@
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-direction:column
+}
+
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end; /* Posiziona i pulsanti a destra */
+  gap: 8px; /* Spaziatura tra i pulsanti */
+}
+.form-row > .MuiTextField-root {
+  flex: 1;
+}
