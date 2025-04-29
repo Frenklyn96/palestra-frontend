@@ -5,17 +5,53 @@ import TransazioniPage from './pages/Transazioni/TransazioniPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ClientiPage from './pages/Clienti/ClientiPage';
 import { RoutesEnum } from './enum/RoutesEnum';
+import { PrivateRoute } from './PrivateRoute';
 
 function App() {
   return (
     <Router>
       <MainLayout>
         <Routes>
-          <Route path={RoutesEnum.HOME} element={<Home />} />
-          <Route path={RoutesEnum.CLIENTI} element={<ClientiPage />} />
-          <Route path={RoutesEnum.TRANSAZIONI} element={<TransazioniPage />} />
-          <Route path="/clienti/:clienteId/transazioni" element={<TransazioniPage />} />
-          <Route path={RoutesEnum.SETTINGS} element={<SettingsPage />} />          
+          <Route
+            path={RoutesEnum.HOME}
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={RoutesEnum.CLIENTI}
+            element={
+              <PrivateRoute>
+                <ClientiPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={RoutesEnum.TRANSAZIONI}
+            element={
+              <PrivateRoute>
+                <TransazioniPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/clienti/:clienteId/transazioni"
+            element={
+              <PrivateRoute>
+                <TransazioniPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={RoutesEnum.SETTINGS}
+            element={
+              <PrivateRoute>
+                <SettingsPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </MainLayout>
     </Router>
