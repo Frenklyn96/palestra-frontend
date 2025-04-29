@@ -6,11 +6,12 @@ import {
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Transazione } from '../../class/Transazione';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store/store';
 import { createTransazioneAsync, updateTransazioneAsync } from '../../slice/transazioniSlice';
 import './transazioneDialog.css';
 import GenericSearchTable, { TableNames } from '../generic/GenericSearchTable';
+import { clearResults } from '../../slice/genericSlice';
 
 interface TransazioneDialogProps {
   open: boolean;
@@ -46,6 +47,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredClienti, setFilteredClienti] = useState<{ id: string; nome: string; cognome: string; numeroTessera: string }[]>([]);
+  const { results} = useSelector((state: RootState) => state.generic);
 
   // Gestione dei dati da visualizzare quando il dialogo si apre
   useEffect(() => {
@@ -67,6 +69,11 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
       }
     }
   }, [open, isEditMode, transazioneToEdit, clienteId, clienteNome]);
+
+  useEffect(()=>{
+    setFilteredClienti(results);
+    clearResults();
+  },[results] )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -117,12 +124,13 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
           ) : (
             <Box className="form-row">
               <GenericSearchTable
-                tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                setResults={(data) => {
-                  setFilteredClienti(data);
-                }}
+                  tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm} 
+                  page={null} 
+                  pageSize={null} 
+                  orderBy={null}
+                  orderDirection={'desc'}
               />
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>

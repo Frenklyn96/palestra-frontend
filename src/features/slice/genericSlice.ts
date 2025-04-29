@@ -31,9 +31,9 @@ export const searchGenericAsync = createAsyncThunk(
     }: { 
       tableName: string; 
       searchTerm: string; 
-      page: number; 
-      pageSize: number; 
-      orderBy: string; 
+      page: number|null; 
+      pageSize: number|null; 
+      orderBy: string|null; 
       orderDirection: 'asc' | 'desc';
     }, 
     { rejectWithValue }
@@ -66,6 +66,9 @@ const genericSlice = createSlice({
     clearResults: (state) => {
       state.results = [];
     },
+    updateResult: (state, action: PayloadAction<any[]>) => {
+      state.results = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -84,7 +87,7 @@ const genericSlice = createSlice({
 });
 
 // Esportazione delle azioni
-export const { clearResults } = genericSlice.actions;
+export const { clearResults,updateResult } = genericSlice.actions;
 
 // Esportazione del reducer
 export default genericSlice.reducer;

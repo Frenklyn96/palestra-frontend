@@ -15,15 +15,17 @@ import TransazioneDialog from '../../features/components/transazioneDialog/Trans
 import { useParams, useNavigate } from 'react-router-dom';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
 import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
+import { clearResults, updateResult } from '../../features/slice/genericSlice';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { transazioni, totalCount, loading } = useSelector((state: RootState) => state.transazioni);
+  const { results: resultsTransazioniFiltered, totalCount: totalCountTransazioniFIltered,} = useSelector((state: RootState) => state.generic);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [transazioneToEdit, setTransazioneToEdit] = useState<Transazione | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredTransazioni, setFilteredTransazioni] = useState<Transazione[]>([]);
+  // const [filteredTransazioni, setFilteredTransazioni] = useState<Transazione[]>([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [transazioneToDelete, setTransazioneToDelete] = useState<Transazione | null>(null);
 
@@ -37,8 +39,7 @@ const TransazioniPage: React.FC = () => {
   const [ascending, setAscending] = useState<boolean>(true);
 
   const [pageGenericSearch, setPageGenericSearch] = useState(1);
-  const [pageSizeGenericSearch, setPageSizeGenericSearch] = useState(20);
-
+  const [transazioniToRender, setTransazioniToRender] = useState<Transazione[] | undefined>(undefined);
   const { clienteId } = useParams<{ clienteId: string }>();
   const isFilterActive = Boolean(clienteId);
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const TransazioniPage: React.FC = () => {
     };
 
     fetchData();
-  }, [dispatch, page, pageSize, startDate, endDate, filterApplied, orderBy, ascending, clienteId]);
+  }, [page, pageSize, startDate, endDate, filterApplied, orderBy, ascending, clienteId]);
 
   const handleAddClick = () => {
     setTransazioneToEdit(null);
@@ -97,10 +98,24 @@ const TransazioniPage: React.FC = () => {
     setTransazioneToDelete(null);
   };
 
-  const transazioniToRender = searchTerm ? filteredTransazioni : transazioni;
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const canGoToNextPage = page < totalPages;
-  const canGoToPreviousPage = page > 1;
+  useEffect(()=>{
+    !openDialog && setTransazioniToRender(
+      searchTerm
+        ? (resultsTransazioniFiltered as Transazione[])
+        : (transazioni as Transazione[])
+    );
+    
+  },[searchTerm,transazioni]);
+
+  const handleOnClose = () => {
+    setOpenDialog(false);
+    dispatch(searchTerm?updateResult(transazioniToRender!):clearResults());
+  };
+  
+  
+  const totalPages = Math.ceil((searchTerm? totalCountTransazioniFIltered: totalCount) / pageSize);
+  const canGoToNextPage = (searchTerm? pageGenericSearch : page) < totalPages;
+  const canGoToPreviousPage = (searchTerm? pageGenericSearch : page) > 1;
 
   const handleSort = (column: string) => {
     const isAsc = orderBy === column && ascending;
@@ -140,11 +155,10 @@ const TransazioniPage: React.FC = () => {
 
               <GenericSearchTable
                 tableName={TableNames.TRANSAZIONI}
-                setResults={setFilteredTransazioni}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 page={pageGenericSearch}
-                pageSize={pageSizeGenericSearch}
+                pageSize={pageSize}
                 orderBy={orderBy}
                 orderDirection={ascending ? 'asc' : 'desc'}
               />
@@ -170,7 +184,7 @@ const TransazioniPage: React.FC = () => {
             <Button
               variant="outlined"
               onClick={() => {
-                setPage(1);
+                searchTerm?setPageGenericSearch(1):setPage(1);
                 setFilterApplied(true);
               }}
               disabled={!startDate && !endDate}
@@ -184,7 +198,7 @@ const TransazioniPage: React.FC = () => {
                 onClick={() => {
                   setStartDate(null);
                   setEndDate(null);
-                  setPage(1);
+                  searchTerm?setPageGenericSearch(1):setPage(1);
                   setFilterApplied(true);
                 }}
               >
@@ -239,8 +253,8 @@ const TransazioniPage: React.FC = () => {
           {/* Pagination */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
             <Box>
-              <Button disabled={!canGoToPreviousPage} onClick={() => setPage(page - 1)}>Pagina precedente</Button>
-              <Button disabled={!canGoToNextPage} onClick={() => setPage(page + 1)}>Pagina successiva</Button>
+              <Button disabled={!canGoToPreviousPage} onClick={() => searchTerm? setPageGenericSearch(pageGenericSearch-1):setPage(page - 1)}>Pagina precedente</Button>
+              <Button disabled={!canGoToNextPage} onClick={() => searchTerm?  setPageGenericSearch(pageGenericSearch+1):setPage(page + 1)}>Pagina successiva</Button>
             </Box>
             <TextField
               select
@@ -248,7 +262,7 @@ const TransazioniPage: React.FC = () => {
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));
-                setPage(1);
+                searchTerm?setPageGenericSearch(1):setPage(1);
               }}
               size="small"
             >
@@ -261,7 +275,7 @@ const TransazioniPage: React.FC = () => {
           {/* Dialog Aggiunta / Modifica */}
           <TransazioneDialog
             open={openDialog}
-            onClose={() => setOpenDialog(false)}
+            onClose={() => handleOnClose()}
             transazioneToEdit={transazioneToEdit}
             isEditMode={!!transazioneToEdit}
             clienteNome={isFilterActive ? transazioni[0]?.clienteNome : null}

@@ -4,9 +4,9 @@ import { BASE_URL_GENERIC as API_URL } from '../../enum/RoutesEnum';
 export const searchGeneric = async (
   tableName: string, 
   searchTerm: string, 
-  pageNumber: number, 
-  pageSize: number, 
-  orderByColumn: string, 
+  pageNumber: number|null, 
+  pageSize: number|null, 
+  orderByColumn: string|null, 
   orderDirection: 'asc' | 'desc'
 ) => {
   // Chiamata HTTP

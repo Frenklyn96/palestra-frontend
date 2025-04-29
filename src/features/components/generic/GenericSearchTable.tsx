@@ -9,9 +9,9 @@ interface GenericSearchTableProps {
   tableName: string;
   searchTerm: string; 
   setSearchTerm: (term: string) => void;
-  page: number; // Numero di pagina
-  pageSize: number; // Dimensione della pagina
-  orderBy: string; // Colonna per ordinare
+  page: number|null; // Numero di pagina
+  pageSize: number|null; // Dimensione della pagina
+  orderBy: string|null; // Colonna per ordinare
   orderDirection: 'asc' | 'desc'; // Direzione dell'ordinamento
 }
 
