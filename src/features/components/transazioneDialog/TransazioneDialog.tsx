@@ -9,7 +9,7 @@ import { Transazione } from '../../class/Transazione';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { createTransazioneAsync, updateTransazioneAsync } from '../../slice/transazioniSlice';
-import './transazioneDialog.css';
+import './TransazioneDialog.css';
 import GenericSearchTable, { TableNames } from '../generic/GenericSearchTable';
 import { clearResults } from '../../slice/genericSlice';
 
