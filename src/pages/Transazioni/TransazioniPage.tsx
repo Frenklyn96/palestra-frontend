@@ -16,12 +16,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
 import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
 import { clearResults, updateResult } from '../../features/slice/genericSlice';
+import { fetchClienteById } from '../../features/slice/clientiSlice';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { transazioni, totalCount, loading } = useSelector((state: RootState) => state.transazioni);
   const { results: resultsTransazioniFiltered, totalCount: totalCountTransazioniFIltered,} = useSelector((state: RootState) => state.generic);
-
+  const {selectedCliente}= useSelector((state:RootState)=>state.clienti);
   const [openDialog, setOpenDialog] = useState(false);
   const [transazioneToEdit, setTransazioneToEdit] = useState<Transazione | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,13 +42,14 @@ const TransazioniPage: React.FC = () => {
   const [pageGenericSearch, setPageGenericSearch] = useState(1);
   const [transazioniToRender, setTransazioniToRender] = useState<Transazione[] | undefined>(undefined);
   const { clienteId } = useParams<{ clienteId: string }>();
-  const isFilterActive = Boolean(clienteId);
+  const [isFilterActive] =useState <boolean>(clienteId!==undefined);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       if (filterApplied || (!startDate && !endDate)) {
-        dispatch(fetchTransazioni({
+        clienteId&& !selectedCliente && await dispatch(fetchClienteById(clienteId));
+        await dispatch(fetchTransazioni({
           startDate,
           endDate,
           page,
@@ -59,7 +61,7 @@ const TransazioniPage: React.FC = () => {
         setFilterApplied(false);
       }
     };
-
+    
     fetchData();
   }, [page, pageSize, startDate, endDate, filterApplied, orderBy, ascending, clienteId]);
 
@@ -82,14 +84,6 @@ const TransazioniPage: React.FC = () => {
     if (transazioneToDelete) {
       try {
         await dispatch(deleteTransazioneAsync(transazioneToDelete.id));
-        dispatch(fetchTransazioni({
-          startDate,
-          endDate,
-          page,
-          pageSize,
-          orderBy,
-          ascending
-        }) as any);
       } catch (error) {
         console.error('Errore durante la cancellazione della transazione', error);
       }
@@ -99,7 +93,7 @@ const TransazioniPage: React.FC = () => {
   };
 
   useEffect(()=>{
-    !openDialog && setTransazioniToRender(
+    setTransazioniToRender(
       searchTerm
         ? (resultsTransazioniFiltered as Transazione[])
         : (transazioni as Transazione[])
@@ -109,7 +103,7 @@ const TransazioniPage: React.FC = () => {
 
   const handleOnClose = () => {
     setOpenDialog(false);
-    dispatch(searchTerm?updateResult(transazioniToRender!):clearResults());
+    dispatch(searchTerm?updateResult(transazioniToRender!):clearResults());  
   };
   
   
@@ -145,7 +139,7 @@ const TransazioniPage: React.FC = () => {
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h4">
-              Transazioni {isFilterActive &&  <span style={{ fontSize: '1rem', color: 'gray' }}>{ transazioni[0]?.clienteNome }</span>}
+              Transazioni {isFilterActive && selectedCliente && <span style={{ fontSize: '1rem', color: 'gray' }}>{ selectedCliente.nome+' '+selectedCliente?.cognome }</span>}
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -278,8 +272,8 @@ const TransazioniPage: React.FC = () => {
             onClose={() => handleOnClose()}
             transazioneToEdit={transazioneToEdit}
             isEditMode={!!transazioneToEdit}
-            clienteNome={isFilterActive ? transazioni[0]?.clienteNome : null}
-            clienteId={transazioneToEdit?.clienteId || null}
+            clienteNome={isFilterActive && selectedCliente ? selectedCliente?.nome+' '+selectedCliente?.cognome : null}
+            clienteId={clienteId || null}
             isFilterActive={isFilterActive}
           />
 

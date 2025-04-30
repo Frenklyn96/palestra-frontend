@@ -142,6 +142,9 @@ const clientiSlice = createSlice({
       .addCase(eliminaRinnovo.fulfilled, (state, action) => {
         state.clienti = state.clienti.filter(c => c.id !== action.payload);
       })
+      .addCase(fetchClienteById.fulfilled, (state, action)=>{
+        state.selectedCliente = action.payload;
+      });
 
   },
 });

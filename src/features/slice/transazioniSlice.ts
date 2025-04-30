@@ -12,7 +12,7 @@ interface TransazioniState {
 
 const initialState: TransazioniState = {
   transazioni: [],
-  loading: false,
+  loading: true,
   error: null,
   totalCount: 0, 
 };
