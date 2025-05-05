@@ -270,7 +270,7 @@ const ClientiPage: React.FC = () => {
             onClose={handleCloseDialog}
             onSubmit={isEditMode ? handleEditCliente : handleAddCliente}
             isEditMode={isEditMode}
-            clienteToEdit={clienteToEdit}
+            clienteToEdit={clienteToEdit?.id}
           />
   
           <ConfirmDeleteDialog

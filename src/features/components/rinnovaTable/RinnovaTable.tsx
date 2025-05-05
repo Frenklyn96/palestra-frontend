@@ -163,7 +163,7 @@ const RinnovaTable: React.FC = () => {
           onSubmit={handleRinnovoSubmit}
           isEditMode={false}
           isRinnovoMode={true}
-          clienteToEdit={clienteDaRinnovare}
+          clienteToEdit={clienteDaRinnovare.id}
         />
       )}
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   TextField, Dialog, DialogActions, DialogContent,
-  DialogTitle, Button, Box, FormControl, InputLabel, Select, MenuItem
+  DialogTitle, Button, Box, FormControl, InputLabel, Select, MenuItem,
+  CircularProgress
 } from '@mui/material';
 import { Cliente } from '../../class/Cliente';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
@@ -9,7 +10,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import './ClienteDialog.css';
-import { createClienteAsync, updateClienteAsync } from '../../slice/clientiSlice';
+import { createClienteAsync, fetchClienteById, updateClienteAsync } from '../../slice/clientiSlice';
 import { fetchTariffe } from '../../slice/settingsSlice';
 
 interface ClienteDialogProps {
@@ -18,7 +19,7 @@ interface ClienteDialogProps {
   onSubmit: (cliente: Cliente) => void;
   isEditMode: boolean;
   isRinnovoMode?: boolean;
-  clienteToEdit?: Cliente;
+  clienteToEdit?: string;
 }
 
 const ClienteDialog: React.FC<ClienteDialogProps> = ({
@@ -39,31 +40,32 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
 
   const [tariffaSelezionata, setTariffaSelezionata] = useState('');
   const tariffe = useSelector((state: RootState) => state.settings.tariffe);
+  const {selectedCliente}= useSelector((state:RootState)=> state.clienti);
   const [firstOpen,setFirstOpen] = useState(true); // ✅ Nuovo stato per gestire il primo open
   const dispatch = useDispatch<AppDispatch>();
+  const [loading, setLoading]=useState <boolean>(true);
 
   useEffect(() => {
-    dispatch(fetchTariffe()); // ✅ Carica le tariffe quando apre il dialog
+    const fetchData = async () => {
+      // Prima carica le tariffe (una sola volta)
+      await dispatch(fetchTariffe());
+  
+      // Carica i dati del cliente solo se siamo in modalità di modifica o rinnovo
+      if ((isEditMode || isRinnovoMode) && clienteToEdit) {
+        await dispatch(fetchClienteById(clienteToEdit));
+        if (selectedCliente) {
+          setCliente(selectedCliente);
+          setTariffaSelezionata(selectedCliente.tariffaNome || '');
+        }
+      }   
+    };
+  
+    fetchData(); // Chiamata alla funzione asincrona
+    setLoading(false); 
+  }, [isEditMode, isRinnovoMode, clienteToEdit]);
+  
+  
 
-    if ((isEditMode || isRinnovoMode) && clienteToEdit) {
-      setCliente(clienteToEdit);
-      setTariffaSelezionata(clienteToEdit.tariffaNome || '');
-    } else {
-      setCliente({
-        id: '',
-        nome: '',
-        cognome: '',
-        numeroTessera: '',
-        scadenza: null,
-        email: '',
-        dataNascita: null,
-        telefono: '',
-        foto: '',
-        tariffaNome: ''
-      });
-      setTariffaSelezionata('');
-    }
-  }, [isEditMode,isRinnovoMode, clienteToEdit, dispatch]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -164,12 +166,20 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   };
 
   return (
+
     <Dialog open={open} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+      {loading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <CircularProgress />
+      </Box>
+    ) : (<>
       <DialogContent>
         <Box className="dialog-header">
           <DialogTitle>
               {isRinnovoMode ? 'Rinnova Abbonamento' : isEditMode ? 'Modifica Cliente' : 'Aggiungi Cliente'}
             </DialogTitle>
+          
+  
           <Box className="photo-upload" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Anteprima Foto */}
             {cliente.foto && (
@@ -284,6 +294,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
           {isRinnovoMode ? 'Rinnova' : isEditMode ? 'Modifica' : 'Aggiungi'}
         </Button>
       </DialogActions>
+    </>)}
     </Dialog>
   );
 };
