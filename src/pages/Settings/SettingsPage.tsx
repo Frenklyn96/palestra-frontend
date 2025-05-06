@@ -142,6 +142,7 @@ const SettingsPage: React.FC = () => {
         initialData={selectedTariffa}
         onSubmit={handleSubmitTariffa}
         errorCode={errorCode}
+        userId = {userId!}
       />
 
       <ConfirmDeleteDialog

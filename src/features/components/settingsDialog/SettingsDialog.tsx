@@ -21,9 +21,10 @@ type Props = {
   onSubmit: (tariffa: Tariffa) => void;
   initialData?: Tariffa | null;
   errorCode?: string | null;
+  userId: string;
 };
 
-const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialData, errorCode }) => {
+const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialData, errorCode, userId }) => {
   const isEdit = !!initialData;
 
   // Riferimento per memorizzare i valori originali
@@ -89,7 +90,8 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       nome,
       durata,
       unitaDurata,
-      costo: parseFloat(costo) // Convertiamo il costo da stringa a numero
+      costo: parseFloat(costo),
+      userId: userId // Convertiamo il costo da stringa a numero
     };
 
     onSubmit(tariffa);
