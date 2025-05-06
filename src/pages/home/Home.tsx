@@ -16,9 +16,9 @@ const Home: React.FC = () => {
 
   return (
     <div className="homeContainer">
-      <Typography variant="h4" className="homeTitle" gutterBottom>
+      {/* <Typography variant="h4" className="homeTitle" gutterBottom>
         Benvenuto nella tua palestra
-      </Typography>
+      </Typography> */}
 
       {fotoHome && fotoHome.startsWith('data:') ? (
         <div

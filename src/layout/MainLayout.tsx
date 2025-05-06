@@ -49,7 +49,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <IconButton color="inherit" onClick={toggleDrawer} edge="start" sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>My Gym App</Typography>
+          <Typography variant="h6" noWrap>GYMP</Typography>
 
           {/* Bottone per cambiare lingua */}
           <Button
