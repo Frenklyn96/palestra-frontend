@@ -9,6 +9,7 @@ export interface Cliente {
     telefono: string;
     foto: string;
     tariffaNome: string;
+    userId:string
   }
 
 export interface  CreateCliente {
@@ -21,5 +22,6 @@ export interface  CreateCliente {
   telefono: string;
   foto: string;
   tariffaNome: string;
+  userId:string
 }
   

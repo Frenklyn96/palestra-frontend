@@ -33,6 +33,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   isFilterActive
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   // Stato per la transazione
   const [transazione, setTransazione] = useState<Transazione>({
@@ -42,7 +43,8 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
     causale: '',
     importo: 0,
     clienteId: clienteId || null,
-    clienteNome: clienteNome || '',  // Nome completo cliente (nome + cognome)
+    clienteNome: clienteNome || '',
+    userId: userId!  // Nome completo cliente (nome + cognome)
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,7 +66,8 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
           causale: '',
           importo: 0,
           clienteId: clienteId || null,
-          clienteNome: clienteNome || '',  // Nome completo cliente (nome + cognome)
+          clienteNome: clienteNome || '', 
+          userId: userId!
         });
       }
     }
@@ -131,6 +134,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
                   pageSize={null} 
                   orderBy={null}
                   orderDirection={'desc'}
+                  userId={userId!}
               />
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>

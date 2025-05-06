@@ -20,9 +20,9 @@ const initialState: SettingsState = {
 // Thunk per ottenere tutte le tariffe
 export const fetchTariffe = createAsyncThunk(
   'settings/fetchTariffe',
-  async (_, thunkAPI) => {
+  async (userId:string, thunkAPI) => {
     try {
-      const tariffe = await settingsService.getTariffe();
+      const tariffe = await settingsService.getTariffe(userId);
       return tariffe;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);

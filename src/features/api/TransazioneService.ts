@@ -11,11 +11,13 @@ interface GetTransazioniParams {
   orderBy: string;
   ascending?: boolean;
   clienteId?: string | null;
+  userId:string;
 }
 
 export const getTransazioni = async (params: GetTransazioniParams) => {
   const queryParams: any = {};
 
+  queryParams.userId= params.userId;
   if (params.startDate) queryParams.startDate = params.startDate;
   if (params.endDate) queryParams.endDate = params.endDate;
   if (params.page) queryParams.page = params.page;
@@ -43,7 +45,8 @@ export const createTransazione = async (transazione: CreateTransazione) => {
     metodoPagamento: transazione.metodoPagamento,
     importo: transazione.importo,
     causale: transazione.causale,
-    clienteId: transazione.clienteId || null, // può essere anche null
+    clienteId: transazione.clienteId || null,
+    userId:transazione.userId // può essere anche null
   };
 
   console.log('Payload inviato (create):', payload);
@@ -65,7 +68,8 @@ export const updateTransazione = async (id: string, transazione: Transazione) =>
     importo: transazione.importo,
     causale: transazione.causale,
     clienteId: transazione.clienteId || null, // Se clienteId è null, lascialo così
-    clienteNome: transazione.clienteNome || null, // Può essere anche null o una stringa vuota
+    clienteNome: transazione.clienteNome || null, 
+    userId: transazione.userId// Può essere anche null o una stringa vuota
   };
 
   // Aggiungi il log per vedere il payload

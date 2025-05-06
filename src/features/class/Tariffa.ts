@@ -6,6 +6,7 @@ export interface Tariffa {
     durata: number;
     unitaDurata: UnitaDurata;
     costo: number;
+    userId:string
   }
 
 export enum UnitaDurata {

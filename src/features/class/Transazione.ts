@@ -7,6 +7,7 @@ export interface Transazione {
     causale:string
     clienteId: string|null;
     clienteNome:string;
+    userId:string;
   }
   
 
@@ -17,4 +18,5 @@ export interface CreateTransazione {
   importo: number;
   causale:string
   clienteId: string|null;
+  userId:string;
 }

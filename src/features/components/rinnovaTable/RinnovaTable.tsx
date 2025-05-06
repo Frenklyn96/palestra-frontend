@@ -6,10 +6,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CachedIcon from '@mui/icons-material/Cached';
 import ConfirmDeleteDialog from '../generic/ConfirmDeleteDialog';
-import { AppDispatch } from '../../../store/store';
+import { AppDispatch, RootState } from '../../../store/store';
 import { useDispatch } from 'react-redux';
 import { eliminaRinnovo, updateCliente } from '../../slice/clientiSlice';
 import ClienteDialog from '../clienteDialog/ClienteDialog';
+import { useSelector } from 'react-redux';
 
 const RinnovaTable: React.FC = () => {
   const [clienti, setClienti] = useState<Cliente[]>([]);
@@ -18,12 +19,14 @@ const RinnovaTable: React.FC = () => {
   const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
   const [clienteDaRinnovare, setClienteDaRinnovare] = useState<Cliente | null>(null); // ✅ nuovo stato
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.user.userId);
+
 
   useEffect(() => {
     const fetchClienti = async () => {
       setLoading(true);
       try {
-        const response = await fetchClientiAbbondamentoScaduto();
+        const response = await fetchClientiAbbondamentoScaduto(userId!);
         setClienti(response);
       } catch (error) {
         console.error("Errore durante il recupero dei clienti:", error);

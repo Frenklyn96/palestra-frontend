@@ -7,7 +7,8 @@ export const searchGeneric = async (
   pageNumber: number|null, 
   pageSize: number|null, 
   orderByColumn: string|null, 
-  orderDirection: 'asc' | 'desc'
+  orderDirection: 'asc' | 'desc',
+  userId:String
 ) => {
   // Chiamata HTTP
   const response = await axios.get(`${API_URL}/search`, {
@@ -17,7 +18,8 @@ export const searchGeneric = async (
       pageNumber,
       pageSize,
       orderByColumn,
-      orderDirection: orderDirection === 'asc'
+      orderDirection: orderDirection === 'asc',
+      userId
     },
   });
 

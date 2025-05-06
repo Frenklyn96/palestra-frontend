@@ -25,8 +25,7 @@ export const fetchClienti = createAsyncThunk('clienti/fetchClienti',
         pageSize?: number;
         orderBy: string;
         ascending?: boolean;
-      } = {
-        orderBy: 'true'
+        userId:string;
       },
       thunkAPI
     ) => {
@@ -48,8 +47,8 @@ export const fetchClienteById = createAsyncThunk(
 
 export const fetchClientiAbbondamentoScaduto = createAsyncThunk(
   'clienti/fetchClientiAbbondamentoScaduto',
-  async () => {
-    return await clienteApi.fetchClientiAbbondamentoScaduto();
+  async (userId:string) => {
+    return await clienteApi.fetchClientiAbbondamentoScaduto(userId);
   }
 );
 
@@ -64,7 +63,7 @@ export const createClienteAsync = createAsyncThunk(
 // Thunk: aggiorna cliente
 export const updateClienteAsync = createAsyncThunk(
   'clienti/updateCliente',
-  async (cliente: Cliente) => {
+  async (cliente: Cliente,) => {
     return await clienteApi.updateCliente(cliente.id, cliente);
   }
 );

@@ -27,7 +27,8 @@ export const searchGenericAsync = createAsyncThunk(
       page, 
       pageSize, 
       orderBy, 
-      orderDirection
+      orderDirection,
+      userId
     }: { 
       tableName: string; 
       searchTerm: string; 
@@ -35,6 +36,7 @@ export const searchGenericAsync = createAsyncThunk(
       pageSize: number|null; 
       orderBy: string|null; 
       orderDirection: 'asc' | 'desc';
+      userId:string;
     }, 
     { rejectWithValue }
   ) => {
@@ -45,7 +47,8 @@ export const searchGenericAsync = createAsyncThunk(
         page, 
         pageSize, 
         orderBy, 
-        orderDirection
+        orderDirection,
+        userId
       );
       
       // Assumiamo che la risposta contenga i dati necessari per la paginazione

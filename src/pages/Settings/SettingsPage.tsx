@@ -20,6 +20,8 @@ const SettingsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const tariffe = useSelector((state: RootState) => state.settings.tariffe);
   const loading = useSelector((state: RootState) => state.settings.loading);
+  const userId = useSelector((state: RootState) => state.user.userId);
+
   const foto = useSelector((state: RootState) => state.settings.foto);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTariffa, setSelectedTariffa] = useState<Tariffa | null>(null);
@@ -28,7 +30,7 @@ const SettingsPage: React.FC = () => {
   const [errorCode, setErrorCode] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchTariffe());
+    dispatch(fetchTariffe(userId!));
     dispatch(getFotoHomeAsync());
   }, [dispatch]);
 
@@ -54,7 +56,7 @@ const SettingsPage: React.FC = () => {
     const action = isEdit ? updateTariffaAsync : addTariffaAsync;
   
     // Chiamata per aggiungere o aggiornare la tariffa
-    const resultAction = await dispatch(action(tariffa));
+    const resultAction = await dispatch(action({...tariffa,userId:userId!}));
   
     if (resultAction.meta.requestStatus === 'rejected') {
       const errorMessage = resultAction.payload as string;
@@ -67,7 +69,7 @@ const SettingsPage: React.FC = () => {
       setDialogOpen(false);
       
       // Ricarica le tariffe dopo l'operazione di aggiunta/aggiornamento
-      dispatch(fetchTariffe());
+      dispatch(fetchTariffe(userId!));
     }
   };
   
@@ -81,7 +83,7 @@ const SettingsPage: React.FC = () => {
         console.error('Errore durante l\'eliminazione della tariffa');
       } else {
         // Ricarica le tariffe dopo l'eliminazione
-        dispatch(fetchTariffe());
+        dispatch(fetchTariffe(userId!));
       }
   
       // Chiudi il dialog di conferma eliminazione

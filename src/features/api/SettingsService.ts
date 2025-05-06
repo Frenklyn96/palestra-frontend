@@ -4,10 +4,19 @@ import {  BASE_URL_TARIFFE as API_URL } from '../../enum/RoutesEnum';
 import {  BASE_URL_UTILITY } from '../../enum/RoutesEnum';
 
 // Funzione per ottenere tutte le tariffe
-export const getTariffe = async () => {
-  const response = await axios.get(API_URL);
+export const getTariffe = async (userId: string) => {
+  const response = await axios.get(API_URL, {
+    params: {
+      userId: userId,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
   return response.data;
 };
+
 
 // Funzione per aggiungere una nuova tariffa
 export const addTariffa = async (tariffa: Tariffa) => {
@@ -16,7 +25,8 @@ export const addTariffa = async (tariffa: Tariffa) => {
         nome: tariffa.nome,
         durata: tariffa.durata,
         unitaDurata: tariffa.unitaDurata,
-        costo: tariffa.costo
+        costo: tariffa.costo,
+        userId:tariffa.userId
     },
     {
       headers: {
@@ -40,7 +50,8 @@ export const updateTariffa = async (tariffa: Tariffa) => {
         nome: tariffa.nome,
         durata: tariffa.durata,
         unitaDurata: tariffa.unitaDurata,
-        costo: tariffa.costo
+        costo: tariffa.costo,
+        userId:tariffa.userId
     },
     {
       headers: {

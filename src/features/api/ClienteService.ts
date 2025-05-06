@@ -3,16 +3,18 @@ import { Cliente, CreateCliente } from '../class/Cliente';
 import { BASE_URL_CLIENTI as API_URL} from '../../enum/RoutesEnum';
 
 
+
 interface GetClientiParams {
   page?: number;
   pageSize?: number;
   orderBy: string;
   ascending?: boolean;
+  userId:string;
 }
 export const getClienti = async ( params:GetClientiParams) => {
   const queryParams: any = {};
 
-  
+  queryParams.userId= params.userId;
   if (params.page) queryParams.page = params.page;
   if (params.pageSize) queryParams.pageSize = params.pageSize;
   if (params.orderBy) queryParams.orderBy = params.orderBy;
@@ -33,7 +35,7 @@ export const getClienteById = async (id: string) => {
 
 export const createCliente = async (cliente: CreateCliente) => {
   const formData = new FormData();
-
+  formData.append("userId",cliente.userId!);
   // Aggiungi sempre tutti i campi
   formData.append("nome", cliente.nome || "");
   formData.append("cognome", cliente.cognome || "");
@@ -75,7 +77,7 @@ export const createCliente = async (cliente: CreateCliente) => {
 
 export const updateCliente = async (id: string, cliente: Cliente) => {
   const formData = new FormData();
-
+  formData.append("userId",cliente.userId!);
   formData.append("nome", cliente.nome);
   formData.append("cognome", cliente.cognome);
   formData.append("numeroTessera", cliente.numeroTessera);
@@ -118,8 +120,8 @@ export const deleteCliente = async (id: string) => {
   await axios.delete(`${API_URL}/${id}`);
 };
 
-export const fetchClientiAbbondamentoScaduto = async() => {
-  const response = await axios.get(API_URL+"/AbbonamentoScaduto");
+export const fetchClientiAbbondamentoScaduto = async(userId: string) => {
+  const response = await axios.get(`${API_URL}/AbbonamentoScaduto/${userId}`);
   return response.data;
 }
 

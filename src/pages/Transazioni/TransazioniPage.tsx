@@ -21,6 +21,8 @@ import { fetchClienteById } from '../../features/slice/clientiSlice';
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { transazioni, totalCount, loading } = useSelector((state: RootState) => state.transazioni);
+  const userId = useSelector((state: RootState) => state.user.userId);
+
   const { results: resultsTransazioniFiltered, totalCount: totalCountTransazioniFIltered,} = useSelector((state: RootState) => state.generic);
   const {selectedCliente}= useSelector((state:RootState)=>state.clienti);
   const [openDialog, setOpenDialog] = useState(false);
@@ -56,7 +58,8 @@ const TransazioniPage: React.FC = () => {
           pageSize,
           clienteId,
           orderBy,
-          ascending
+          ascending,
+          userId: userId!
         }) as any);
         setFilterApplied(false);
       }
@@ -155,6 +158,7 @@ const TransazioniPage: React.FC = () => {
                 pageSize={pageSize}
                 orderBy={orderBy}
                 orderDirection={ascending ? 'asc' : 'desc'}
+                userId={userId!}
               />
             </Box>
           </Box>

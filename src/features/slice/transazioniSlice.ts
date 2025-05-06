@@ -30,9 +30,7 @@ export const fetchTransazioni = createAsyncThunk(
       orderBy: string;
       ascending?: boolean;
       clienteId?: string | null;
-    } = {
-      startDate: null, endDate: null,
-      orderBy: 'true'
+      userId:string;
     },
     thunkAPI
   ) => {

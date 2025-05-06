@@ -13,6 +13,7 @@ interface GenericSearchTableProps {
   pageSize: number|null; // Dimensione della pagina
   orderBy: string|null; // Colonna per ordinare
   orderDirection: 'asc' | 'desc'; // Direzione dell'ordinamento
+  userId:string;
 }
 
 export enum TableNames {
@@ -29,7 +30,8 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   page,
   pageSize,
   orderBy,
-  orderDirection
+  orderDirection,
+  userId
 }) => {
   const dispatch = useDispatch<AppDispatch>();  // Tipizza il dispatch
 
@@ -48,7 +50,8 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
           page,
           pageSize,
           orderBy,
-          orderDirection
+          orderDirection,
+          userId
         })
       );  
     };

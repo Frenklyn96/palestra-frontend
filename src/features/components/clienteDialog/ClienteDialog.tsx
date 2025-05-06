@@ -25,6 +25,8 @@ interface ClienteDialogProps {
 const ClienteDialog: React.FC<ClienteDialogProps> = ({
   open, onClose, isEditMode, isRinnovoMode = false, clienteToEdit, onSubmit
 }) => {
+  const userId = useSelector((state: RootState) => state.user.userId);
+
   const [cliente, setCliente] = useState<Cliente>({
     id: '',
     nome: '',
@@ -35,7 +37,8 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
     dataNascita: null,
     telefono: '',
     foto: '',
-    tariffaNome: ''
+    tariffaNome: '',
+    userId:userId!
   });
 
   const [tariffaSelezionata, setTariffaSelezionata] = useState('');
@@ -48,7 +51,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       // Prima carica le tariffe (una sola volta)
-      await dispatch(fetchTariffe());
+      await dispatch(fetchTariffe(userId!));
   
       // Carica i dati del cliente solo se siamo in modalità di modifica o rinnovo
       if ((isEditMode || isRinnovoMode) && clienteToEdit) {
@@ -143,7 +146,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
     else if (isRinnovoMode)  onSubmit(cliente);
     else{
       const { id, ...clienteSenzaId } = cliente;
-      await dispatch(createClienteAsync(clienteSenzaId));
+      await dispatch(createClienteAsync({ ...clienteSenzaId, userId:userId! }));
     }
     onClose();
   };
@@ -159,7 +162,8 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
       dataNascita: null,
       telefono: '',
       foto: '',
-      tariffaNome: ''
+      tariffaNome: '',
+      userId:userId!
     });
     setTariffaSelezionata('');
     onClose();

@@ -31,7 +31,8 @@ const ClientiPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [orderBy, setOrderBy] = useState<ClienteKeys>('numeroTessera');
   const [orderDirection, setOrderDirection] = useState<'asc' | 'desc'>('asc');
-  
+  const userId = useSelector((state: RootState) => state.user.userId);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -52,6 +53,7 @@ const ClientiPage: React.FC = () => {
         pageSize,
         orderBy,
         ascending: orderDirection === 'asc',
+        userId: userId!
       }));
     };
     fetchData();
@@ -152,6 +154,7 @@ const ClientiPage: React.FC = () => {
                 pageSize={pageSize}
                 orderBy={orderBy}
                 orderDirection={orderDirection}
+                userId={userId!}
               />
             </Box>
           </Box>
