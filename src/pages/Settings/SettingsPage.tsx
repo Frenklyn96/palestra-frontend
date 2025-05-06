@@ -2,23 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Paper, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, IconButton, CircularProgress, Backdrop
+  TableRow, IconButton, CircularProgress, Backdrop,
+  Box
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { RootState } from '../../store/store';
-import { addTariffaAsync, updateTariffaAsync, removeTariffaAsync, fetchTariffe } from '../../features/slice/settingsSlice';
+import { addTariffaAsync, updateTariffaAsync, removeTariffaAsync, fetchTariffe, uploadFotoAsync, getFotoHomeAsync } from '../../features/slice/settingsSlice';
 import { Tariffa } from '../../features/class/Tariffa';
 import { AppDispatch } from '../../store/store';
 import TariffaFormDialog from '../../features/components/settingsDialog/SettingsDialog';
 import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
+import ImageUploader from '../../features/components/ImageUploader/ImageUploader';
 
 const SettingsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const tariffe = useSelector((state: RootState) => state.settings.tariffe);
   const loading = useSelector((state: RootState) => state.settings.loading);
-
+  const foto = useSelector((state: RootState) => state.settings.foto);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTariffa, setSelectedTariffa] = useState<Tariffa | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -27,6 +29,7 @@ const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchTariffe());
+    dispatch(getFotoHomeAsync());
   }, [dispatch]);
 
   const handleOpenAddDialog = () => {
@@ -87,6 +90,7 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
+    <>
     <Paper sx={{ padding: 3 }}>
       <Typography variant="h4" gutterBottom>Gestione Tariffe</Typography>
 
@@ -149,6 +153,38 @@ const SettingsPage: React.FC = () => {
         <CircularProgress color="inherit" />
       </Backdrop>
     </Paper>
+      <Paper sx={{ padding: 3, mt: 4 }}>
+        <Typography variant="h4" gutterBottom textAlign="left">
+          Immagine Home
+        </Typography>
+
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            minHeight: 300,
+            border: '1px dashed #ccc',
+            borderRadius: 2,
+            padding: 2,
+            backgroundColor: '#fafafa'
+          }}
+        >
+          <ImageUploader
+            onFileSelect={(file) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64String = reader.result as string;
+                dispatch(uploadFotoAsync(base64String));
+              };
+              reader.readAsDataURL(file);
+            }}
+            initialImageUrl={foto || undefined}
+          />
+        </Box>
+      </Paper>
+    </>
   );
 };
 

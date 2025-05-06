@@ -7,12 +7,14 @@ interface SettingsState {
   tariffe: Tariffa[];
   loading: boolean;
   error: string | null;
+  foto: string | null
 }
 
 const initialState: SettingsState = {
   tariffe: [],
   loading: false,
   error: null,
+  foto: null
 };
 
 // Thunk per ottenere tutte le tariffe
@@ -65,6 +67,31 @@ export const removeTariffaAsync = createAsyncThunk(
       return thunkAPI.rejectWithValue(error.message);
     }
   }
+);
+
+export const uploadFotoAsync = createAsyncThunk(
+  'settings/uploadFoto',
+    async (file: String, thunkAPI) => {
+      try {
+        const uplaodFoto = await settingsService.uploadFoto(file);
+        return uplaodFoto;
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.message);
+      }
+    }
+);
+
+
+export const getFotoHomeAsync = createAsyncThunk(
+  'settings/getFotoHome',
+    async (_,thunkAPI) => {
+      try {
+        const uplaodFoto = await settingsService.getFotoHome();
+        return uplaodFoto;
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.message);
+      }
+    }
 );
 
 // Slice
@@ -136,6 +163,9 @@ const settingsSlice = createSlice({
       .addCase(removeTariffaAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(getFotoHomeAsync.fulfilled, (state, action)=> {
+        state.foto = action.payload as string;
       });
   },
 });
