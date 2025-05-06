@@ -63,7 +63,7 @@ const TransazioniPage: React.FC = () => {
     };
     
     fetchData();
-  }, [page, pageSize, startDate, endDate, filterApplied, orderBy, ascending, clienteId]);
+  }, [page, pageSize, startDate, endDate, filterApplied, orderBy, ascending, clienteId,pageGenericSearch]);
 
   const handleAddClick = () => {
     setTransazioneToEdit(null);

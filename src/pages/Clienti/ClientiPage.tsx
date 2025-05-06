@@ -56,7 +56,7 @@ const ClientiPage: React.FC = () => {
     };
     fetchData();
 
-  }, [page, pageSize, orderBy, orderDirection]);
+  }, [page, pageSize, orderBy, orderDirection, pageGenericSearch]);
   
   useEffect(() => {
         

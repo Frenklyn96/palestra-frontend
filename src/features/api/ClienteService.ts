@@ -32,9 +32,46 @@ export const getClienteById = async (id: string) => {
 };
 
 export const createCliente = async (cliente: CreateCliente) => {
-  const response = await axios.post(API_URL, cliente);
+  const formData = new FormData();
+
+  // Aggiungi sempre tutti i campi
+  formData.append("nome", cliente.nome || "");
+  formData.append("cognome", cliente.cognome || "");
+  formData.append("numeroTessera", cliente.numeroTessera || "");
+  formData.append("email", cliente.email || "");
+  formData.append("telefono", cliente.telefono || "");
+  formData.append("tariffaNome", cliente.tariffaNome || "");
+
+  if (cliente.dataNascita)
+    formData.append("dataNascita",  new Date(cliente.dataNascita).toDateString());
+
+  if (cliente.scadenza)
+    formData.append("scadenza",  new Date(cliente.scadenza).toDateString());
+
+  // Gestione della foto se presente
+  if (cliente.foto && cliente.foto.startsWith("data:image")) {
+    const byteString = atob(cliente.foto.split(",")[1]);
+    const mimeString = cliente.foto.split(",")[0].split(":")[1].split(";")[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([ab], { type: mimeString });
+    formData.append("foto", blob, "foto.jpg");
+  }
+
+  const response = await axios.post(API_URL, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return response.data;
 };
+
 
 export const updateCliente = async (id: string, cliente: Cliente) => {
   const formData = new FormData();
