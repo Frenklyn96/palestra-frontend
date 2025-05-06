@@ -184,7 +184,11 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             {/* Anteprima Foto */}
             {cliente.foto && (
               <Box sx={{ marginBottom: 1 }}>
-                <img src={cliente.foto} alt="Anteprima Foto" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                 <img
+                  src={cliente.foto.startsWith('data:') ? cliente.foto : `${process.env.REACT_APP_API_URL}${cliente.foto}`}
+                  alt="Anteprima Foto"
+                  style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                />
               </Box>
             )}
             {/* Bottone per caricare foto, posizionato sotto l'anteprima */}
