@@ -8,6 +8,7 @@ interface ClientiState {
   loading: boolean;
   selectedCliente: Cliente | null;
   totalCount: number;
+  loadingSelectedCliente: boolean;
 }
 
 const initialState: ClientiState = {
@@ -15,6 +16,7 @@ const initialState: ClientiState = {
   loading: false,
   selectedCliente: null,  
   totalCount: 0,
+  loadingSelectedCliente: false,
 };
 
 // Thunk: carica clienti da backend
@@ -107,6 +109,9 @@ const clientiSlice = createSlice({
     selectCliente: (state, action: PayloadAction<Cliente | null>) => {
       state.selectedCliente = action.payload;
     },
+    removeSelectCliente: (state) => {
+      state.selectedCliente = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -141,12 +146,16 @@ const clientiSlice = createSlice({
       .addCase(eliminaRinnovo.fulfilled, (state, action) => {
         state.clienti = state.clienti.filter(c => c.id !== action.payload);
       })
+      .addCase(fetchClienteById.pending, (state) => {
+        state.loadingSelectedCliente = true;
+      })
       .addCase(fetchClienteById.fulfilled, (state, action)=>{
         state.selectedCliente = action.payload;
+        state.loadingSelectedCliente = false;
       });
 
   },
 });
 
-export const { setClienti, removeCliente, updateCliente, selectCliente } = clientiSlice.actions;
+export const { setClienti, removeCliente, updateCliente, selectCliente,removeSelectCliente } = clientiSlice.actions;
 export default clientiSlice.reducer;

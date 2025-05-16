@@ -267,14 +267,17 @@ const ClientiPage: React.FC = () => {
             </TextField>
           </Box>
   
-          {/* Dialogs */}
-          <ClienteDialog
-            open={openDialog}
-            onClose={handleCloseDialog}
-            onSubmit={isEditMode ? handleEditCliente : handleAddCliente}
-            isEditMode={isEditMode}
-            clienteToEdit={clienteToEdit?.id}
-          />
+          {openDialog && (
+            <ClienteDialog
+              open={openDialog}
+              onClose={handleCloseDialog}
+              onSubmit={isEditMode ? handleEditCliente : handleAddCliente}
+              isEditMode={isEditMode}
+              clienteToEdit={clienteToEdit?.id}
+            />
+          )}
+
+  
   
           <ConfirmDeleteDialog
             open={clienteToDelete !== null}

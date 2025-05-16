@@ -10,7 +10,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import './ClienteDialog.css';
-import { createClienteAsync, fetchClienteById, updateClienteAsync } from '../../slice/clientiSlice';
+import { createClienteAsync, fetchClienteById, removeSelectCliente, updateClienteAsync } from '../../slice/clientiSlice';
 import { fetchTariffe } from '../../slice/settingsSlice';
 
 interface ClienteDialogProps {
@@ -43,11 +43,10 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
 
   const [tariffaSelezionata, setTariffaSelezionata] = useState('');
   const tariffe = useSelector((state: RootState) => state.settings.tariffe);
-  const {selectedCliente}= useSelector((state:RootState)=> state.clienti);
+  const {selectedCliente,loadingSelectedCliente}= useSelector((state:RootState)=> state.clienti);
   const [firstOpen,setFirstOpen] = useState(true); // ✅ Nuovo stato per gestire il primo open
   const dispatch = useDispatch<AppDispatch>();
-  const [loading, setLoading]=useState <boolean>(true);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       // Prima carica le tariffe (una sola volta)
@@ -56,16 +55,19 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
       // Carica i dati del cliente solo se siamo in modalità di modifica o rinnovo
       if ((isEditMode || isRinnovoMode) && clienteToEdit) {
         await dispatch(fetchClienteById(clienteToEdit));
-        if (selectedCliente) {
-          setCliente(selectedCliente);
-          setTariffaSelezionata(selectedCliente.tariffaNome || '');
-        }
       }   
+      setLoading(false);
     };
   
     fetchData(); // Chiamata alla funzione asincrona
-    setLoading(false); 
-  }, [isEditMode, isRinnovoMode, clienteToEdit]);
+
+  }, [isEditMode, isRinnovoMode, clienteToEdit, dispatch]);
+
+  useEffect(() => {
+    if (selectedCliente) {
+      setCliente(selectedCliente);
+      setTariffaSelezionata(selectedCliente.tariffaNome || '');
+  }}, [selectedCliente]);
   
   
 
@@ -148,7 +150,9 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
       const { id, ...clienteSenzaId } = cliente;
       await dispatch(createClienteAsync({ ...clienteSenzaId, userId:userId! }));
     }
+    dispatch(removeSelectCliente());
     onClose();
+    setLoading(true);
   };
 
   const handleDialogClose = () => {
@@ -166,13 +170,16 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
       userId:userId!
     });
     setTariffaSelezionata('');
+    dispatch(removeSelectCliente());
     onClose();
+    setLoading(true);
+
   };
 
   return (
 
     <Dialog open={open} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-      {loading ? (
+      {loading || loadingSelectedCliente ? (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
         <CircularProgress />
       </Box>
