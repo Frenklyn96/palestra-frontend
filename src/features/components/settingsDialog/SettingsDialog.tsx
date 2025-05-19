@@ -91,7 +91,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       durata,
       unitaDurata,
       costo: parseFloat(costo),
-      userId: userId // Convertiamo il costo da stringa a numero
+      userId: userId! // Convertiamo il costo da stringa a numero
     };
 
     onSubmit(tariffa);
