@@ -12,6 +12,7 @@ import { RootState, AppDispatch } from '../../../store/store';
 import './ClienteDialog.css';
 import { createClienteAsync, fetchClienteById, removeSelectCliente, updateClienteAsync } from '../../slice/clientiSlice';
 import { fetchTariffe } from '../../slice/settingsSlice';
+import { it } from 'date-fns/locale';
 
 interface ClienteDialogProps {
   open: boolean;
@@ -144,7 +145,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   };
 
   const handleFormSubmit = async () => {
-    if (isEditMode && cliente.id) await dispatch(updateClienteAsync(cliente));
+    if (isEditMode && cliente.id) await dispatch(updateClienteAsync({...cliente,userId:userId!}));
     else if (isRinnovoMode)  onSubmit(cliente);
     else{
       const { id, ...clienteSenzaId } = cliente;
@@ -251,7 +252,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             disabled={isRinnovoMode}
             sx={{ flex: 1, marginRight: 2 }}
           />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
             <DateTimePicker
               label="Data di Nascita"
               value={cliente.dataNascita ? new Date(cliente.dataNascita) : null}
@@ -286,8 +287,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             </Select>
           </FormControl>
 
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateTimePicker
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>            <DateTimePicker
               label="Scadenza Tessera"
               value={
                 isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata

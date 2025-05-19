@@ -12,6 +12,9 @@ import { createTransazioneAsync, updateTransazioneAsync } from '../../slice/tran
 import './TransazioneDialog.css';
 import GenericSearchTable, { TableNames } from '../generic/GenericSearchTable';
 import { clearResults } from '../../slice/genericSlice';
+import { it } from 'date-fns/locale';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface TransazioneDialogProps {
   open: boolean;
@@ -113,28 +116,44 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditMode ? 'Modifica Transazione' : 'Aggiungi Transazione'}</DialogTitle>
-      <DialogContent>
-        <Box className="form-row">
-          {/* Cliente */}
-          {clienteNome || isFilterActive ? (
+        <DialogContent>
+          <Box className="form-row">
+            {/* Cliente */}
+            {transazione.clienteNome && !isFilterActive ? (
             <TextField
               label="Cliente Selezionato"
               value={transazione.clienteNome}
               disabled
               fullWidth
               className="text-field"
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    onClick={() =>
+                      setTransazione((prev) => ({
+                        ...prev,
+                        clienteId: null,
+                        clienteNome: ''
+                      }))
+                    }
+                    size="small"
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                )
+              }}
             />
           ) : (
             <Box className="form-row">
               <GenericSearchTable
-                  tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm} 
-                  page={null} 
-                  pageSize={null} 
-                  orderBy={null}
-                  orderDirection={'desc'}
-                  userId={userId!}
+                tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm} 
+                page={null} 
+                pageSize={null} 
+                orderBy={null}
+                orderDirection={'desc'}
+                userId={userId!}
               />
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>
@@ -152,6 +171,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
             </Box>
           )}
 
+
           <TextField
             label="Causale"
             name="causale"
@@ -168,7 +188,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
             fullWidth
             className="text-field"
           />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
             <DateTimePicker
               label="Data Transazione"
               value={transazione.dataTransazione ? new Date(transazione.dataTransazione) : new Date()}
