@@ -15,7 +15,7 @@ jobs:
 
       - name: Build frontend
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
       - name: Login to Docker Hub
