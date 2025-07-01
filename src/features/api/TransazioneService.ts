@@ -4,8 +4,8 @@ import { BASE_URL_TRANSAZIONI as API_URL} from '../../enum/RoutesEnum';
 
 
 interface GetTransazioniParams {
-  startDate: string | null;
-  endDate: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
   page?: number;
   pageSize?: number;
   orderBy: string;
