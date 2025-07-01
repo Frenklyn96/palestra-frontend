@@ -17,6 +17,9 @@ import GenericSearchTable, { TableNames } from '../../features/components/generi
 import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
 import { clearResults, updateResult } from '../../features/slice/genericSlice';
 import { fetchClienteById } from '../../features/slice/clientiSlice';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { it } from 'date-fns/locale';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -34,8 +37,8 @@ const TransazioniPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [filterApplied, setFilterApplied] = useState(false);
 
   const [orderBy, setOrderBy] = useState<string>('DataTransazione');
@@ -102,7 +105,7 @@ const TransazioniPage: React.FC = () => {
         : (transazioni as Transazione[])
     );
     
-  },[searchTerm,transazioni]);
+  },[searchTerm,transazioni,resultsTransazioniFiltered]);
 
   const handleOnClose = () => {
     setOpenDialog(false);
@@ -164,21 +167,25 @@ const TransazioniPage: React.FC = () => {
           </Box>
 
           {/* Filtro date */}
-          <Box sx={{ display: 'flex', gap: 2, marginY: 2 }}>
-            <TextField
-              label="Data Inizio"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              value={startDate || ''}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <TextField
+          <Box sx={{ display: 'flex', gap: 2, marginY: 2, width: '30%' }}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+              <DateTimePicker
+                label="Data Inizio"
+                value={startDate ? new Date(startDate) : null}
+                onChange={(e) => setStartDate(e)}
+                views={['year', 'month', 'day']}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+              <DateTimePicker
               label="Data Fine"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              value={endDate || ''}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+                value={endDate ? new Date(endDate) : null}
+                onChange={(e) => setEndDate(e)}
+                views={['year', 'month', 'day']}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
             <Button
               variant="outlined"
               onClick={() => {

@@ -23,8 +23,8 @@ export const fetchTransazioni = createAsyncThunk(
   'transazioni/fetchAll',
   async (
     params: {
-      startDate: string | null;
-      endDate: string | null;
+      startDate: Date | null;
+      endDate: Date | null;
       page?: number;
       pageSize?: number;
       orderBy: string;
