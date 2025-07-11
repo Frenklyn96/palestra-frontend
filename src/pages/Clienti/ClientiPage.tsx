@@ -10,11 +10,13 @@ import { RootState, AppDispatch } from '../../store/store';
 import {
   fetchClienti, deleteClienteAsync, updateClienteAsync, createClienteAsync, selectCliente,
 } from '../../features/slice/clientiSlice';
+import {createEntranceAsync} from '../../features/slice/entrancesSlice';
 import { Cliente } from '../../features/class/Cliente';
 import ClienteDialog from '../../features/components/clienteDialog/ClienteDialog';
 import { useNavigate } from 'react-router-dom';
-import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
+import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
+import StairsIcon from '@mui/icons-material/Stairs';
 
 type ClienteKeys = keyof Cliente;
 
@@ -43,10 +45,8 @@ const ClientiPage: React.FC = () => {
   const [clientiToRender, setClientiToRender] = useState<Cliente[]>([]);
 
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
-    console.log("Chiamata a fetchData per clientiPage:", { searchTerm, page, pageSize, orderBy, orderDirection });
-
     const fetchData = async () => {
       await dispatch(fetchClienti({
         page,
@@ -124,6 +124,30 @@ const ClientiPage: React.FC = () => {
     setOrderBy(property);
   };
 
+const handleScalaEntrances = async (cliente: Cliente) => {
+  try {
+    await dispatch(createEntranceAsync({
+      dataOra: new Date(),
+      clienteId: cliente.id,
+      userId: userId!
+    })).unwrap(); // ottieni direttamente il payload
+
+
+    // Solo se è andata bene:
+    setClientiToRender(prev =>
+      prev.map(c =>
+        c.id === cliente.id
+          ? { ...c,scadenza:new Date(), ingressiResidui: (c.ingressiResidui || 0) - 1 }
+          : c
+      )
+    );
+  } catch (error) {
+    console.error("Errore nel creare l'ingresso:", error);
+    // opzionalmente: mostra notifica
+  }
+};
+
+
   return (
     <Box sx={{ padding: 2, position: 'relative', minHeight: '200px' }}>
       {loading ? (
@@ -168,6 +192,7 @@ const ClientiPage: React.FC = () => {
                   <TableCell onClick={() => handleRequestSort('nome')} style={{ cursor: 'pointer' }}>Nome</TableCell>
                   <TableCell onClick={() => handleRequestSort('cognome')} style={{ cursor: 'pointer' }}>Cognome</TableCell>
                   <TableCell onClick={() => handleRequestSort('scadenza')} style={{ cursor: 'pointer' }}>Scadenza</TableCell>
+                  <TableCell>Ingressi Residui</TableCell>
                   <TableCell>Azioni</TableCell>
                 </TableRow>
               </TableHead>
@@ -198,17 +223,27 @@ const ClientiPage: React.FC = () => {
                         <TableCell>{cliente.numeroTessera}</TableCell>
                         <TableCell>{cliente.nome}</TableCell>
                         <TableCell>{cliente.cognome}</TableCell>
-                        <TableCell>{scadenzaFormatted}</TableCell>
+                        <TableCell>{cliente.ingressiResidui?"":scadenzaFormatted}</TableCell>
+                        <TableCell>{cliente.ingressiResidui}</TableCell>
                         <TableCell>
                           <IconButton color="primary" onClick={() => handleOpenEditDialog(cliente)}>
                             <EditIcon />
                           </IconButton>
                           <IconButton color="success" onClick={() => handleSelectCliente(cliente)}>
                             <AttachMoneyIcon />
-                          </IconButton>
+                          </IconButton>    
                           <IconButton color="error" onClick={() => handleOpenDeleteDialog(cliente.id)}>
                             <DeleteIcon />
                           </IconButton>
+                            {cliente.ingressiResidui != null && (
+                              <IconButton
+                                color="secondary"
+                                disabled={cliente.ingressiResidui === 0}
+                                onClick={() => handleScalaEntrances(cliente)}
+                              >
+                                <StairsIcon />
+                              </IconButton>
+                            )}
                         </TableCell>
                       </TableRow>
                     );
@@ -279,7 +314,8 @@ const ClientiPage: React.FC = () => {
 
   
   
-          <ConfirmDeleteDialog
+          <ConfirmDialog
+            title="Conferma Eliminazione"
             open={clienteToDelete !== null}
             onConfirm={handleRemoveCliente}
             onClose={handleCloseDeleteDialog}

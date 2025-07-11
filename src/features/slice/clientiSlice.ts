@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Cliente, CreateCliente } from '../class/Cliente';
+import { Cliente, CreateCliente, RenewAbbonamneto } from '../class/Cliente';
 import * as clienteApi from '../api/ClienteService'; // servizio API per chiamate backend
 
 // Stato iniziale
@@ -87,6 +87,13 @@ export const eliminaRinnovo = createAsyncThunk(
   }
 );
 
+
+export const renewAbbonamentoAsync = createAsyncThunk(
+  'clienti/updateClienteAbbonamento',
+  async (data: RenewAbbonamneto,) => {
+    return await clienteApi.renewAbbonamento(data);
+  }
+);
 
 
 // Slice

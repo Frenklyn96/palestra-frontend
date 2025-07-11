@@ -13,7 +13,7 @@ import { addTariffaAsync, updateTariffaAsync, removeTariffaAsync, fetchTariffe, 
 import { Tariffa } from '../../features/class/Tariffa';
 import { AppDispatch } from '../../store/store';
 import TariffaFormDialog from '../../features/components/settingsDialog/SettingsDialog';
-import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
+import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import ImageUploader from '../../features/components/ImageUploader/ImageUploader';
 
 const SettingsPage: React.FC = () => {
@@ -145,11 +145,12 @@ const SettingsPage: React.FC = () => {
         userId = {userId!}
       />
 
-      <ConfirmDeleteDialog
+      <ConfirmDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteConfirmed}
         message={`Sei sicuro di voler eliminare la tariffa "${tariffaToDelete?.nome}"?`}
+        title="Conferma Eliminazione"
       />
 
       <Backdrop open={loading} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
