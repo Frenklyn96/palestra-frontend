@@ -26,7 +26,8 @@ export const addTariffa = async (tariffa: Tariffa) => {
         durata: tariffa.durata,
         unitaDurata: tariffa.unitaDurata,
         costo: tariffa.costo,
-        userId:tariffa.userId
+        userId:tariffa.userId,
+        toCount: tariffa.toCount??false
     },
     {
       headers: {
@@ -51,7 +52,8 @@ export const updateTariffa = async (tariffa: Tariffa) => {
         durata: tariffa.durata,
         unitaDurata: tariffa.unitaDurata,
         costo: tariffa.costo,
-        userId:tariffa.userId
+        userId:tariffa.userId,
+        toCount: tariffa.toCount??false
     },
     {
       headers: {

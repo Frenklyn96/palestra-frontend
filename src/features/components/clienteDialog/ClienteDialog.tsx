@@ -290,12 +290,12 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>            <DateTimePicker
               label="Scadenza Tessera"
               value={
-                isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata
+                isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount
                   ? calcolaScadenza(new Date(),cliente.tariffaNome)
-                  : cliente.scadenza ? new Date(cliente.scadenza) : null
+                  : cliente.scadenza && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount ? new Date(cliente.scadenza) : null
               }              
               onChange={handleDateChange}
-              disabled={isGiornaliera()}
+              disabled={isGiornaliera()||tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount}
               views={['year', 'month', 'day']}
               slotProps={{ textField: { fullWidth: true } }}
             />

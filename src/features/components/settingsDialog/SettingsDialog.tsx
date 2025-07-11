@@ -10,7 +10,9 @@ import {
   Select,
   InputLabel,
   FormControl,
-  Typography
+  Typography,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import { Tariffa, UnitaDurata } from '../../class/Tariffa';
 import './SettingsDialog.css'; // Importa il file CSS
@@ -34,6 +36,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   const [durata, setDurata] = useState(1);
   const [unitaDurata, setUnitaDurata] = useState<UnitaDurata>(UnitaDurata.Giorni);
   const [costo, setCosto] = useState<string>(''); // Gestiamo il costo come stringa per permettere la cancellazione
+  const [toCount, setToCount] = useState(false);
 
   // Stato per gestire gli errori sui campi
   const [errorNome, setErrorNome] = useState(false);
@@ -47,7 +50,8 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       setNome(initialData.nome);
       setDurata(initialData.durata);
       setUnitaDurata(initialData.unitaDurata);
-      setCosto(initialData.costo.toString()); // Convertiamo il costo in stringa per gestirlo come input
+      setCosto(initialData.costo.toString());
+      setToCount(initialData.toCount ?? false); // Convertiamo il costo in stringa per gestirlo come input
     } else {
       // Reset dei campi quando si passa alla modalità di aggiunta (senza initialData)
       initialValuesRef.current = null; // Non c'è valore iniziale
@@ -55,6 +59,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       setDurata(1);
       setUnitaDurata(UnitaDurata.Giorni);
       setCosto('');
+      setToCount(false);
     }
   }, [initialData]); // Solo quando initialData cambia
 
@@ -91,7 +96,8 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       durata,
       unitaDurata,
       costo: parseFloat(costo),
-      userId: userId! // Convertiamo il costo da stringa a numero
+      userId: userId!, // Convertiamo il costo da stringa a numero
+      toCount
     };
 
     onSubmit(tariffa);
@@ -114,6 +120,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
         setDurata(initialValuesRef.current.durata);
         setUnitaDurata(initialValuesRef.current.unitaDurata);
         setCosto(initialValuesRef.current.costo.toString());
+        setToCount(initialValuesRef.current.toCount ?? false);
       }
     } else {
       // Se siamo in modalità Aggiungi, resettiamo i valori
@@ -121,6 +128,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       setDurata(1);
       setUnitaDurata(UnitaDurata.Giorni);
       setCosto('');
+      setToCount(false);
     }
   };
 
@@ -190,6 +198,18 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
             />
           </div>
         </div>
+       <div className="tariffa-field">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={toCount}
+              onChange={(e) => setToCount(e.target.checked)}
+            />
+          }
+          label="Da scalare"
+        />
+      </div>
+
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="inherit">

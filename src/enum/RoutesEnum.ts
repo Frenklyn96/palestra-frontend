@@ -4,7 +4,8 @@ enum BE_API{
   GENERIC = 'GenericSearch',
   TRANSAZIONI = 'Transazioni',
   TARIFFE = "Tariffe",
-  UTILITY = "Utility"
+  UTILITY = "Utility",
+  BASE_URL_ENTRATE = "Entrance",
 }
 
 const BASE_URL = import.meta.env.VITE_BE_URL_LOCAL + '/api/';
@@ -14,6 +15,7 @@ export const BASE_URL_TRANSAZIONI = BASE_URL + BE_API.TRANSAZIONI;
 export const BASE_URL_CLIENTI = BASE_URL + BE_API.CLIENTI;
 export const BASE_URL_GENERIC = BASE_URL + BE_API.GENERIC;
 export const BASE_URL_UTILITY = BASE_URL + BE_API.UTILITY;
+export const BASE_URL_ENTRATE = BASE_URL + BE_API.BASE_URL_ENTRATE;
 
 
 

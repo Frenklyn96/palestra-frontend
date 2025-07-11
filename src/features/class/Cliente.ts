@@ -10,6 +10,7 @@ export interface Cliente {
     foto: string;
     tariffaNome: string;
     userId:string
+    ingressiResidui?: number; // Aggiunto per visualizzare gli ingressi residui
   }
 
 export interface  CreateCliente {
@@ -23,5 +24,14 @@ export interface  CreateCliente {
   foto: string;
   tariffaNome: string;
   userId:string
+}
+
+export interface RenewAbbonamneto{
+
+    clienteId: string;
+    tariffaNome: string;
+    userId: string;
+    scadenza: Date  |null;
+
 }
   

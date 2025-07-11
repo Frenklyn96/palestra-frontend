@@ -5,10 +5,10 @@ import { Cliente } from '../../class/Cliente';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CachedIcon from '@mui/icons-material/Cached';
-import ConfirmDeleteDialog from '../generic/ConfirmDeleteDialog';
+import ConfirmDialog from '../generic/ConfirmDialog';
 import { AppDispatch, RootState } from '../../../store/store';
 import { useDispatch } from 'react-redux';
-import { eliminaRinnovo, updateCliente } from '../../slice/clientiSlice';
+import { eliminaRinnovo, renewAbbonamentoAsync } from '../../slice/clientiSlice';
 import ClienteDialog from '../clienteDialog/ClienteDialog';
 import { useSelector } from 'react-redux';
 
@@ -53,7 +53,12 @@ const RinnovaTable: React.FC = () => {
 
   const handleRinnovoSubmit = (clienteAggiornato: Cliente) => {
     if (clienteAggiornato) {
-      dispatch(updateCliente(clienteAggiornato));
+      dispatch(renewAbbonamentoAsync({
+        clienteId: clienteAggiornato.id,
+        tariffaNome: clienteAggiornato.tariffaNome,
+        scadenza: clienteAggiornato.scadenza,
+        userId: userId!
+      }));
     closeRinnovoDialog();
     // Aggiorna la lista localmente (rimuovi il cliente rinnovato)
     setClienti(prev => prev.filter(c => c.id !== clienteAggiornato.id));
@@ -171,11 +176,13 @@ const RinnovaTable: React.FC = () => {
       )}
 
       {clienteToDelete && (
-        <ConfirmDeleteDialog
+        <ConfirmDialog
           open={dialogOpen}
           onClose={closeDeleteDialog}
           onConfirm={handleDeleteConfirm}
+          title="Conferma Eliminazione"
           message={`Sei sicuro di voler eliminare ${clienteToDelete.nome} ${clienteToDelete.cognome}?`}
+          confirmColor="primary"
         />
       )}
     </Box>

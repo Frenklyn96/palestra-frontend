@@ -14,7 +14,7 @@ import { Transazione } from '../../features/class/Transazione';
 import TransazioneDialog from '../../features/components/transazioneDialog/TransazioneDialog';
 import { useParams, useNavigate } from 'react-router-dom';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
-import ConfirmDeleteDialog from '../../features/components/generic/ConfirmDeleteDialog';
+import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import { clearResults, updateResult } from '../../features/slice/genericSlice';
 import { fetchClienteById } from '../../features/slice/clientiSlice';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
@@ -289,10 +289,12 @@ const TransazioniPage: React.FC = () => {
           />
 
           {/* Dialog Conferma Elimina */}
-          <ConfirmDeleteDialog
+          <ConfirmDialog
             open={openDeleteDialog}
             onClose={() => setOpenDeleteDialog(false)}
             onConfirm={handleDeleteConfirm}
+            title="Conferma Eliminazione"
+
           />
         </>
       )}

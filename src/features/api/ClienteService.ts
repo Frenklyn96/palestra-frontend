@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Cliente, CreateCliente } from '../class/Cliente';
+import { Cliente, CreateCliente, RenewAbbonamneto } from '../class/Cliente';
 import { BASE_URL_CLIENTI as API_URL} from '../../enum/RoutesEnum';
 
 
@@ -134,4 +134,19 @@ export const rinnovaTutti = async(clienti: Cliente[]) => {
 export async function eliminaRinnovo(id: string) {
   await axios.delete(`${API_URL}/EliminaRinnovo/${id}`);
 }
+
+export const renewAbbonamento = async (data: RenewAbbonamneto) => {
+  const response = await axios.put(`${API_URL}/RinnovoAbbonamento`, {
+  clienteId: data.clienteId,
+  tariffaNome: data.tariffaNome,
+  userId: data.userId,
+  scadenza: data.scadenza ? new Date(data.scadenza).toISOString() : null
+}, {
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+  return response.data;
+};
 
