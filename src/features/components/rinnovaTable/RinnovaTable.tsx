@@ -104,7 +104,7 @@ const RinnovaTable: React.FC = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">Clienti con abbonamento scaduto</Typography>
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           startIcon={<RefreshIcon />}
@@ -112,7 +112,7 @@ const RinnovaTable: React.FC = () => {
           disabled={loading}
         >
           Rinnova Tutti
-        </Button>
+        </Button> */}
       </Box>
 
       {loading ? (
