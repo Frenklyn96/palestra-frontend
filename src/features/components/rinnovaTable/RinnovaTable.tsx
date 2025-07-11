@@ -3,7 +3,6 @@ import { Box, Typography, Paper, Button, Table, TableBody, TableCell, TableConta
 import { fetchClientiAbbondamentoScaduto } from '../../api/ClienteService';
 import { Cliente } from '../../class/Cliente';
 import DeleteIcon from '@mui/icons-material/Delete';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import CachedIcon from '@mui/icons-material/Cached';
 import ConfirmDialog from '../generic/ConfirmDialog';
 import { AppDispatch, RootState } from '../../../store/store';
@@ -38,10 +37,6 @@ const RinnovaTable: React.FC = () => {
     fetchClienti();
   }, []);
 
-  const rinnovaTutti = () => {
-    console.log('Rinnovo tutti gli abbonamenti!');
-    // TODO: implementa rinnovo multiplo
-  };
 
   const openRinnovoDialog = (cliente: Cliente) => {
     setClienteDaRinnovare(cliente);
