@@ -45,7 +45,7 @@ const ClientiPage: React.FC = () => {
   const [clientiToRender, setClientiToRender] = useState<Cliente[]>([]);
 
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       await dispatch(fetchClienti({
@@ -132,11 +132,12 @@ const handleScalaEntrances = async (cliente: Cliente) => {
       userId: userId!
     })).unwrap(); // ottieni direttamente il payload
 
+
     // Solo se è andata bene:
     setClientiToRender(prev =>
       prev.map(c =>
         c.id === cliente.id
-          ? { ...c, ingressiResidui: (c.ingressiResidui || 0) - 1 }
+          ? { ...c,scadenza:new Date(), ingressiResidui: (c.ingressiResidui || 0) - 1 }
           : c
       )
     );
