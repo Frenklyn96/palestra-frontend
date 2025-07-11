@@ -135,7 +135,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
     if (unita === 'Giorni') nuovaData.setDate(nuovaData.getDate() + numero);
     if (unita === 'Mesi') nuovaData.setMonth(nuovaData.getMonth() + numero);
     if (unita === 'Anni') nuovaData.setFullYear(nuovaData.getFullYear() + numero);
-  
+
     return nuovaData;
   };
 
@@ -146,7 +146,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
 
   const handleFormSubmit = async () => {
     if (isEditMode && cliente.id) await dispatch(updateClienteAsync({...cliente,userId:userId!}));
-    else if (isRinnovoMode)  onSubmit(cliente);
+    else if (isRinnovoMode)  onSubmit({...cliente, scadenza: firstOpen ? calcolaScadenza(new Date(), cliente.tariffaNome) : cliente.scadenza});
     else{
       const { id, ...clienteSenzaId } = cliente;
       await dispatch(createClienteAsync({ ...clienteSenzaId, userId:userId! }));

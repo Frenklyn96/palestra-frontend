@@ -137,7 +137,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
     setClientiToRender(prev =>
       prev.map(c =>
         c.id === cliente.id
-          ? { ...c,scadenza:new Date(), ingressiResidui: (c.ingressiResidui || 0) - 1 }
+          ? { ...c,scadenza:c.ingressiResidui && c.ingressiResidui-1===0?new Date():c.scadenza, ingressiResidui: (c.ingressiResidui || 0) - 1 }
           : c
       )
     );
