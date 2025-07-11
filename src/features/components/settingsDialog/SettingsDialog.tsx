@@ -172,13 +172,19 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
               <FormControl fullWidth>
                 <InputLabel>Unità</InputLabel>
                 <Select
-                  value={unitaDurata}
+                  value={toCount ? UnitaDurata.Giorni : unitaDurata}
                   label="Unità"
                   onChange={(e) => setUnitaDurata(e.target.value as UnitaDurata)}
+                  disabled={toCount}  // disabilita se toCount è attivo
                 >
-                  <MenuItem value={UnitaDurata.Giorni}>Giorni</MenuItem>
-                  <MenuItem value={UnitaDurata.Mesi}>Mesi</MenuItem>
-                  <MenuItem value={UnitaDurata.Anni}>Anni</MenuItem>
+                  {!toCount && (
+                    <>
+                      <MenuItem value={UnitaDurata.Giorni}>Giorni</MenuItem>
+                      <MenuItem value={UnitaDurata.Mesi}>Mesi</MenuItem>
+                      <MenuItem value={UnitaDurata.Anni}>Anni</MenuItem>
+                    </>
+                  )}
+                  {toCount && <MenuItem value={UnitaDurata.Giorni}>Giorni</MenuItem>}
                 </Select>
               </FormControl>
             </div>
