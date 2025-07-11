@@ -124,12 +124,26 @@ const ClientiPage: React.FC = () => {
     setOrderBy(property);
   };
 
-  const handleScalaEntrances = (cliente: Cliente) => {
-  dispatch(createEntranceAsync({
-    dataOra: new Date(),
-    clienteId: cliente.id,
-    userId: userId!
-  }));
+const handleScalaEntrances = async (cliente: Cliente) => {
+  try {
+    await dispatch(createEntranceAsync({
+      dataOra: new Date(),
+      clienteId: cliente.id,
+      userId: userId!
+    })).unwrap(); // ottieni direttamente il payload
+
+    // Solo se è andata bene:
+    setClientiToRender(prev =>
+      prev.map(c =>
+        c.id === cliente.id
+          ? { ...c, ingressiResidui: (c.ingressiResidui || 0) - 1 }
+          : c
+      )
+    );
+  } catch (error) {
+    console.error("Errore nel creare l'ingresso:", error);
+    // opzionalmente: mostra notifica
+  }
 };
 
 
@@ -208,7 +222,7 @@ const ClientiPage: React.FC = () => {
                         <TableCell>{cliente.numeroTessera}</TableCell>
                         <TableCell>{cliente.nome}</TableCell>
                         <TableCell>{cliente.cognome}</TableCell>
-                        <TableCell>{scadenzaFormatted}</TableCell>
+                        <TableCell>{cliente.ingressiResidui?"":scadenzaFormatted}</TableCell>
                         <TableCell>{cliente.ingressiResidui}</TableCell>
                         <TableCell>
                           <IconButton color="primary" onClick={() => handleOpenEditDialog(cliente)}>
@@ -216,13 +230,19 @@ const ClientiPage: React.FC = () => {
                           </IconButton>
                           <IconButton color="success" onClick={() => handleSelectCliente(cliente)}>
                             <AttachMoneyIcon />
-                          </IconButton>
-                          <IconButton color="secondary" onClick={() => handleScalaEntrances(cliente)}>
-                            <StairsIcon />
-                          </IconButton>
+                          </IconButton>    
                           <IconButton color="error" onClick={() => handleOpenDeleteDialog(cliente.id)}>
                             <DeleteIcon />
                           </IconButton>
+                            {cliente.ingressiResidui != null && (
+                              <IconButton
+                                color="secondary"
+                                disabled={cliente.ingressiResidui === 0}
+                                onClick={() => handleScalaEntrances(cliente)}
+                              >
+                                <StairsIcon />
+                              </IconButton>
+                            )}
                         </TableCell>
                       </TableRow>
                     );
