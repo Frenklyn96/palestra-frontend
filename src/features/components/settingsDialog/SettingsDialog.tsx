@@ -135,7 +135,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>
         {isEdit ? t("settings_dialog.title.edit") : t("settings_dialog.title.add")}
       </DialogTitle>
@@ -220,7 +220,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} color="inherit">
+        <Button onClick={handleClose} color="inherit">
           {t("settings_dialog.buttons.cancel")}
         </Button>
         <Button onClick={handleSubmit} variant="contained" color="primary">
