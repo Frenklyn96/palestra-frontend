@@ -274,8 +274,12 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             onChange={handleInputChange}
             sx={{ marginBottom: 2 }}
             disabled={isRinnovoMode}
-            error={showErrors && !cliente.email.includes('@')}
-            helperText={showErrors && !cliente.email.includes('@') ? 'Email non valida (deve contenere @)' : ''}
+            error={showErrors && cliente.email !== '' && !cliente.email.includes('@')}
+            helperText={
+              showErrors && cliente.email !== '' && !cliente.email.includes('@')
+                ? 'Email non valida (deve contenere @)'
+                : ''
+            }
           />
 
           <Box className="form-row" sx={{ marginBottom: 2 }}>
