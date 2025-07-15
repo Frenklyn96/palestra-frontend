@@ -14,6 +14,7 @@ interface GenericSearchTableProps {
   orderBy: string|null; // Colonna per ordinare
   orderDirection: 'asc' | 'desc'; // Direzione dell'ordinamento
   userId:string;
+  placeholder?: string; // Placeholder per il campo di ricerca
 }
 
 export enum TableNames {
@@ -31,7 +32,8 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   pageSize,
   orderBy,
   orderDirection,
-  userId
+  userId,
+  placeholder = "Cerca..."
 }) => {
   const dispatch = useDispatch<AppDispatch>();  // Tipizza il dispatch
 
@@ -64,7 +66,7 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   return (
     <TextField
       size="small"
-      placeholder="Cerca..."
+      placeholder={placeholder}
       value={searchTerm}
       onChange={handleSearch}
       InputProps={{
