@@ -154,6 +154,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
                 orderBy={null}
                 orderDirection={'desc'}
                 userId={userId!}
+                placeholder="Cerca Cliente"
               />
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>

@@ -46,6 +46,8 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   const tariffe = useSelector((state: RootState) => state.settings.tariffe);
   const {selectedCliente,loadingSelectedCliente}= useSelector((state:RootState)=> state.clienti);
   const [firstOpen,setFirstOpen] = useState(true); // ✅ Nuovo stato per gestire il primo open
+  const [showErrors, setShowErrors] = useState(false);
+
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -139,22 +141,36 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
     return nuovaData;
   };
 
-  const isGiornaliera = () => {
-    const selezionata = tariffe.find(t => t.nome === tariffaSelezionata);
-    return selezionata?.durata === 1 && selezionata.unitaDurata === 'Giorni';
-  };
+  // const isGiornaliera = () => {
+  //   const selezionata = tariffe.find(t => t.nome === tariffaSelezionata);
+  //   return selezionata?.durata === 1 && selezionata.unitaDurata === 'Giorni';
+  // };
 
   const handleFormSubmit = async () => {
-    if (isEditMode && cliente.id) await dispatch(updateClienteAsync({...cliente,userId:userId!}));
-    else if (isRinnovoMode)  onSubmit({...cliente, scadenza: firstOpen ? calcolaScadenza(new Date(), cliente.tariffaNome) : cliente.scadenza});
-    else{
-      const { id, ...clienteSenzaId } = cliente;
-      await dispatch(createClienteAsync({ ...clienteSenzaId, userId:userId! }));
-    }
-    dispatch(removeSelectCliente());
-    onClose();
-    setLoading(true);
-  };
+  setShowErrors(true); // Mostra gli errori
+
+  if (!cliente.nome.trim()) {
+    return; // Blocca il submit se il campo è vuoto
+  }
+
+  if (isEditMode && cliente.id) {
+    await dispatch(updateClienteAsync({...cliente, userId: userId!}));
+  } else if (isRinnovoMode) {
+    onSubmit({
+      ...cliente,
+      scadenza: firstOpen ? calcolaScadenza(new Date(), cliente.tariffaNome) : cliente.scadenza
+    });
+  } else {
+    const { id, ...clienteSenzaId } = cliente;
+    await dispatch(createClienteAsync({ ...clienteSenzaId, userId: userId! }));
+  }
+
+  dispatch(removeSelectCliente());
+  onClose();
+  setLoading(true);
+  setShowErrors(false); // Reset per il prossimo utilizzo
+};
+
 
   const handleDialogClose = () => {
     setCliente({
@@ -184,132 +200,178 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
         <CircularProgress />
       </Box>
-    ) : (<>
-      <DialogContent>
-        <Box className="dialog-header">
-          <DialogTitle>
-              {isRinnovoMode ? 'Rinnova Abbonamento' : isEditMode ? 'Modifica Cliente' : 'Aggiungi Cliente'}
-            </DialogTitle>
-          
-  
-          <Box className="photo-upload" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Anteprima Foto */}
-            {cliente.foto && (
-              <Box sx={{ marginBottom: 1 }}>
-                 <img
-                  src={cliente.foto.startsWith('data:') ? cliente.foto : `${process.env.REACT_APP_API_URL}${cliente.foto}`}
-                  alt="Anteprima Foto"
-                  style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
-                />
-              </Box>
-            )}
-            {/* Bottone per caricare foto, posizionato sotto l'anteprima */}
-            <Button variant="outlined" component="label" sx={{ marginTop: 1 }} disabled={isRinnovoMode}>
-              Carica Foto
-              <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
-            </Button>
+    ) : tariffe.length === 0 ? (
+    <DialogContent>
+      <Box sx={{ textAlign: 'center', padding: 4 }}>
+        <DialogTitle>Attenzione</DialogTitle>
+        <p>Per poter aggiungere un cliente è necessario prima creare almeno una tariffa.</p>
+        <DialogActions sx={{ justifyContent: 'center', marginTop: 2 }}>
+          <Button onClick={handleDialogClose} color="primary" variant="contained">Chiudi</Button>
+        </DialogActions>
+      </Box>
+    </DialogContent>
+    ) : (
+      <>
+        <DialogContent>
+          <Box className="dialog-header">
+            <DialogTitle>
+                {isRinnovoMode ? 'Rinnova Abbonamento' : isEditMode ? 'Modifica Cliente' : 'Aggiungi Cliente'}
+              </DialogTitle>
+            
+    
+            <Box className="photo-upload" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Anteprima Foto */}
+              {cliente.foto && (
+                <Box sx={{ marginBottom: 1 }}>
+                  <img
+                    src={cliente.foto.startsWith('data:') ? cliente.foto : `${process.env.REACT_APP_API_URL}${cliente.foto}`}
+                    alt="Anteprima Foto"
+                    style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                  />
+                </Box>
+              )}
+              {/* Bottone per caricare foto, posizionato sotto l'anteprima */}
+              <Button variant="outlined" component="label" sx={{ marginTop: 1 }} disabled={isRinnovoMode}>
+                Carica Foto
+                <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
+              </Button>
+            </Box>
           </Box>
-        </Box>
 
-        <TextField
-          label="Nome"
-          variant="outlined"
-          fullWidth
-          name="nome"
-          value={cliente.nome}
-          onChange={handleInputChange}
-          sx={{ marginBottom: 2 }}
-          disabled={isRinnovoMode}
-        />
-        <TextField
-          label="Cognome"
-          variant="outlined"
-          fullWidth
-          name="cognome"
-          value={cliente.cognome}
-          onChange={handleInputChange}
-          sx={{ marginBottom: 2 }}
-          disabled={isRinnovoMode}
-        />
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          name="email"
-          value={cliente.email}
-          onChange={handleInputChange}
-          sx={{ marginBottom: 2 }}
-          disabled={isRinnovoMode}
-        />
-
-        <Box className="form-row" sx={{ marginBottom: 2 }}>
           <TextField
-            label="Telefono"
+            label="Nome"
             variant="outlined"
-            name="telefono"
-            value={cliente.telefono}
+            fullWidth
+            name="nome"
+            value={cliente.nome}
+            onChange={handleInputChange}
+            sx={{ marginBottom: 2 }}
+            disabled={isRinnovoMode}
+            required
+            error={showErrors && !cliente.nome}
+            helperText={showErrors && !cliente.nome ? 'Campo obbligatorio' : ''}
+          />
+
+          <TextField
+            label="Cognome"
+            variant="outlined"
+            fullWidth
+            name="cognome"
+            value={cliente.cognome}
+            onChange={handleInputChange}
+            sx={{ marginBottom: 2 }}
+            disabled={isRinnovoMode}
+            required
+            error={showErrors && !cliente.cognome}
+            helperText={showErrors && !cliente.cognome ? 'Campo obbligatorio' : ''}
+          />
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            name="email"
+            value={cliente.email}
+            onChange={handleInputChange}
+            sx={{ marginBottom: 2 }}
+            disabled={isRinnovoMode}
+            error={showErrors && !cliente.email.includes('@')}
+            helperText={showErrors && !cliente.email.includes('@') ? 'Email non valida (deve contenere @)' : ''}
+          />
+
+          <Box className="form-row" sx={{ marginBottom: 2 }}>
+            <TextField
+              label="Telefono"
+              variant="outlined"
+              name="telefono"
+              value={cliente.telefono}
+              onChange={handleInputChange}
+              disabled={isRinnovoMode}
+              sx={{ flex: 1, marginRight: 2 }}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+              onKeyDown={(e) => {
+                // Permetti solo numeri, backspace, delete, frecce, tab
+                const allowedKeys = [
+                  'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'
+                ];
+                if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              onPaste={(e) => {
+                // Impedisci l’incolla se contiene caratteri non numerici
+                const paste = e.clipboardData.getData('text');
+                if (!/^\d+$/.test(paste)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+              <DateTimePicker
+                label="Data di Nascita"
+                value={cliente.dataNascita ? new Date(cliente.dataNascita) : null}
+                onChange={handleBirthDateChange}
+                views={['year', 'month', 'day']}
+                disabled={isRinnovoMode}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+          </Box>
+
+          <TextField
+            label="Numero Tessera"
+            variant="outlined"
+            fullWidth
+            name="numeroTessera"
+            value={cliente.numeroTessera}
             onChange={handleInputChange}
             disabled={isRinnovoMode}
-            sx={{ flex: 1, marginRight: 2 }}
+            sx={{ marginBottom: 2 }}
           />
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-            <DateTimePicker
-              label="Data di Nascita"
-              value={cliente.dataNascita ? new Date(cliente.dataNascita) : null}
-              onChange={handleBirthDateChange}
-              views={['year', 'month', 'day']}
-              disabled={isRinnovoMode}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-        </Box>
 
-        <TextField
-          label="Numero Tessera"
-          variant="outlined"
-          fullWidth
-          name="numeroTessera"
-          value={cliente.numeroTessera}
-          onChange={handleInputChange}
-          disabled={isRinnovoMode}
-          sx={{ marginBottom: 2 }}
-        />
+          <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
+            <FormControl fullWidth error={showErrors && !tariffaSelezionata}>
+              <InputLabel>Tariffa</InputLabel>
+              <Select
+                value={tariffaSelezionata}
+                label="Tariffa"
+                onChange={handleTariffaChange}
+              >
+                {tariffe.map((t, i) => (
+                  <MenuItem key={i} value={t.nome}>
+                    {t.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+              {showErrors && !tariffaSelezionata && (
+                <Box sx={{ color: 'error.main', fontSize: '0.75rem', marginTop: '4px' }}>
+                  Campo obbligatorio
+                </Box>
+              )}
+            </FormControl>
 
-        <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel>Tariffa</InputLabel>
-            <Select value={tariffaSelezionata} label="Tariffa" onChange={handleTariffaChange}>
-              {tariffe.map((t, i) => (
-                <MenuItem key={i} value={t.nome}>
-                  {t.nome}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>            <DateTimePicker
+                label="Scadenza Tessera"
+                value={
+                  isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount
+                    ? calcolaScadenza(new Date(),cliente.tariffaNome)
+                    : cliente.scadenza && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount ? new Date(cliente.scadenza) : null
+                }              
+                onChange={handleDateChange}
+                disabled={tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount}
+                views={['year', 'month', 'day']}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+          </Box>
+        </DialogContent>
 
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>            <DateTimePicker
-              label="Scadenza Tessera"
-              value={
-                isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount
-                  ? calcolaScadenza(new Date(),cliente.tariffaNome)
-                  : cliente.scadenza && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount ? new Date(cliente.scadenza) : null
-              }              
-              onChange={handleDateChange}
-              disabled={isGiornaliera()||tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount}
-              views={['year', 'month', 'day']}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-        </Box>
-      </DialogContent>
-
-      <DialogActions>
-        <Button onClick={handleDialogClose} color="secondary">Annulla</Button>
-        <Button onClick={handleFormSubmit} color="primary">
-          {isRinnovoMode ? 'Rinnova' : isEditMode ? 'Modifica' : 'Aggiungi'}
-        </Button>
-      </DialogActions>
-    </>)}
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="secondary">Annulla</Button>
+          <Button onClick={handleFormSubmit} color="primary">
+            {isRinnovoMode ? 'Rinnova' : isEditMode ? 'Modifica' : 'Aggiungi'}
+          </Button>
+        </DialogActions>
+      </>)}
     </Dialog>
   );
 };
