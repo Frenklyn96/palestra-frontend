@@ -53,6 +53,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredClienti, setFilteredClienti] = useState<{ id: string; nome: string; cognome: string; numeroTessera: string }[]>([]);
   const { results} = useSelector((state: RootState) => state.generic);
+  const [showErrors, setShowErrors] = useState(false);
 
   // Gestione dei dati da visualizzare quando il dialogo si apre
   useEffect(() => {
@@ -104,14 +105,28 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   };
 
   const handleSubmit = async () => {
+    setShowErrors(true);
+
+    const isCausaleValid = !!transazione.causale?.trim();
+    const isMetodoPagamentoValid = !!transazione.metodoPagamento?.trim();
+    const isImportoValid = transazione.importo > 0;
+    const isClienteValid = !!transazione.clienteId;
+
+    if (!isCausaleValid || !isMetodoPagamentoValid || !isImportoValid || !isClienteValid) {
+      return; // blocca il submit
+    }
+
     if (isEditMode && transazione.id) {
       await dispatch(updateTransazioneAsync(transazione));
     } else {
       const { id, clienteNome, ...createTransazione } = transazione;
       await dispatch(createTransazioneAsync(createTransazione));
     }
-    onClose(); // Chiusura del dialogo dopo il submit
+
+    setShowErrors(false);
+    onClose();
   };
+
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -180,6 +195,9 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
             onChange={handleChange}
             fullWidth
             className="text-field"
+            required
+            error={showErrors && !transazione.causale?.trim()}
+            helperText={showErrors && !transazione.causale?.trim() ? 'Campo obbligatorio' : ''}
           />
           <TextField
             label="Metodo di Pagamento"
