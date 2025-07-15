@@ -33,7 +33,7 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   orderBy,
   orderDirection,
   userId,
-  placeholder = "Cerca..."
+  placeholder
 }) => {
   const dispatch = useDispatch<AppDispatch>();  // Tipizza il dispatch
 

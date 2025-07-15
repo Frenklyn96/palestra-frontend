@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
 import StairsIcon from '@mui/icons-material/Stairs';
+import { useTranslation } from 'react-i18next';
 
 type ClienteKeys = keyof Cliente;
 
@@ -43,6 +44,7 @@ const ClientiPage: React.FC = () => {
 
   const [totalPages, setTotalPages] = useState(0);
   const [clientiToRender, setClientiToRender] = useState<Cliente[]>([]);
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
  
@@ -165,10 +167,10 @@ const handleScalaEntrances = async (cliente: Cliente) => {
               gap: '1rem',
             }}
           >
-            <h1>Clienti</h1>
+            <h1>{t('cliente_page.page_title')}</h1>
             <Box sx={{ display: 'flex', gap: '0.5rem' }}>
               <Button variant="contained" color="primary" onClick={handleOpenAddDialog}>
-                Aggiungi Cliente
+                {t('cliente_page.buttons.add_client')}
               </Button>
               <GenericSearchTable
                 tableName={TableNames.CLIENTI}
@@ -179,21 +181,30 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                 orderBy={orderBy}
                 orderDirection={orderDirection}
                 userId={userId!}
+                placeholder={t('cliente_page.generic_search.search_placeholder')}
               />
             </Box>
           </Box>
-  
+
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Attivo</TableCell>
-                  <TableCell onClick={() => handleRequestSort('numeroTessera')} style={{ cursor: 'pointer' }}>Tessera</TableCell>
-                  <TableCell onClick={() => handleRequestSort('nome')} style={{ cursor: 'pointer' }}>Nome</TableCell>
-                  <TableCell onClick={() => handleRequestSort('cognome')} style={{ cursor: 'pointer' }}>Cognome</TableCell>
-                  <TableCell onClick={() => handleRequestSort('scadenza')} style={{ cursor: 'pointer' }}>Scadenza</TableCell>
-                  <TableCell>Ingressi Residui</TableCell>
-                  <TableCell>Azioni</TableCell>
+                  <TableCell>{t('cliente_page.table.headers.active')}</TableCell>
+                  <TableCell onClick={() => handleRequestSort('numeroTessera')} style={{ cursor: 'pointer' }}>
+                    {t('cliente_page.table.headers.card_number')}
+                  </TableCell>
+                  <TableCell onClick={() => handleRequestSort('nome')} style={{ cursor: 'pointer' }}>
+                    {t('cliente_page.table.headers.first_name')}
+                  </TableCell>
+                  <TableCell onClick={() => handleRequestSort('cognome')} style={{ cursor: 'pointer' }}>
+                    {t('cliente_page.table.headers.last_name')}
+                  </TableCell>
+                  <TableCell onClick={() => handleRequestSort('scadenza')} style={{ cursor: 'pointer' }}>
+                    {t('cliente_page.table.headers.expiration')}
+                  </TableCell>
+                  <TableCell>{t('cliente_page.table.headers.remaining_entries')}</TableCell>
+                  <TableCell>{t('cliente_page.table.headers.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -202,7 +213,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                     const scadenzaFormatted = cliente.scadenza
                       ? new Date(cliente.scadenza).toLocaleDateString('it-IT')
                       : '';
-  
+
                     return (
                       <TableRow key={cliente.id}>
                         <TableCell>
@@ -223,7 +234,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                         <TableCell>{cliente.numeroTessera}</TableCell>
                         <TableCell>{cliente.nome}</TableCell>
                         <TableCell>{cliente.cognome}</TableCell>
-                        <TableCell>{cliente.ingressiResidui?"":scadenzaFormatted}</TableCell>
+                        <TableCell>{cliente.ingressiResidui ? '' : scadenzaFormatted}</TableCell>
                         <TableCell>{cliente.ingressiResidui}</TableCell>
                         <TableCell>
                           <IconButton color="primary" onClick={() => handleOpenEditDialog(cliente)}>
@@ -231,19 +242,19 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                           </IconButton>
                           <IconButton color="success" onClick={() => handleSelectCliente(cliente)}>
                             <AttachMoneyIcon />
-                          </IconButton>    
+                          </IconButton>
                           <IconButton color="error" onClick={() => handleOpenDeleteDialog(cliente.id)}>
                             <DeleteIcon />
                           </IconButton>
-                            {cliente.ingressiResidui != null && (
-                              <IconButton
-                                color="secondary"
-                                disabled={cliente.ingressiResidui === 0}
-                                onClick={() => handleScalaEntrances(cliente)}
-                              >
-                                <StairsIcon />
-                              </IconButton>
-                            )}
+                          {cliente.ingressiResidui != null && (
+                            <IconButton
+                              color="secondary"
+                              disabled={cliente.ingressiResidui === 0}
+                              onClick={() => handleScalaEntrances(cliente)}
+                            >
+                              <StairsIcon />
+                            </IconButton>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -251,47 +262,44 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
-                      Nessun cliente trovato.
+                      {t('cliente_page.table.no_clients_found')}
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </TableContainer>
-  
+
           {/* Pagination controls */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
             <Box>
-              {/* Pagina precedente */}
               <Button
                 disabled={searchTerm ? pageGenericSearch <= 1 : page <= 1}
                 onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch - 1) : setPage(page - 1)}
               >
-                Pagina precedente
+                {t('cliente_page.buttons.previous_page')}
               </Button>
-  
-              {/* Pagina successiva */}
+
               <Button
                 disabled={searchTerm ? pageGenericSearch >= totalPages : page >= totalPages}
                 onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch + 1) : setPage(page + 1)}
               >
-                Pagina successiva
+                {t('cliente_page.buttons.next_page')}
               </Button>
             </Box>
-  
-            {/* Elementi per pagina */}
+
             <TextField
               select
-              label="Elementi per pagina"
+              label={t('cliente_page.pagination.items_per_page')}
               value={pageSize}
               onChange={(e) => {
                 const newPageSize = Number(e.target.value);
                 if (searchTerm) {
                   setPageSize(newPageSize);
-                  setPageGenericSearch(1);  // Reset della pagina a 1 ogni volta che cambia la dimensione della pagina
+                  setPageGenericSearch(1);
                 } else {
                   setPageSize(newPageSize);
-                  setPage(1);  // Reset della pagina a 1 ogni volta che cambia la dimensione della pagina
+                  setPage(1);
                 }
               }}
               size="small"
@@ -301,7 +309,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
               ))}
             </TextField>
           </Box>
-  
+
           {openDialog && (
             <ClienteDialog
               open={openDialog}
@@ -312,10 +320,8 @@ const handleScalaEntrances = async (cliente: Cliente) => {
             />
           )}
 
-  
-  
           <ConfirmDialog
-            title="Conferma Eliminazione"
+            title={t('cliente_page.dialog.confirm_delete_title')}
             open={clienteToDelete !== null}
             onConfirm={handleRemoveCliente}
             onClose={handleCloseDeleteDialog}
@@ -324,6 +330,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
       )}
     </Box>
   );
+
 };
 
 export default ClientiPage;

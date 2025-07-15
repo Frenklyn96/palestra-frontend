@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { eliminaRinnovo, renewAbbonamentoAsync } from '../../slice/clientiSlice';
 import ClienteDialog from '../clienteDialog/ClienteDialog';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const RinnovaTable: React.FC = () => {
   const [clienti, setClienti] = useState<Cliente[]>([]);
@@ -19,6 +20,7 @@ const RinnovaTable: React.FC = () => {
   const [clienteDaRinnovare, setClienteDaRinnovare] = useState<Cliente | null>(null); // ✅ nuovo stato
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.userId);
+  const { t } = useTranslation();
 
 
   useEffect(() => {
@@ -97,39 +99,57 @@ const RinnovaTable: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Clienti con abbonamento scaduto</Typography>
-        {/* <Button
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6">{t("rinnovaTable.title")}</Typography>
+        {/* 
+        <Button
           variant="contained"
           color="primary"
           startIcon={<RefreshIcon />}
           onClick={rinnovaTutti}
           disabled={loading}
         >
-          Rinnova Tutti
-        </Button> */}
+          {t("rinnovaTable.buttons.rinnova_tutti")}
+        </Button> 
+        */}
       </Box>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "200px",
+          }}
+        >
           <CircularProgress />
         </Box>
       ) : clienti.length === 0 ? (
-        <Typography>Nessun cliente con abbonamento scaduto.</Typography>
+        <Typography>{t("rinnovaTable.no_clients")}</Typography>
       ) : (
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="tabella clienti">
             <TableHead>
               <TableRow>
-                <TableCell>Nome</TableCell>
-                <TableCell>Scadenza</TableCell>
-                <TableCell align="center">Azioni</TableCell>
+                <TableCell>{t("rinnovaTable.table.nome")}</TableCell>
+                <TableCell>{t("rinnovaTable.table.scadenza")}</TableCell>
+                <TableCell align="center">{t("rinnovaTable.table.azioni")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {clienti.map((cliente) => (
                 <TableRow key={cliente.id}>
-                  <TableCell>{cliente.nome} {cliente.cognome}</TableCell>
+                  <TableCell>
+                    {cliente.nome} {cliente.cognome}
+                  </TableCell>
                   <TableCell>{formatDate(cliente.scadenza)}</TableCell>
                   <TableCell align="center">
                     <Button
@@ -140,7 +160,7 @@ const RinnovaTable: React.FC = () => {
                       sx={{ marginRight: 1 }}
                       onClick={() => openRinnovoDialog(cliente)}
                     >
-                      Rinnova
+                      {t("rinnovaTable.buttons.rinnova")}
                     </Button>
                     <Button
                       variant="outlined"
@@ -149,7 +169,7 @@ const RinnovaTable: React.FC = () => {
                       startIcon={<DeleteIcon />}
                       onClick={() => openDeleteDialog(cliente)}
                     >
-                      Elimina
+                      {t("rinnovaTable.buttons.elimina")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -175,8 +195,11 @@ const RinnovaTable: React.FC = () => {
           open={dialogOpen}
           onClose={closeDeleteDialog}
           onConfirm={handleDeleteConfirm}
-          title="Conferma Eliminazione"
-          message={`Sei sicuro di voler eliminare ${clienteToDelete.nome} ${clienteToDelete.cognome}?`}
+          title={t("rinnovaTable.confirmDialog.title")}
+          message={t("rinnovaTable.confirmDialog.message", {
+            nome: clienteToDelete.nome,
+            cognome: clienteToDelete.cognome,
+          })}
           confirmColor="primary"
         />
       )}

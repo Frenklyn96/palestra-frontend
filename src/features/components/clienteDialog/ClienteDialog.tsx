@@ -13,6 +13,7 @@ import './ClienteDialog.css';
 import { createClienteAsync, fetchClienteById, removeSelectCliente, updateClienteAsync } from '../../slice/clientiSlice';
 import { fetchTariffe } from '../../slice/settingsSlice';
 import { it } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface ClienteDialogProps {
   open: boolean;
@@ -47,6 +48,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   const {selectedCliente,loadingSelectedCliente}= useSelector((state:RootState)=> state.clienti);
   const [firstOpen,setFirstOpen] = useState(true); // ✅ Nuovo stato per gestire il primo open
   const [showErrors, setShowErrors] = useState(false);
+  const { t } = useTranslation();
 
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(true);
@@ -193,53 +195,56 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
 
   };
 
-  return (
+return (
 
-    <Dialog open={open} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-      {loading || loadingSelectedCliente ? (
+  <Dialog open={open} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+    {loading || loadingSelectedCliente ? (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
         <CircularProgress />
       </Box>
     ) : tariffe.length === 0 ? (
-    <DialogContent>
-      <Box sx={{ textAlign: 'center', padding: 4 }}>
-        <DialogTitle>Attenzione</DialogTitle>
-        <p>Per poter aggiungere un cliente è necessario prima creare almeno una tariffa.</p>
-        <DialogActions sx={{ justifyContent: 'center', marginTop: 2 }}>
-          <Button onClick={handleDialogClose} color="primary" variant="contained">Chiudi</Button>
-        </DialogActions>
-      </Box>
-    </DialogContent>
+      <DialogContent>
+        <Box sx={{ textAlign: 'center', padding: 4 }}>
+          <DialogTitle>{t('cliente_dialog.title.warning')}</DialogTitle>
+          <p>{t('cliente_dialog.errors.no_tariffa')}</p>
+          <DialogActions sx={{ justifyContent: 'center', marginTop: 2 }}>
+            <Button onClick={handleDialogClose} color="primary" variant="contained">{t('cliente_dialog.buttons.close')}</Button>
+          </DialogActions>
+        </Box>
+      </DialogContent>
     ) : (
       <>
         <DialogContent>
           <Box className="dialog-header">
             <DialogTitle>
-                {isRinnovoMode ? 'Rinnova Abbonamento' : isEditMode ? 'Modifica Cliente' : 'Aggiungi Cliente'}
-              </DialogTitle>
-            
-    
+              {isRinnovoMode
+                ? t('cliente_dialog.title.renew')
+                : isEditMode
+                ? t('cliente_dialog.title.edit')
+                : t('cliente_dialog.title.add')}
+            </DialogTitle>
+
             <Box className="photo-upload" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               {/* Anteprima Foto */}
               {cliente.foto && (
                 <Box sx={{ marginBottom: 1 }}>
                   <img
                     src={cliente.foto.startsWith('data:') ? cliente.foto : `${process.env.REACT_APP_API_URL}${cliente.foto}`}
-                    alt="Anteprima Foto"
+                    alt={t('cliente_dialog.photo.preview')}
                     style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
                   />
                 </Box>
               )}
               {/* Bottone per caricare foto, posizionato sotto l'anteprima */}
               <Button variant="outlined" component="label" sx={{ marginTop: 1 }} disabled={isRinnovoMode}>
-                Carica Foto
+                {t('cliente_dialog.photo.upload')}
                 <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
               </Button>
             </Box>
           </Box>
 
           <TextField
-            label="Nome"
+            label={t('cliente_dialog.fields.nome')}
             variant="outlined"
             fullWidth
             name="nome"
@@ -249,11 +254,11 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             disabled={isRinnovoMode}
             required
             error={showErrors && !cliente.nome}
-            helperText={showErrors && !cliente.nome ? 'Campo obbligatorio' : ''}
+            helperText={showErrors && !cliente.nome ? t('cliente_dialog.errors.required') : ''}
           />
 
           <TextField
-            label="Cognome"
+            label={t('cliente_dialog.fields.cognome')}
             variant="outlined"
             fullWidth
             name="cognome"
@@ -263,10 +268,10 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             disabled={isRinnovoMode}
             required
             error={showErrors && !cliente.cognome}
-            helperText={showErrors && !cliente.cognome ? 'Campo obbligatorio' : ''}
+            helperText={showErrors && !cliente.cognome ? t('cliente_dialog.errors.required') : ''}
           />
           <TextField
-            label="Email"
+            label={t('cliente_dialog.fields.email')}
             variant="outlined"
             fullWidth
             name="email"
@@ -277,14 +282,14 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             error={showErrors && cliente.email !== '' && !cliente.email.includes('@')}
             helperText={
               showErrors && cliente.email !== '' && !cliente.email.includes('@')
-                ? 'Email non valida (deve contenere @)'
+                ? t('cliente_dialog.errors.invalid_email')
                 : ''
             }
           />
 
           <Box className="form-row" sx={{ marginBottom: 2 }}>
             <TextField
-              label="Telefono"
+              label={t('cliente_dialog.fields.telefono')}
               variant="outlined"
               name="telefono"
               value={cliente.telefono}
@@ -311,7 +316,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
             />
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
               <DateTimePicker
-                label="Data di Nascita"
+                label={t('cliente_dialog.fields.data_nascita')}
                 value={cliente.dataNascita ? new Date(cliente.dataNascita) : null}
                 onChange={handleBirthDateChange}
                 views={['year', 'month', 'day']}
@@ -322,7 +327,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
           </Box>
 
           <TextField
-            label="Numero Tessera"
+            label={t('cliente_dialog.fields.numero_tessera')}
             variant="outlined"
             fullWidth
             name="numeroTessera"
@@ -334,10 +339,10 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
 
           <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
             <FormControl fullWidth error={showErrors && !tariffaSelezionata}>
-              <InputLabel>Tariffa</InputLabel>
+              <InputLabel>{t('cliente_dialog.fields.tariffa')}</InputLabel>
               <Select
                 value={tariffaSelezionata}
-                label="Tariffa"
+                label={t('cliente_dialog.fields.tariffa')}
                 onChange={handleTariffaChange}
               >
                 {tariffe.map((t, i) => (
@@ -348,13 +353,14 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
               </Select>
               {showErrors && !tariffaSelezionata && (
                 <Box sx={{ color: 'error.main', fontSize: '0.75rem', marginTop: '4px' }}>
-                  Campo obbligatorio
+                  {t('cliente_dialog.errors.required')}
                 </Box>
               )}
             </FormControl>
 
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>            <DateTimePicker
-                label="Scadenza Tessera"
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+              <DateTimePicker
+                label={t('cliente_dialog.fields.scadenza')}
                 value={
                   isRinnovoMode && firstOpen && cliente.scadenza && tariffaSelezionata && !tariffe.find(t=> t.nome === tariffaSelezionata)?.toCount
                     ? calcolaScadenza(new Date(),cliente.tariffaNome)
@@ -370,14 +376,20 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">Annulla</Button>
+          <Button onClick={handleDialogClose} color="secondary">{t('cliente_dialog.buttons.cancel')}</Button>
           <Button onClick={handleFormSubmit} color="primary">
-            {isRinnovoMode ? 'Rinnova' : isEditMode ? 'Modifica' : 'Aggiungi'}
+            {isRinnovoMode
+              ? t('cliente_dialog.buttons.submit.renew')
+              : isEditMode
+              ? t('cliente_dialog.buttons.submit.edit')
+              : t('cliente_dialog.buttons.submit.add')}
           </Button>
         </DialogActions>
-      </>)}
-    </Dialog>
-  );
+      </>
+    )}
+  </Dialog>
+);
+
 };
 
 export default ClienteDialog;

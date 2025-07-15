@@ -1,0 +1,204 @@
+{
+  "home":{
+    "imagePlaceholder": "Upload an image in the settings panel."
+  },
+  "rinnovaTable":{
+    "title": "Clients with expired subscription",
+    "no_clients": "No clients with expired subscription.",
+    "table": {
+      "nome": "Name",
+      "scadenza": "Expiration",
+      "azioni": "Actions"
+    },
+    "buttons": {
+      "rinnova": "Renew",
+      "elimina": "Delete",
+      "rinnova_tutti": "Renew All"
+    },
+    "confirmDialog": {
+      "title": "Delete Confirmation",
+      "message": "Are you sure you want to delete {{nome}} {{cognome}}?"
+    }
+  },
+
+  "cliente_dialog": {
+      "title": {
+        "add": "Add Client",
+        "edit": "Edit Client",
+        "renew": "Renew Subscription",
+        "warning": "Warning"
+      },
+      "photo": {
+        "upload": "Upload Photo",
+        "preview": "Photo Preview"
+      },
+      "fields": {
+        "nome": "First Name",
+        "cognome": "Last Name",
+        "email": "Email",
+        "telefono": "Phone",
+        "data_nascita": "Birth Date",
+        "numero_tessera": "Card Number",
+        "tariffa": "Rate Plan",
+        "scadenza": "Card Expiry"
+      },
+      "errors": {
+        "required": "Required field",
+        "invalid_email": "Invalid email (must contain @)",
+        "no_tariffa": "You must first create at least one rate plan to add a client."
+      },
+      "buttons": {
+        "submit": {
+          "add": "Add",
+          "edit": "Edit",
+          "renew": "Renew"
+        },
+        "cancel": "Cancel",
+        "close": "Close"
+      }
+    },
+    "cliente_page":
+    {
+      "page_title": "Clients",
+      "buttons": {
+        "add_client": "Add Client",
+        "previous_page": "Previous Page",
+        "next_page": "Next Page"
+      },
+      "table": {
+        "headers": {
+          "active": "Active",
+          "card_number": "Card Number",
+          "first_name": "First Name",
+          "last_name": "Last Name",
+          "expiration": "Expiration",
+          "remaining_entries": "Remaining Entries",
+          "actions": "Actions"
+        },
+        "no_clients_found": "No clients found."
+      },
+      "pagination": {
+        "items_per_page": "Items per page"
+      },
+      "dialog": {
+        "confirm_delete_title": "Confirm Deletion"
+      },
+      "generic_search": {
+        "search_placeholder": "Search..."
+      }
+  },
+  "trnsazioni_dialog":
+    {
+      "dialog": {
+        "title": {
+          "add": "Add Transaction",
+          "edit": "Edit Transaction"
+        },
+        "fields": {
+          "cliente_selezionato": "Selected Client",
+          "search_placeholder": "Search Client",
+          "causale": "Reason",
+          "metodo_pagamento": "Payment Method",
+          "data_transazione": "Transaction Date",
+          "importo": "Amount"
+        },
+        "errors": {
+          "required": "Required field"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "submit_add": "Add",
+          "submit_edit": "Save"
+        }
+      }
+    },
+    "transazioni_page":
+    {
+      "table": {
+        "title": "Transactions",
+        "cliente": "Client",
+        "causale": "Reason",
+        "metodo_pagamento": "Payment Method",
+        "data_transazione": "Transaction Date",
+        "importo": "Amount",
+        "azioni": "Actions",
+        "nessun_risultato": "No transactions found."
+      },
+      "buttons": {
+        "aggiungi": "Add",
+        "torna_clienti": "Back to Client Profile",
+        "applica_filtro": "Apply Filter",
+        "rimuovi_filtri": "Remove Filters",
+        "pagina_precedente": "Previous Page",
+        "pagina_successiva": "Next Page"
+      },
+      "labels": {
+        "data_inizio": "Start Date",
+        "data_fine": "End Date",
+        "elementi_per_pagina": "Items per page"
+      },
+      "dialogs": {
+        "conferma_eliminazione": "Confirm Deletion"
+      },
+      "generic_search":{
+            "search_placeholder": "Search..."
+        }
+    },
+    "settings_page":
+    {
+      "title": "Rate Management",
+      "buttons": {
+        "aggiungi_tariffa": "Add Rate"
+      },
+      "table": {
+        "nome_tariffa": "Rate Name",
+        "durata": "Duration",
+        "costo": "Cost",
+        "azioni": "Actions"
+      },
+      "dialogs": {
+        "conferma_eliminazione": "Confirm Deletion",
+        "elimina_messaggio": "Are you sure you want to delete the rate \"{{nome}}\"?"
+      },
+      "upload": {
+        "immagine_home": "Home Image"
+      },
+      "error": {
+        "tariffa_duplicata": "A rate with this name already exists."
+      }
+    },
+    "settings_dialog":
+    {
+      "title": {
+        "add": "Add Rate",
+        "edit": "Edit Rate"
+      },
+      "labels": {
+        "nome": "Rate Name",
+        "durata": "Duration",
+        "unita": "Unit",
+        "costo": "Cost (€)",
+        "toCount": "To count"
+      },
+      "helperText": {
+        "nome_required": "Name is required",
+        "durata_positive": "Duration must be greater than 0",
+        "costo_positive": "Cost must be greater than 0",
+        "tariffa_duplicata": "A rate with this name already exists."
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add"
+      },
+      "selectOptions": {
+        "giorni": "Days",
+        "mesi": "Months",
+        "anni": "Years"
+      }
+    }
+
+
+
+
+}
