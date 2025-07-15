@@ -15,6 +15,7 @@ import { clearResults } from '../../slice/genericSlice';
 import { it } from 'date-fns/locale';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'react-i18next';
 
 interface TransazioneDialogProps {
   open: boolean;
@@ -54,6 +55,7 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   const [filteredClienti, setFilteredClienti] = useState<{ id: string; nome: string; cognome: string; numeroTessera: string }[]>([]);
   const { results} = useSelector((state: RootState) => state.generic);
   const [showErrors, setShowErrors] = useState(false);
+  const { t } = useTranslation();
 
   // Gestione dei dati da visualizzare quando il dialogo si apre
   useEffect(() => {
@@ -128,15 +130,20 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   };
 
 
-  return (
+return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{isEditMode ? 'Modifica Transazione' : 'Aggiungi Transazione'}</DialogTitle>
-        <DialogContent>
-          <Box className="form-row">
-            {/* Cliente */}
-            {transazione.clienteNome && !isFilterActive ? (
+      <DialogTitle>
+        {isEditMode
+          ? t('trnsazioni_dialog.dialog.title.edit')
+          : t('trnsazioni_dialog.dialog.title.add')}
+      </DialogTitle>
+
+      <DialogContent>
+        <Box className="form-row">
+          {/* Cliente */}
+          {transazione.clienteNome && !isFilterActive ? (
             <TextField
-              label="Cliente Selezionato"
+              label={t('trnsazioni_dialog.dialog.fields.cliente_selezionato')}
               value={transazione.clienteNome}
               disabled
               fullWidth
@@ -148,14 +155,14 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
                       setTransazione((prev) => ({
                         ...prev,
                         clienteId: null,
-                        clienteNome: ''
+                        clienteNome: '',
                       }))
                     }
                     size="small"
                   >
                     <CloseIcon />
                   </IconButton>
-                )
+                ),
               }}
             />
           ) : (
@@ -163,13 +170,13 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
               <GenericSearchTable
                 tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
                 searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm} 
-                page={null} 
-                pageSize={null} 
+                setSearchTerm={setSearchTerm}
+                page={null}
+                pageSize={null}
                 orderBy={null}
                 orderDirection={'desc'}
                 userId={userId!}
-                placeholder="Cerca Cliente"
+                placeholder={t('trnsazioni_dialog.dialog.fields.search_placeholder')}
               />
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>
@@ -177,9 +184,13 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
                     <ListItem
                       key={cliente.id}
                       component="button"
-                      onClick={() => handleSelectCliente(cliente.id, cliente.nome, cliente.cognome)}
+                      onClick={() =>
+                        handleSelectCliente(cliente.id, cliente.nome, cliente.cognome)
+                      }
                     >
-                      <ListItemText primary={`${cliente.nome} ${cliente.cognome} - ${cliente.numeroTessera}`} />
+                      <ListItemText
+                        primary={`${cliente.nome} ${cliente.cognome} - ${cliente.numeroTessera}`}
+                      />
                     </ListItem>
                   ))}
                 </List>
@@ -187,9 +198,9 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
             </Box>
           )}
 
-
+          {/* Causale */}
           <TextField
-            label="Causale"
+            label={t('trnsazioni_dialog.dialog.fields.causale')}
             name="causale"
             value={transazione.causale}
             onChange={handleChange}
@@ -197,26 +208,40 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
             className="text-field"
             required
             error={showErrors && !transazione.causale?.trim()}
-            helperText={showErrors && !transazione.causale?.trim() ? 'Campo obbligatorio' : ''}
+            helperText={
+              showErrors && !transazione.causale?.trim()
+                ? t('trnsazioni_dialog.dialog.errors.required')
+                : ''
+            }
           />
+
+          {/* Metodo di pagamento */}
           <TextField
-            label="Metodo di Pagamento"
+            label={t('trnsazioni_dialog.dialog.fields.metodo_pagamento')}
             name="metodoPagamento"
             value={transazione.metodoPagamento}
             onChange={handleChange}
             fullWidth
             className="text-field"
           />
+
+          {/* Data transazione */}
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
             <DateTimePicker
-              label="Data Transazione"
-              value={transazione.dataTransazione ? new Date(transazione.dataTransazione) : new Date()}
+              label={t('trnsazioni_dialog.dialog.fields.data_transazione')}
+              value={
+                transazione.dataTransazione
+                  ? new Date(transazione.dataTransazione)
+                  : new Date()
+              }
               onChange={handleDateChange}
               views={['year', 'month', 'day']}
             />
           </LocalizationProvider>
+
+          {/* Importo */}
           <TextField
-            label="Importo"
+            label={t('trnsazioni_dialog.dialog.fields.importo')}
             name="importo"
             type="number"
             value={transazione.importo}
@@ -226,14 +251,20 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
           />
         </Box>
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={onClose} color="secondary">Annulla</Button>
+        <Button onClick={onClose} color="secondary">
+          {t('trnsazioni_dialog.dialog.buttons.cancel')}
+        </Button>
         <Button onClick={handleSubmit} color="primary">
-          {isEditMode ? 'Salva' : 'Aggiungi'}
+          {isEditMode
+            ? t('trnsazioni_dialog.dialog.buttons.submit_edit')
+            : t('trnsazioni_dialog.dialog.buttons.submit_add')}
         </Button>
       </DialogActions>
     </Dialog>
   );
+
 };
 
 export default TransazioneDialog;

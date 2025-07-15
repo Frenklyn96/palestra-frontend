@@ -5,10 +5,12 @@ import './Home.css';
 import RinnovaTable from '../../features/components/rinnovaTable/RinnovaTable';
 import { getFotoHomeAsync } from '../../features/slice/settingsSlice';
 import { AppDispatch, RootState } from '../../store/store';
+import { useTranslation } from 'react-i18next';
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const fotoHome = useSelector((state: RootState) => state.settings.foto);
+  const { t } = useTranslation();
 
   useEffect(() => {
     dispatch(getFotoHomeAsync());
@@ -27,7 +29,7 @@ const Home: React.FC = () => {
         />
       ) : (
         <Typography variant="body1" className="imagePlaceholder">
-          Carica un'immagine nel pannello delle impostazioni.
+          {t('home.imagePlaceholder')}
         </Typography>
       )}
 

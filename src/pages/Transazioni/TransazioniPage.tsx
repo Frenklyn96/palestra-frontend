@@ -20,6 +20,7 @@ import { fetchClienteById } from '../../features/slice/clientiSlice';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { it } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -49,6 +50,7 @@ const TransazioniPage: React.FC = () => {
   const { clienteId } = useParams<{ clienteId: string }>();
   const [isFilterActive] =useState <boolean>(clienteId!==undefined);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -139,18 +141,23 @@ const TransazioniPage: React.FC = () => {
               onClick={() => navigate('/clienti')}
               sx={{ marginBottom: 1 }}
             >
-              Torna alla scheda Clienti
+              {t('transazioni_page.buttons.torna_clienti')}
             </Button>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h4">
-              Transazioni {isFilterActive && selectedCliente && <span style={{ fontSize: '1rem', color: 'gray' }}>{ selectedCliente.nome+' '+selectedCliente?.cognome }</span>}
+              {t('transazioni_page.table.title')}{' '}
+              {isFilterActive && selectedCliente && (
+                <span style={{ fontSize: '1rem', color: 'gray' }}>
+                  {selectedCliente.nome + ' ' + selectedCliente?.cognome}
+                </span>
+              )}
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
-                Aggiungi
+                {t('transazioni_page.buttons.aggiungi')}
               </Button>
 
               <GenericSearchTable
@@ -162,6 +169,8 @@ const TransazioniPage: React.FC = () => {
                 orderBy={orderBy}
                 orderDirection={ascending ? 'asc' : 'desc'}
                 userId={userId!}
+                placeholder={t('transazioni_page.generic_search.search_placeholder')}
+
               />
             </Box>
           </Box>
@@ -170,7 +179,7 @@ const TransazioniPage: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 2, marginY: 2, width: '30%' }}>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
               <DateTimePicker
-                label="Data Inizio"
+                label={t('transazioni_page.labels.data_inizio')}
                 value={startDate ? new Date(startDate) : null}
                 onChange={(e) => setStartDate(e)}
                 views={['year', 'month', 'day']}
@@ -179,7 +188,7 @@ const TransazioniPage: React.FC = () => {
             </LocalizationProvider>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
               <DateTimePicker
-              label="Data Fine"
+                label={t('transazioni_page.labels.data_fine')}
                 value={endDate ? new Date(endDate) : null}
                 onChange={(e) => setEndDate(e)}
                 views={['year', 'month', 'day']}
@@ -189,12 +198,12 @@ const TransazioniPage: React.FC = () => {
             <Button
               variant="outlined"
               onClick={() => {
-                searchTerm?setPageGenericSearch(1):setPage(1);
+                searchTerm ? setPageGenericSearch(1) : setPage(1);
                 setFilterApplied(true);
               }}
               disabled={!startDate && !endDate}
             >
-              Applica filtro
+              {t('transazioni_page.buttons.applica_filtro')}
             </Button>
             {(startDate || endDate) && (
               <Button
@@ -203,11 +212,11 @@ const TransazioniPage: React.FC = () => {
                 onClick={() => {
                   setStartDate(null);
                   setEndDate(null);
-                  searchTerm?setPageGenericSearch(1):setPage(1);
+                  searchTerm ? setPageGenericSearch(1) : setPage(1);
                   setFilterApplied(true);
                 }}
               >
-                Rimuovi filtri
+                {t('transazioni_page.buttons.rimuovi_filtri')}
               </Button>
             )}
           </Box>
@@ -217,18 +226,35 @@ const TransazioniPage: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell onClick={() => handleSort('clienteNome')} sx={{ cursor: 'pointer' }}>Cliente</TableCell>
-                  <TableCell onClick={() => handleSort('causale')} sx={{ cursor: 'pointer' }}>Causale</TableCell>
-                  <TableCell onClick={() => handleSort('metodoPagamento')} sx={{ cursor: 'pointer' }}>Metodo di Pagamento</TableCell>
-                  <TableCell onClick={() => handleSort('dataTransazione')} sx={{ cursor: 'pointer' }}>Data Transazione</TableCell>
-                  <TableCell onClick={() => handleSort('importo')} sx={{ cursor: 'pointer' }}>Importo</TableCell>
-                  <TableCell align="right">Azioni</TableCell>
+                  <TableCell onClick={() => handleSort('clienteNome')} sx={{ cursor: 'pointer' }}>
+                    {t('transazioni_page.table.cliente')}
+                  </TableCell>
+                  <TableCell onClick={() => handleSort('causale')} sx={{ cursor: 'pointer' }}>
+                    {t('transazioni_page.table.causale')}
+                  </TableCell>
+                  <TableCell onClick={() => handleSort('metodoPagamento')} sx={{ cursor: 'pointer' }}>
+                    {t('transazioni_page.table.metodo_pagamento')}
+                  </TableCell>
+                  <TableCell onClick={() => handleSort('dataTransazione')} sx={{ cursor: 'pointer' }}>
+                    {t('transazioni_page.table.data_transazione')}
+                  </TableCell>
+                  <TableCell onClick={() => handleSort('importo')} sx={{ cursor: 'pointer' }}>
+                    {t('transazioni_page.table.importo')}
+                  </TableCell>
+                  <TableCell align="right">
+                    {t('transazioni_page.table.azioni')}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {transazioniToRender && transazioniToRender.length > 0 ? (
                   transazioniToRender.map((transazione, index) => (
-                    <TableRow key={index} hover onClick={() => handleEdit(transazione)} style={{ cursor: 'pointer' }}>
+                    <TableRow
+                      key={index}
+                      hover
+                      onClick={() => handleEdit(transazione)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <TableCell>{transazione.clienteNome}</TableCell>
                       <TableCell>{transazione.causale}</TableCell>
                       <TableCell>{transazione.metodoPagamento}</TableCell>
@@ -247,7 +273,7 @@ const TransazioniPage: React.FC = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
-                      Nessuna transazione trovata.
+                      {t('transazioni_page.table.nessun_risultato')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -258,16 +284,26 @@ const TransazioniPage: React.FC = () => {
           {/* Pagination */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
             <Box>
-              <Button disabled={!canGoToPreviousPage} onClick={() => searchTerm? setPageGenericSearch(pageGenericSearch-1):setPage(page - 1)}>Pagina precedente</Button>
-              <Button disabled={!canGoToNextPage} onClick={() => searchTerm?  setPageGenericSearch(pageGenericSearch+1):setPage(page + 1)}>Pagina successiva</Button>
+              <Button
+                disabled={!canGoToPreviousPage}
+                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch - 1) : setPage(page - 1)}
+              >
+                {t('transazioni_page.buttons.pagina_precedente')}
+              </Button>
+              <Button
+                disabled={!canGoToNextPage}
+                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch + 1) : setPage(page + 1)}
+              >
+                {t('transazioni_page.buttons.pagina_successiva')}
+              </Button>
             </Box>
             <TextField
               select
-              label="Elementi per pagina"
+              label={t('transazioni_page.labels.elementi_per_pagina')}
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value));
-                searchTerm?setPageGenericSearch(1):setPage(1);
+                searchTerm ? setPageGenericSearch(1) : setPage(1);
               }}
               size="small"
             >
@@ -283,7 +319,7 @@ const TransazioniPage: React.FC = () => {
             onClose={() => handleOnClose()}
             transazioneToEdit={transazioneToEdit}
             isEditMode={!!transazioneToEdit}
-            clienteNome={isFilterActive && selectedCliente ? selectedCliente?.nome+' '+selectedCliente?.cognome : null}
+            clienteNome={isFilterActive && selectedCliente ? selectedCliente?.nome + ' ' + selectedCliente?.cognome : null}
             clienteId={clienteId || null}
             isFilterActive={isFilterActive}
           />
@@ -293,13 +329,13 @@ const TransazioniPage: React.FC = () => {
             open={openDeleteDialog}
             onClose={() => setOpenDeleteDialog(false)}
             onConfirm={handleDeleteConfirm}
-            title="Conferma Eliminazione"
-
+            title={t('transazioni_page.dialogs.conferma_eliminazione')}
           />
         </>
       )}
     </Paper>
   );
+
 };
 
 export default TransazioniPage;

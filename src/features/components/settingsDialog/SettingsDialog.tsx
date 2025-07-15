@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Tariffa, UnitaDurata } from '../../class/Tariffa';
 import './SettingsDialog.css'; // Importa il file CSS
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;
@@ -42,6 +43,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   const [errorNome, setErrorNome] = useState(false);
   const [errorDurata, setErrorDurata] = useState(false);
   const [errorCosto, setErrorCosto] = useState(false);
+  const { t } = useTranslation();
 
   // Effetto per aggiornare i dati iniziali quando cambiano (modalità edit)
   useEffect(() => {
@@ -133,54 +135,57 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>{isEdit ? 'Modifica Tariffa' : 'Aggiungi Tariffa'}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {isEdit ? t("settings_dialog.title.edit") : t("settings_dialog.title.add")}
+      </DialogTitle>
+
       <DialogContent>
         <div className="tariffa-form">
           {/* Nome Tariffa */}
           <div className="tariffa-field">
             <TextField
               fullWidth
-              label="Nome Tariffa"
+              label={t("settings_dialog.labels.nome")}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               error={errorNome || !!errorCode}
-              helperText={errorNome ? "Il nome è obbligatorio" : ''}
+              helperText={errorNome ? t("settings_dialog.helperText.nome_required") : ''}
             />
             {errorCode === 'TARIFFA_DUPLICATA' && (
               <Typography color="error" variant="body2" mt={0.5}>
-                Una tariffa con questo nome esiste già.
+                {t("settings_dialog.helperText.tariffa_duplicata")}
               </Typography>
             )}
           </div>
 
-          {/* Durata e Unità sulla stessa riga */}
+          {/* Durata e Unità */}
           <div className="durata-unita-row">
             <div className="tariffa-field">
               <TextField
                 fullWidth
                 type="number"
-                label="Durata"
+                label={t("settings_dialog.labels.durata")}
                 value={durata}
                 onChange={(e) => setDurata(Number(e.target.value))}
                 inputProps={{ min: 1 }}
                 error={errorDurata}
-                helperText={errorDurata ? "La durata deve essere maggiore di 0" : ''}
+                helperText={errorDurata ? t("settings_dialog.helperText.durata_positive") : ''}
               />
             </div>
+
             <div className="tariffa-field">
               <FormControl fullWidth>
-                <InputLabel>Unità</InputLabel>
+                <InputLabel>{t("settings_dialog.labels.unita")}</InputLabel>
                 <Select
                   value={toCount ? UnitaDurata.Giorni : unitaDurata}
-                  label="Unità"
+                  label={t("settings_dialog.labels.unita")}
                   onChange={(e) => setUnitaDurata(e.target.value as UnitaDurata)}
-                  disabled={toCount}  // disabilita se toCount è attivo
+                  disabled={toCount}
                 >
-                  <MenuItem value={UnitaDurata.Giorni}>Giorni</MenuItem>
-                  <MenuItem value={UnitaDurata.Mesi}>Mesi</MenuItem>
-                  <MenuItem value={UnitaDurata.Anni}>Anni</MenuItem>
-                 
+                  <MenuItem value={UnitaDurata.Giorni}>{t("settings_dialog.selectOptions.giorni")}</MenuItem>
+                  <MenuItem value={UnitaDurata.Mesi}>{t("settings_dialog.selectOptions.mesi")}</MenuItem>
+                  <MenuItem value={UnitaDurata.Anni}>{t("settings_dialog.selectOptions.anni")}</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -191,38 +196,38 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
             <TextField
               fullWidth
               type="number"
-              label="Costo (€)"
+              label={t("settings_dialog.labels.costo")}
               value={costo}
-              onChange={(e) => setCosto(e.target.value)} // Impostiamo il valore come stringa
+              onChange={(e) => setCosto(e.target.value)}
               inputProps={{ min: 0 }}
               error={errorCosto}
-              helperText={errorCosto ? "Il costo deve essere maggiore di 0" : ''}
+              helperText={errorCosto ? t("settings_dialog.helperText.costo_positive") : ''}
             />
           </div>
         </div>
-       <div className="tariffa-field">
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={toCount}
-              onChange={(e) => setToCount(e.target.checked)}
-            />
-          }
-          label="Da scalare"
-        />
-      </div>
 
+        <div className="tariffa-field">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={toCount}
+                onChange={(e) => setToCount(e.target.checked)}
+              />
+            }
+            label={t("settings_dialog.labels.toCount")}
+          />
+        </div>
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={handleClose} color="inherit">
-          Annulla
+        <Button onClick={onClose} color="inherit">
+          {t("settings_dialog.buttons.cancel")}
         </Button>
         <Button onClick={handleSubmit} variant="contained" color="primary">
-          {isEdit ? 'Salva' : 'Aggiungi'}
+          {isEdit ? t("settings_dialog.buttons.save") : t("settings_dialog.buttons.add")}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
-
 export default TariffaFormDialog;
