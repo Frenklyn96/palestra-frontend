@@ -35,6 +35,8 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-direction: row;
+  justify-content: flex-end
 }
 
 /* Filtro date */
@@ -61,7 +63,6 @@
   cursor: pointer !important;
   padding: 8px 12px !important;
   transition: background-color 0.2s ease, border-radius 0.2s ease !important;
-  border-radius: 8px !important;
 }
 
 .sortable-cell:hover {
