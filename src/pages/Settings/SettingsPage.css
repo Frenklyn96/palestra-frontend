@@ -1,0 +1,42 @@
+.settings-paper {
+  padding: 24px; /* equivalente a sx={{ padding: 3 }} */
+}
+
+.mt-4 {
+  margin-top: 32px; /* equivalente a sx={{ mt: 4 }} */
+}
+
+.settings-backdrop {
+  z-index: 1301; /* theme.zIndex.drawer + 1 (default MUI drawer zIndex = 1300) */
+}
+
+.image-uploader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 300px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fafafa;
+}
+
+.settings-page-icon {
+  font-size: 32px !important;
+  background-color: rgba(163, 243, 168, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  color: #30ab1a !important;
+  position: relative !important;
+  top: 2px !important;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px; /* spazio sotto */
+}
+
+

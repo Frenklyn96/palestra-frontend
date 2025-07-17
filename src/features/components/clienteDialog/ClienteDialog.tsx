@@ -208,7 +208,7 @@ return (
           <DialogTitle>{t('cliente_dialog.title.warning')}</DialogTitle>
           <p>{t('cliente_dialog.errors.no_tariffa')}</p>
           <DialogActions sx={{ justifyContent: 'center', marginTop: 2 }}>
-            <Button onClick={handleDialogClose} color="primary" variant="contained">{t('cliente_dialog.buttons.close')}</Button>
+            <Button onClick={handleDialogClose} className='button-general' color="primary" variant="contained">{t('cliente_dialog.buttons.close')}</Button>
           </DialogActions>
         </Box>
       </DialogContent>
@@ -236,7 +236,7 @@ return (
                 </Box>
               )}
               {/* Bottone per caricare foto, posizionato sotto l'anteprima */}
-              <Button variant="outlined" component="label" sx={{ marginTop: 1 }} disabled={isRinnovoMode}>
+              <Button variant="outlined" component="label" sx={{ marginTop: 1 }} disabled={isRinnovoMode} className='button-general'>
                 {t('cliente_dialog.photo.upload')}
                 <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
               </Button>
@@ -376,8 +376,8 @@ return (
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">{t('cliente_dialog.buttons.cancel')}</Button>
-          <Button onClick={handleFormSubmit} color="primary">
+          <Button onClick={handleDialogClose}  className='button-general' color="secondary">{t('cliente_dialog.buttons.cancel')}</Button>
+          <Button onClick={handleFormSubmit} color="primary" className='button-general' >
             {isRinnovoMode
               ? t('cliente_dialog.buttons.submit.renew')
               : isEditMode

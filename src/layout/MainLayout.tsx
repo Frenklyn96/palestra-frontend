@@ -1,100 +1,130 @@
 import React, { useState } from 'react';
 import {
-  Box, CssBaseline, Drawer, IconButton, List, ListItem, ListItemText, Toolbar, AppBar, Typography, ListItemButton, Button, Menu, MenuItem
+  Box,
+  CssBaseline,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  Button,
+  Menu,
+  MenuItem,
+  Toolbar,
+  useTheme,
+  useMediaQuery,
+  IconButton,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import { RoutesEnum } from '../enum/RoutesEnum'; // Importa l'enum con le rotte
-import { useTranslation } from 'react-i18next';  // Importiamo il hook useTranslation per gestire la lingua
-import '../styles/MainLayout.css'; // Importa il CSS relativo al layout
+import { RoutesEnum } from '../enum/RoutesEnum';
+import { useTranslation } from 'react-i18next';
 
-const drawerWidth = 240;
+import HomeIcon from '@mui/icons-material/Home';
+import PeopleIcon from '@mui/icons-material/People';
+import PaymentIcon from '@mui/icons-material/Payment';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MenuIcon from '@mui/icons-material/Menu';
+
+import '../styles/MainLayout.css';
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Stato per il menu della lingua
-  const { i18n } = useTranslation();  // Hook per gestire le lingue
-  const openMenu = Boolean(anchorEl); // Verifica se il menu della lingua è aperto
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { i18n } = useTranslation();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const toggleDrawer = () => setOpen(!open);
 
   const menuItems = [
-    { label: 'Home', route: RoutesEnum.HOME },
-    { label: 'Clienti', route: RoutesEnum.CLIENTI },
-    { label: 'Transazioni', route: RoutesEnum.TRANSAZIONI },
-    { label: 'Settings', route: RoutesEnum.SETTINGS },
+    { label: 'Home', route: RoutesEnum.HOME, icon: <HomeIcon /> },
+    { label: 'Clienti', route: RoutesEnum.CLIENTI, icon: <PeopleIcon /> },
+    { label: 'Transazioni', route: RoutesEnum.TRANSAZIONI, icon: <PaymentIcon /> },
+    { label: 'Settings', route: RoutesEnum.SETTINGS, icon: <SettingsIcon /> },
   ];
 
-  // Funzione per aprire il menu della lingua
   const handleLanguageMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Funzione per chiudere il menu della lingua
   const handleLanguageMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // Funzione per cambiare la lingua
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);  // Cambia la lingua con i18next
-    handleLanguageMenuClose();  // Chiudi il menu dopo aver cambiato la lingua
+    i18n.changeLanguage(lang);
+    handleLanguageMenuClose();
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box className="layout">
       <CssBaseline />
-      <AppBar position="fixed" className="appBar">
-        <Toolbar>
-          <IconButton color="inherit" onClick={toggleDrawer} edge="start" sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>GYMP</Typography>
 
-          {/* Bottone per cambiare lingua */}
-          <Button
-            color="inherit"
-            onClick={handleLanguageMenuOpen}
-            sx={{ ml: 'auto' }}
-          >
-            {i18n.language === 'it' ? 'Italiano' : 'English'}
-          </Button>
+      {/* Bottone hamburger solo su schermi piccoli */}
+      {isSmallScreen && (
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          onClick={toggleDrawer}
+          edge="start"
+          className="hamburgerButton"
 
-          {/* Menu per selezionare la lingua */}
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleLanguageMenuClose}
-          >
-            <MenuItem onClick={() => changeLanguage('it')}>Italiano</MenuItem>
-            <MenuItem onClick={() => changeLanguage('en')}>English</MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
 
       <Drawer
-        variant="temporary"
-        open={open}
+        variant={isSmallScreen ? 'temporary' : 'persistent'}
+        open={isSmallScreen ? open : true}
         onClose={toggleDrawer}
-        sx={{
-          '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
-        }}
         className="drawer"
+        ModalProps={{
+          keepMounted: true, // migliora performance mobile
+        }}
       >
         <Toolbar />
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.route} component={Link} to={item.route} onClick={toggleDrawer}>
-              <ListItemButton>
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        <Box className="drawerContent">
+          <List className="menuList">
+            {menuItems.map((item) => (
+              <ListItem
+                key={item.route}
+                component={Link}
+                to={item.route}
+                onClick={isSmallScreen ? toggleDrawer : undefined}
+                disablePadding
+              >
+                <ListItemButton className="menuItemButton">
+                  {item.icon}
+                  <ListItemText primary={item.label} className="menuItemText" />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+
+          <Box className="languageSelector">
+            <Button
+              onClick={handleLanguageMenuOpen}
+              className="languageButtonDrawer"
+            >
+              {i18n.language === 'it' ? 'IT' : 'EN'}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleLanguageMenuClose}
+            >
+              <MenuItem onClick={() => changeLanguage('it')}>Italiano</MenuItem>
+              <MenuItem onClick={() => changeLanguage('en')}>English</MenuItem>
+            </Menu>
+          </Box>
+        </Box>
       </Drawer>
 
-      <Box component="main" className="mainContent">
-        <Toolbar />
+      <Box
+        component="main"
+        className={`mainContent ${isSmallScreen ? 'shifted' : ''}`}
+      >
         {children}
       </Box>
     </Box>

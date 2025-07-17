@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Paper, IconButton, Button, Typography, Box, TextField, MenuItem, CircularProgress
+  TableRow, Paper, IconButton, Button, Typography, Box, TextField, MenuItem, CircularProgress,Tooltip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,6 +21,8 @@ import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { it } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import './TransazioniPage.css';
+import PaymentIcon from '@mui/icons-material/Payment';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -126,216 +128,222 @@ const TransazioniPage: React.FC = () => {
   };
 
   return (
-    <Paper sx={{ padding: 2, position: 'relative', minHeight: '200px' }}>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-          {isFilterActive && (
-            <Button
-              size="small"
-              variant="text"
-              startIcon={<ArrowBackIcon />}
-              onClick={() => navigate('/clienti')}
-              sx={{ marginBottom: 1 }}
-            >
-              {t('transazioni_page.buttons.torna_clienti')}
+  <Paper sx={{ padding: 2, position: 'relative', minHeight: '200px' }}>
+    {loading ? (
+      <Box className="loading-container">
+        <CircularProgress />
+      </Box>
+    ) : (
+      <>
+        {isFilterActive && (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/clienti')}
+            className="transazioni-back-button"
+          >
+            {t('transazioni_page.buttons.torna_clienti')}
+          </Button>
+        )}
+
+        <Box className="transazioni-header">
+          <Typography variant="h4" className="transazioni-title">
+            <PaymentIcon className="transazioni-page-icon" />{t('transazioni_page.table.title')}{' '}
+            {isFilterActive && selectedCliente && (
+              <span className="transazioni-selected-cliente">
+                {selectedCliente.nome + ' ' + selectedCliente?.cognome}
+              </span>
+            )}
+          </Typography>
+
+          <Box className="transazioni-actions">
+            
+
+            <GenericSearchTable
+              tableName={TableNames.TRANSAZIONI}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              page={pageGenericSearch}
+              pageSize={pageSize}
+              orderBy={orderBy}
+              orderDirection={ascending ? 'asc' : 'desc'}
+              userId={userId!}
+              placeholder={t('transazioni_page.generic_search.search_placeholder')}
+            />
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick} className='button-general'>
+              {t('transazioni_page.buttons.aggiungi')}
             </Button>
-          )}
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h4">
-              {t('transazioni_page.table.title')}{' '}
-              {isFilterActive && selectedCliente && (
-                <span style={{ fontSize: '1rem', color: 'gray' }}>
-                  {selectedCliente.nome + ' ' + selectedCliente?.cognome}
-                </span>
-              )}
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
-                {t('transazioni_page.buttons.aggiungi')}
-              </Button>
-
-              <GenericSearchTable
-                tableName={TableNames.TRANSAZIONI}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                page={pageGenericSearch}
-                pageSize={pageSize}
-                orderBy={orderBy}
-                orderDirection={ascending ? 'asc' : 'desc'}
-                userId={userId!}
-                placeholder={t('transazioni_page.generic_search.search_placeholder')}
-
-              />
-            </Box>
           </Box>
+        </Box>
 
-          {/* Filtro date */}
-          <Box sx={{ display: 'flex', gap: 2, marginY: 2, width: '30%' }}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-              <DateTimePicker
-                label={t('transazioni_page.labels.data_inizio')}
-                value={startDate ? new Date(startDate) : null}
-                onChange={(e) => setStartDate(e)}
-                views={['year', 'month', 'day']}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-              <DateTimePicker
-                label={t('transazioni_page.labels.data_fine')}
-                value={endDate ? new Date(endDate) : null}
-                onChange={(e) => setEndDate(e)}
-                views={['year', 'month', 'day']}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
+        {/* Filtro date */}
+        <Box className="transazioni-filtro-date">
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+            <DateTimePicker
+              label={t('transazioni_page.labels.data_inizio')}
+              value={startDate ? new Date(startDate) : null}
+              onChange={(e) => setStartDate(e)}
+              views={['year', 'month', 'day']}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </LocalizationProvider>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+            <DateTimePicker
+              label={t('transazioni_page.labels.data_fine')}
+              value={endDate ? new Date(endDate) : null}
+              onChange={(e) => setEndDate(e)}
+              views={['year', 'month', 'day']}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </LocalizationProvider>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              searchTerm ? setPageGenericSearch(1) : setPage(1);
+              setFilterApplied(true);
+            }}
+            disabled={!startDate && !endDate}
+          >
+            {t('transazioni_page.buttons.applica_filtro')}
+          </Button>
+          {(startDate || endDate) && (
             <Button
-              variant="outlined"
+              variant="text"
+              color="error"
               onClick={() => {
+                setStartDate(null);
+                setEndDate(null);
                 searchTerm ? setPageGenericSearch(1) : setPage(1);
                 setFilterApplied(true);
               }}
-              disabled={!startDate && !endDate}
             >
-              {t('transazioni_page.buttons.applica_filtro')}
+              {t('transazioni_page.buttons.rimuovi_filtri')}
             </Button>
-            {(startDate || endDate) && (
-              <Button
-                variant="text"
-                color="error"
-                onClick={() => {
-                  setStartDate(null);
-                  setEndDate(null);
-                  searchTerm ? setPageGenericSearch(1) : setPage(1);
-                  setFilterApplied(true);
-                }}
-              >
-                {t('transazioni_page.buttons.rimuovi_filtri')}
-              </Button>
-            )}
-          </Box>
+          )}
+        </Box>
 
-          {/* Tabella */}
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell onClick={() => handleSort('clienteNome')} sx={{ cursor: 'pointer' }}>
-                    {t('transazioni_page.table.cliente')}
-                  </TableCell>
-                  <TableCell onClick={() => handleSort('causale')} sx={{ cursor: 'pointer' }}>
-                    {t('transazioni_page.table.causale')}
-                  </TableCell>
-                  <TableCell onClick={() => handleSort('metodoPagamento')} sx={{ cursor: 'pointer' }}>
-                    {t('transazioni_page.table.metodo_pagamento')}
-                  </TableCell>
-                  <TableCell onClick={() => handleSort('dataTransazione')} sx={{ cursor: 'pointer' }}>
-                    {t('transazioni_page.table.data_transazione')}
-                  </TableCell>
-                  <TableCell onClick={() => handleSort('importo')} sx={{ cursor: 'pointer' }}>
-                    {t('transazioni_page.table.importo')}
-                  </TableCell>
-                  <TableCell align="right">
-                    {t('transazioni_page.table.azioni')}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transazioniToRender && transazioniToRender.length > 0 ? (
-                  transazioniToRender.map((transazione, index) => (
-                    <TableRow
-                      key={index}
-                      hover
-                      onClick={() => handleEdit(transazione)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <TableCell>{transazione.clienteNome}</TableCell>
-                      <TableCell>{transazione.causale}</TableCell>
-                      <TableCell>{transazione.metodoPagamento}</TableCell>
-                      <TableCell>{new Date(transazione.dataTransazione).toLocaleDateString('it-IT')}</TableCell>
-                      <TableCell>{transazione.importo.toFixed(2)} €</TableCell>
-                      <TableCell align="right">
-                        <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteClick(transazione); }}>
-                          <DeleteIcon />
-                        </IconButton>
+        {/* Tabella */}
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell onClick={() => handleSort('clienteNome')} className="sortable-cell">
+                  {t('transazioni_page.table.cliente')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('causale')} className="sortable-cell">
+                  {t('transazioni_page.table.causale')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('metodoPagamento')} className="sortable-cell">
+                  {t('transazioni_page.table.metodo_pagamento')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('dataTransazione')} className="sortable-cell">
+                  {t('transazioni_page.table.data_transazione')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('importo')} className="sortable-cell">
+                  {t('transazioni_page.table.importo')}
+                </TableCell>
+                <TableCell align="right">
+                  {t('transazioni_page.table.azioni')}
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {transazioniToRender && transazioniToRender.length > 0 ? (
+                transazioniToRender.map((transazione, index) => (
+                  <TableRow
+                    key={index}
+                    hover
+                  >
+                    <TableCell>{transazione.clienteNome}</TableCell>
+                    <TableCell>{transazione.causale}</TableCell>
+                    <TableCell>{transazione.metodoPagamento}</TableCell>
+                    <TableCell>{new Date(transazione.dataTransazione).toLocaleDateString('it-IT')}</TableCell>
+                    <TableCell>{transazione.importo.toFixed(2)} €</TableCell>
+                    <TableCell align="right">
+                      <Tooltip title={t('transazioni_page.actions.edit')}>
                         <IconButton onClick={(e) => { e.stopPropagation(); handleEdit(transazione); }}>
                           <EditIcon />
                         </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      {t('transazioni_page.table.nessun_risultato')}
+                      </Tooltip>
+
+                      <Tooltip title={t('transazioni_page.actions.delete')}>
+                        <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteClick(transazione); }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    {t('transazioni_page.table.nessun_risultato')}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-          {/* Pagination */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-            <Box>
-              <Button
-                disabled={!canGoToPreviousPage}
-                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch - 1) : setPage(page - 1)}
-              >
-                {t('transazioni_page.buttons.pagina_precedente')}
-              </Button>
-              <Button
-                disabled={!canGoToNextPage}
-                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch + 1) : setPage(page + 1)}
-              >
-                {t('transazioni_page.buttons.pagina_successiva')}
-              </Button>
-            </Box>
-            <TextField
-              select
-              label={t('transazioni_page.labels.elementi_per_pagina')}
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                searchTerm ? setPageGenericSearch(1) : setPage(1);
-              }}
-              size="small"
+        {/* Pagination */}
+        <Box className="transazioni-pagination">
+          <Box className="pagination-buttons">
+            <Button
+              disabled={!canGoToPreviousPage}
+              onClick={() =>
+                searchTerm ? setPageGenericSearch(pageGenericSearch - 1) : setPage(page - 1)
+              }
             >
-              {[10, 20, 30, 50].map((size) => (
-                <MenuItem key={size} value={size}>{size}</MenuItem>
-              ))}
-            </TextField>
+              {t('transazioni_page.buttons.pagina_precedente')}
+            </Button>
+            <Button
+              disabled={!canGoToNextPage}
+              onClick={() =>
+                searchTerm ? setPageGenericSearch(pageGenericSearch + 1) : setPage(page + 1)
+              }
+            >
+              {t('transazioni_page.buttons.pagina_successiva')}
+            </Button>
           </Box>
+          <TextField
+            select
+            label={t('transazioni_page.labels.elementi_per_pagina')}
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              searchTerm ? setPageGenericSearch(1) : setPage(1);
+            }}
+            size="small"
+          >
+            {[10, 20, 30, 50].map((size) => (
+              <MenuItem key={size} value={size}>{size}</MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
-          {/* Dialog Aggiunta / Modifica */}
-          <TransazioneDialog
-            open={openDialog}
-            onClose={() => handleOnClose()}
-            transazioneToEdit={transazioneToEdit}
-            isEditMode={!!transazioneToEdit}
-            clienteNome={isFilterActive && selectedCliente ? selectedCliente?.nome + ' ' + selectedCliente?.cognome : null}
-            clienteId={clienteId || null}
-            isFilterActive={isFilterActive}
-          />
+        {/* Dialog Aggiunta / Modifica */}
+        <TransazioneDialog
+          open={openDialog}
+          onClose={() => handleOnClose()}
+          transazioneToEdit={transazioneToEdit}
+          isEditMode={!!transazioneToEdit}
+          clienteNome={isFilterActive && selectedCliente ? selectedCliente?.nome + ' ' + selectedCliente?.cognome : null}
+          clienteId={clienteId || null}
+          isFilterActive={isFilterActive}
+        />
 
-          {/* Dialog Conferma Elimina */}
-          <ConfirmDialog
-            open={openDeleteDialog}
-            onClose={() => setOpenDeleteDialog(false)}
-            onConfirm={handleDeleteConfirm}
-            title={t('transazioni_page.dialogs.conferma_eliminazione')}
-          />
-        </>
-      )}
-    </Paper>
-  );
-
+        {/* Dialog Conferma Elimina */}
+        <ConfirmDialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+          onConfirm={handleDeleteConfirm}
+          title={t('transazioni_page.dialogs.conferma_eliminazione')}
+        />
+      </>
+    )}
+  </Paper>
+);
 };
 
 export default TransazioniPage;

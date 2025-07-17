@@ -1,7 +1,7 @@
 {
 
   "home":{
-    "imagePlaceholder": "Carica un'immagine nel pannello delle impostazioni."
+    "imagePlaceholder": "Carica la tua immagine nei Settings."
   },
   "rinnovaTable":{
         "title": "Clienti con abbonamento scaduto",
@@ -60,7 +60,7 @@
     "cliente_page":{
         "page_title": "Clienti",
         "buttons": {
-            "add_client": "Aggiungi Cliente",
+            "add_client": "Aggiungi",
             "previous_page": "Pagina precedente",
             "next_page": "Pagina successiva"
         },
@@ -84,6 +84,13 @@
         },
         "generic_search": {
             "search_placeholder": "Cerca..."
+        },
+        "actions":{
+            "tooltip_enteries_zero": "Nessun ingresso disponibile",
+            "tooltip_enteries":"Scala ingresso",
+            "edit":"Modifica",
+            "transactions":"Transazioni cliente",
+            "delete":"Elimina cliente"
         }
     },
     "trnsazioni_dialog":{
@@ -140,13 +147,17 @@
         },
         "generic_search":{
             "search_placeholder": "Cerca..."
+        },
+        "actions":{
+            "delete": "Elimina",
+            "edit":"Modifica"
         }
     },
     "settings_page":
     {
         "title": "Gestione Tariffe",
         "buttons": {
-            "aggiungi_tariffa": "Aggiungi Tariffa"
+            "aggiungi_tariffa": "Aggiungi"
         },
         "table": {
             "nome_tariffa": "Nome Tariffa",
@@ -163,6 +174,10 @@
         },
         "error": {
             "tariffa_duplicata": "Esiste già una tariffa con questo nome."
+        },
+        "actions":{
+            "delete": "Elimina",
+            "edit":"Modifica"
         }
     },
     "settings_dialog":{

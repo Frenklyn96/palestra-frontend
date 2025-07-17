@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, CircularProgress, MenuItem, TextField
+  Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, MenuItem, TextField
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { RootState, AppDispatch } from '../../store/store';
 import {
   fetchClienti, deleteClienteAsync, updateClienteAsync, createClienteAsync, selectCliente,
@@ -16,8 +16,13 @@ import ClienteDialog from '../../features/components/clienteDialog/ClienteDialog
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import GenericSearchTable, { TableNames } from '../../features/components/generic/GenericSearchTable';
-import StairsIcon from '@mui/icons-material/Stairs';
+import LoginIcon  from '@mui/icons-material/Login';
 import { useTranslation } from 'react-i18next';
+import PeopleIcon from '@mui/icons-material/People';
+import './ClientiPage.css';
+import '../../styles/MainLayout.css'
+import AddIcon from '@mui/icons-material/Add';
+import { Paper } from '@mui/material';
 
 type ClienteKeys = keyof Cliente;
 
@@ -151,164 +156,198 @@ const handleScalaEntrances = async (cliente: Cliente) => {
 
 
   return (
-    <Box sx={{ padding: 2, position: 'relative', minHeight: '200px' }}>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 2,
-              gap: '1rem',
-            }}
-          >
-            <h1>{t('cliente_page.page_title')}</h1>
-            <Box sx={{ display: 'flex', gap: '0.5rem' }}>
-              <Button variant="contained" color="primary" onClick={handleOpenAddDialog}>
-                {t('cliente_page.buttons.add_client')}
-              </Button>
-              <GenericSearchTable
-                tableName={TableNames.CLIENTI}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                page={pageGenericSearch}
-                pageSize={pageSize}
-                orderBy={orderBy}
-                orderDirection={orderDirection}
-                userId={userId!}
-                placeholder={t('cliente_page.generic_search.search_placeholder')}
-              />
-            </Box>
+  <Paper sx={{ padding: 2, position: 'relative', minHeight: '200px' }}>
+    {loading ? (
+      <Box className="loading-container">
+        <CircularProgress />
+      </Box>
+    ) : (
+      <>
+        <Box className="clienti-page-header">
+          <h1 className="clienti-page-title">
+            <PeopleIcon className="clienti-page-icon" />
+            {t('cliente_page.page_title')}
+          </h1>
+
+          <Box className="clienti-page-controls">    
+            <GenericSearchTable
+              tableName={TableNames.CLIENTI}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              page={pageGenericSearch}
+              pageSize={pageSize}
+              orderBy={orderBy}
+              orderDirection={orderDirection}
+              userId={userId!}
+              placeholder={t('cliente_page.generic_search.search_placeholder')}
+            />
+             <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenAddDialog}
+              className="button-general"
+            >
+              {t('cliente_page.buttons.add_client')}
+            </Button>
           </Box>
+        </Box>
+        
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>{t('cliente_page.table.headers.active')}</TableCell>
+                <TableCell
+                  onClick={() => handleRequestSort('numeroTessera')}
+                  className="clienti-page-table-cell-sortable"
+                >
+                  {t('cliente_page.table.headers.card_number')}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleRequestSort('nome')}
+                  className="clienti-page-table-cell-sortable"
+                >
+                  {t('cliente_page.table.headers.first_name')}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleRequestSort('cognome')}
+                  className="clienti-page-table-cell-sortable"
+                >
+                  {t('cliente_page.table.headers.last_name')}
+                </TableCell>
+                <TableCell
+                  onClick={() => handleRequestSort('scadenza')}
+                  className="clienti-page-table-cell-sortable"
+                >
+                  {t('cliente_page.table.headers.expiration')}
+                </TableCell>
+                <TableCell>{t('cliente_page.table.headers.remaining_entries')}</TableCell>
+                <TableCell align="right">{t('cliente_page.table.headers.actions')}</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {clientiToRender && clientiToRender.length > 0 ? (
+                clientiToRender.map((cliente) => {
+                  const scadenzaFormatted = cliente.scadenza
+                    ? new Date(cliente.scadenza).toLocaleDateString('it-IT')
+                    : '';
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('cliente_page.table.headers.active')}</TableCell>
-                  <TableCell onClick={() => handleRequestSort('numeroTessera')} style={{ cursor: 'pointer' }}>
-                    {t('cliente_page.table.headers.card_number')}
-                  </TableCell>
-                  <TableCell onClick={() => handleRequestSort('nome')} style={{ cursor: 'pointer' }}>
-                    {t('cliente_page.table.headers.first_name')}
-                  </TableCell>
-                  <TableCell onClick={() => handleRequestSort('cognome')} style={{ cursor: 'pointer' }}>
-                    {t('cliente_page.table.headers.last_name')}
-                  </TableCell>
-                  <TableCell onClick={() => handleRequestSort('scadenza')} style={{ cursor: 'pointer' }}>
-                    {t('cliente_page.table.headers.expiration')}
-                  </TableCell>
-                  <TableCell>{t('cliente_page.table.headers.remaining_entries')}</TableCell>
-                  <TableCell>{t('cliente_page.table.headers.actions')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {clientiToRender && clientiToRender.length > 0 ? (
-                  clientiToRender.map((cliente) => {
-                    const scadenzaFormatted = cliente.scadenza
-                      ? new Date(cliente.scadenza).toLocaleDateString('it-IT')
-                      : '';
-
-                    return (
-                      <TableRow key={cliente.id}>
-                        <TableCell>
-                          {cliente.scadenza && (
-                            <Box
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: '50%',
-                                backgroundColor:
-                                  new Date(cliente.scadenza) > new Date() ? 'green' : 'red',
-                                display: 'inline-block',
-                                marginLeft: 1,
-                              }}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell>{cliente.numeroTessera}</TableCell>
-                        <TableCell>{cliente.nome}</TableCell>
-                        <TableCell>{cliente.cognome}</TableCell>
-                        <TableCell>{cliente.ingressiResidui ? '' : scadenzaFormatted}</TableCell>
-                        <TableCell>{cliente.ingressiResidui}</TableCell>
-                        <TableCell>
-                          <IconButton color="primary" onClick={() => handleOpenEditDialog(cliente)}>
+                  return (
+                    <TableRow 
+                      key={cliente.id} 
+                      hover
+                    >
+                      <TableCell>
+                        {cliente.scadenza && (
+                          <Box
+                            className={`clienti-page-status-dot ${
+                              new Date(cliente.scadenza) > new Date()
+                                ? 'active'
+                                : 'inactive'
+                            }`}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>{cliente.numeroTessera}</TableCell>
+                      <TableCell>{cliente.nome}</TableCell>
+                      <TableCell>{cliente.cognome}</TableCell>
+                      <TableCell>{cliente.ingressiResidui ? '' : scadenzaFormatted}</TableCell>
+                      <TableCell>{cliente.ingressiResidui}</TableCell>
+                      <TableCell align="right">
+                        {cliente.ingressiResidui != null && (
+                          <Tooltip title={cliente.ingressiResidui === 0 ? t('cliente_page.actions.tooltip_enteries_zero'): t('cliente_page.actions.tooltip_enteries')}>
+                            <span>
+                              <IconButton
+                                color="secondary"
+                                disabled={cliente.ingressiResidui === 0}
+                                onClick={() => handleScalaEntrances(cliente)}
+                                className="icon-neutral"
+                              >
+                                <LoginIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t('cliente_page.actions.edit')}>
+                          <IconButton onClick={() => handleOpenEditDialog(cliente)} className="icon-neutral">
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="success" onClick={() => handleSelectCliente(cliente)}>
-                            <AttachMoneyIcon />
+                        </Tooltip>
+
+                        <Tooltip title={t('cliente_page.actions.transactions')}>
+                          <IconButton onClick={() => handleSelectCliente(cliente)} className="icon-neutral">
+                            <PaymentIcon />
                           </IconButton>
-                          <IconButton color="error" onClick={() => handleOpenDeleteDialog(cliente.id)}>
+                        </Tooltip>
+
+                        <Tooltip title={t('cliente_page.actions.delete')}>
+                          <IconButton onClick={() => handleOpenDeleteDialog(cliente.id)}>
                             <DeleteIcon />
                           </IconButton>
-                          {cliente.ingressiResidui != null && (
-                            <IconButton
-                              color="secondary"
-                              disabled={cliente.ingressiResidui === 0}
-                              onClick={() => handleScalaEntrances(cliente)}
-                            >
-                              <StairsIcon />
-                            </IconButton>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      {t('cliente_page.table.no_clients_found')}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Pagination controls */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-            <Box>
-              <Button
-                disabled={searchTerm ? pageGenericSearch <= 1 : page <= 1}
-                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch - 1) : setPage(page - 1)}
-              >
-                {t('cliente_page.buttons.previous_page')}
-              </Button>
-
-              <Button
-                disabled={searchTerm ? pageGenericSearch >= totalPages : page >= totalPages}
-                onClick={() => searchTerm ? setPageGenericSearch(pageGenericSearch + 1) : setPage(page + 1)}
-              >
-                {t('cliente_page.buttons.next_page')}
-              </Button>
-            </Box>
-
-            <TextField
-              select
-              label={t('cliente_page.pagination.items_per_page')}
-              value={pageSize}
-              onChange={(e) => {
-                const newPageSize = Number(e.target.value);
-                if (searchTerm) {
-                  setPageSize(newPageSize);
-                  setPageGenericSearch(1);
-                } else {
-                  setPageSize(newPageSize);
-                  setPage(1);
-                }
-              }}
-              size="small"
+                        </Tooltip>  
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    {t('cliente_page.table.no_clients_found')}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Box className="clienti-page-pagination-container">
+          <Box className= "pagination-buttons">
+            <Button
+              disabled={searchTerm ? pageGenericSearch <= 1 : page <= 1}
+              onClick={() =>
+                searchTerm
+                  ? setPageGenericSearch(pageGenericSearch - 1)
+                  : setPage(page - 1)
+              }
             >
-              {[10, 20, 30, 50].map((size) => (
-                <MenuItem key={size} value={size}>{size}</MenuItem>
-              ))}
-            </TextField>
+              {t('cliente_page.buttons.previous_page')}
+            </Button>
+
+            <Button
+              disabled={searchTerm ? pageGenericSearch >= totalPages : page >= totalPages}
+              onClick={() =>
+                searchTerm
+                  ? setPageGenericSearch(pageGenericSearch + 1)
+                  : setPage(page + 1)
+              }
+            >
+              {t('cliente_page.buttons.next_page')}
+            </Button>
           </Box>
+
+          <TextField
+            select
+            label={t('cliente_page.pagination.items_per_page')}
+            value={pageSize}
+            onChange={(e) => {
+              const newPageSize = Number(e.target.value);
+              if (searchTerm) {
+                setPageSize(newPageSize);
+                setPageGenericSearch(1);
+              } else {
+                setPageSize(newPageSize);
+                setPage(1);
+              }
+            }}
+            size="small"
+          >
+            {[10, 20, 30, 50].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
           {openDialog && (
             <ClienteDialog
@@ -328,7 +367,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
           />
         </>
       )}
-    </Box>
+   </Paper>
   );
 
 };

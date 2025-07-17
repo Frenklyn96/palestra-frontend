@@ -1,0 +1,117 @@
+.clienti-page-container {
+  padding: 16px;
+  position: relative;
+  min-height: 200px;
+}
+
+
+.clienti-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 1rem;
+}
+
+.clienti-page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2rem; /* opzionale, puoi personalizzare */
+  margin: 0;
+}
+
+.clienti-page-icon {
+  font-size: 32px !important;
+  background-color: rgba(163, 196, 243, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  color: #1A3DAB !important;
+  position: relative !important;
+  top: 2px !important;
+}
+
+.clienti-page-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.clienti-page-button {
+  border-radius: 12px !important; /* forza arrotondamento anche con MUI */
+}
+
+.clienti-page-table-cell-sortable {
+  cursor: pointer !important;
+  padding: 4px 8px !important;
+  transition: background-color 0.2s ease, border-radius 0.2s ease !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important; /* aggiungi un po’ di padding per il rettangolo */
+}
+
+.clienti-page-table-cell-sortable:hover {
+  background-color: #e0e0e0 !important;
+  border-radius: 8px !important;
+}
+.clienti-page-status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.clienti-page-status-dot.active {
+  background-color: green;
+}
+
+.clienti-page-status-dot.inactive {
+  background-color: red;
+}
+
+.clienti-page-pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.clienti-page-pagination-container .pagination-buttons {
+  display: flex;
+  gap: 8px; /* spazio tra i bottoni */
+}
+
+.clienti-page-pagination-container button {
+  background-color: #1976D2; /* blu intenso */
+  color: white !important;
+  border: none !important;
+  padding: 3px 8px !important; /* ancora più compatto */
+  border-radius: 5px !important;
+  font-size: 0.75rem !important; /* ancora più piccolo */
+  min-width: auto !important;
+  transition: background-color 0.3s ease;
+}
+
+.clienti-page-pagination-container button:hover:not(:disabled) {
+  background-color: white !important;
+  color: #6ca4dd !important;
+  
+}
+
+.clienti-page-pagination-container button:disabled {
+  background-color: #a0a0a0 !important; /* grigio chiaro per disabilitati */
+  color: #f0f0f0 !important;
+}
+
+
+.clienti-page-table-row {
+  cursor: pointer;
+}
+
+.clienti-table-paper {
+  padding: 16px;
+  position: relative;
+  min-height: 200px;
+}
+
+

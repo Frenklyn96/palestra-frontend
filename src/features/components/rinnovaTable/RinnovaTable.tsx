@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper, IconButton, Tooltip,Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
 import { fetchClientiAbbondamentoScaduto } from '../../api/ClienteService';
 import { Cliente } from '../../class/Cliente';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,6 +11,7 @@ import { eliminaRinnovo, renewAbbonamentoAsync } from '../../slice/clientiSlice'
 import ClienteDialog from '../clienteDialog/ClienteDialog';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import '../../../styles/MainLayout.css'; // Importa il CSS per la tabella
 
 const RinnovaTable: React.FC = () => {
   const [clienti, setClienti] = useState<Cliente[]>([]);
@@ -141,7 +142,7 @@ const RinnovaTable: React.FC = () => {
               <TableRow>
                 <TableCell>{t("rinnovaTable.table.nome")}</TableCell>
                 <TableCell>{t("rinnovaTable.table.scadenza")}</TableCell>
-                <TableCell align="center">{t("rinnovaTable.table.azioni")}</TableCell>
+                <TableCell align="right">{t("rinnovaTable.table.azioni")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -151,26 +152,29 @@ const RinnovaTable: React.FC = () => {
                     {cliente.nome} {cliente.cognome}
                   </TableCell>
                   <TableCell>{formatDate(cliente.scadenza)}</TableCell>
-                  <TableCell align="center">
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      size="small"
-                      startIcon={<CachedIcon />}
-                      sx={{ marginRight: 1 }}
-                      onClick={() => openRinnovoDialog(cliente)}
-                    >
-                      {t("rinnovaTable.buttons.rinnova")}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => openDeleteDialog(cliente)}
-                    >
-                      {t("rinnovaTable.buttons.elimina")}
-                    </Button>
+                  <TableCell align="right">
+                    <Tooltip title={t("rinnovaTable.buttons.rinnova")}>
+                      <span>
+                        <IconButton
+                          onClick={() => openRinnovoDialog(cliente)}
+                          className="button-general"
+                        >
+                          <CachedIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+
+                    <Tooltip title={t("rinnovaTable.buttons.elimina")}>
+                      <span>
+                        <IconButton
+                          onClick={() => openDeleteDialog(cliente)}
+                          className="button-general"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+
                   </TableCell>
                 </TableRow>
               ))}
