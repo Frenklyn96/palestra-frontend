@@ -253,10 +253,10 @@ return (
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
+        <Button onClick={onClose} color="secondary" className='button-general'>
           {t('trnsazioni_dialog.dialog.buttons.cancel')}
         </Button>
-        <Button onClick={handleSubmit} color="primary">
+        <Button onClick={handleSubmit} color="primary" className='button-general'>
           {isEditMode
             ? t('trnsazioni_dialog.dialog.buttons.submit_edit')
             : t('trnsazioni_dialog.dialog.buttons.submit_add')}
