@@ -128,3 +128,24 @@ body {
     margin-left: 0;
   }
 }
+
+/* Intestazioni colonna */
+.MuiTableHead-root th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Righe hover */
+.MuiTableRow-root:hover {
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Celle */
+.MuiTableCell-root {
+  font-size: 14px;
+  color: #444;
+}
+

@@ -1,28 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, IconButton, Tooltip,Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  IconButton,
+  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  CircularProgress
+} from '@mui/material';
 import { fetchClientiAbbondamentoScaduto } from '../../api/ClienteService';
 import { Cliente } from '../../class/Cliente';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CachedIcon from '@mui/icons-material/Cached';
 import ConfirmDialog from '../generic/ConfirmDialog';
 import { AppDispatch, RootState } from '../../../store/store';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { eliminaRinnovo, renewAbbonamentoAsync } from '../../slice/clientiSlice';
 import ClienteDialog from '../clienteDialog/ClienteDialog';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import '../../../styles/MainLayout.css'; // Importa il CSS per la tabella
+import './rinnovaTable.css'; // ✅ Import del CSS
 
 const RinnovaTable: React.FC = () => {
   const [clienti, setClienti] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
-  const [clienteDaRinnovare, setClienteDaRinnovare] = useState<Cliente | null>(null); // ✅ nuovo stato
+  const [clienteDaRinnovare, setClienteDaRinnovare] = useState<Cliente | null>(null);
+
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.userId);
   const { t } = useTranslation();
-
 
   useEffect(() => {
     const fetchClienti = async () => {
@@ -33,13 +45,12 @@ const RinnovaTable: React.FC = () => {
       } catch (error) {
         console.error("Errore durante il recupero dei clienti:", error);
         setClienti([]);
-      } 
+      }
       setLoading(false);
     };
 
     fetchClienti();
   }, []);
-
 
   const openRinnovoDialog = (cliente: Cliente) => {
     setClienteDaRinnovare(cliente);
@@ -57,11 +68,10 @@ const RinnovaTable: React.FC = () => {
         scadenza: clienteAggiornato.scadenza,
         userId: userId!
       }));
-    closeRinnovoDialog();
-    // Aggiorna la lista localmente (rimuovi il cliente rinnovato)
-    setClienti(prev => prev.filter(c => c.id !== clienteAggiornato.id));
-    };
-  }
+      closeRinnovoDialog();
+      setClienti(prev => prev.filter(c => c.id !== clienteAggiornato.id));
+    }
+  };
 
   const formatDate = (dateString: Date | null) => {
     if (dateString) {
@@ -89,55 +99,28 @@ const RinnovaTable: React.FC = () => {
   const handleDeleteConfirm = async () => {
     if (clienteToDelete) {
       const resultAction = await dispatch(eliminaRinnovo(clienteToDelete.id));
-
       if (eliminaRinnovo.fulfilled.match(resultAction)) {
         setClienti(prev => prev.filter(c => c.id !== clienteToDelete.id));
       }
-
       closeDeleteDialog();
     }
   };
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
+      <Box className="rinnova-header">
         <Typography variant="h6">{t("rinnovaTable.title")}</Typography>
-        {/* 
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<RefreshIcon />}
-          onClick={rinnovaTutti}
-          disabled={loading}
-        >
-          {t("rinnovaTable.buttons.rinnova_tutti")}
-        </Button> 
-        */}
       </Box>
 
       {loading ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "200px",
-          }}
-        >
+        <Box className="rinnova-loading">
           <CircularProgress />
         </Box>
       ) : clienti.length === 0 ? (
         <Typography>{t("rinnovaTable.no_clients")}</Typography>
       ) : (
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="tabella clienti">
+          <Table className="rinnova-table" aria-label="tabella clienti">
             <TableHead>
               <TableRow>
                 <TableCell>{t("rinnovaTable.table.nome")}</TableCell>
@@ -147,7 +130,7 @@ const RinnovaTable: React.FC = () => {
             </TableHead>
             <TableBody>
               {clienti.map((cliente) => (
-                <TableRow key={cliente.id}>
+                <TableRow key={cliente.id} hover>
                   <TableCell>
                     {cliente.nome} {cliente.cognome}
                   </TableCell>
@@ -163,7 +146,6 @@ const RinnovaTable: React.FC = () => {
                         </IconButton>
                       </span>
                     </Tooltip>
-
                     <Tooltip title={t("rinnovaTable.buttons.elimina")}>
                       <span>
                         <IconButton
@@ -174,7 +156,6 @@ const RinnovaTable: React.FC = () => {
                         </IconButton>
                       </span>
                     </Tooltip>
-
                   </TableCell>
                 </TableRow>
               ))}
