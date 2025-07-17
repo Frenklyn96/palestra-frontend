@@ -1,6 +1,6 @@
 {
   "home":{
-    "imagePlaceholder": "Upload an image in the settings panel."
+    "imagePlaceholder": "Upload an image in the Settings panel."
   },
   "rinnovaTable":{
     "title": "Clients with expired subscription",
@@ -61,7 +61,7 @@
     {
       "page_title": "Clients",
       "buttons": {
-        "add_client": "Add Client",
+        "add_client": "Add",
         "previous_page": "Previous Page",
         "next_page": "Next Page"
       },
@@ -85,7 +85,14 @@
       },
       "generic_search": {
         "search_placeholder": "Search..."
-      }
+      },
+      "actions":{
+            "tooltip_enteries_zero": "No entries available",
+            "tooltip_enteries": "Deduct entry",
+            "edit": "Edit",
+            "transactions": "Client transactions",
+            "delete": "Delete client"
+        }
   },
   "trnsazioni_dialog":
     {
@@ -142,13 +149,17 @@
       },
       "generic_search":{
             "search_placeholder": "Search..."
+        },
+      "actions":{
+            "delete": "Delete",
+            "edit":"Edit"
         }
     },
     "settings_page":
     {
       "title": "Rate Management",
       "buttons": {
-        "aggiungi_tariffa": "Add Rate"
+        "aggiungi_tariffa": "Add"
       },
       "table": {
         "nome_tariffa": "Rate Name",
@@ -165,7 +176,11 @@
       },
       "error": {
         "tariffa_duplicata": "A rate with this name already exists."
-      }
+      },
+      "actions":{
+            "delete": "Delete",
+            "edit":"Edit"
+        }
     },
     "settings_dialog":
     {

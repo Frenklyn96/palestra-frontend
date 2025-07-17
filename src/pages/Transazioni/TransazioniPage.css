@@ -1,0 +1,110 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+/* Back button */
+.transazioni-back-button {
+  margin-bottom: 8px;
+}
+
+/* Header generale */
+.transazioni-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.transazioni-title {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transazioni-selected-cliente {
+  font-size: 1rem;
+  color: gray;
+}
+
+/* Azioni header */
+.transazioni-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Filtro date */
+.transazioni-filtro-date {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+  width: 30%;
+}
+
+/* Riga tabella cliccabile */
+.transazioni-row {
+  cursor: pointer;
+}
+
+/* Pagination */
+.transazioni-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.sortable-cell {
+  cursor: pointer !important;
+  padding: 8px 12px !important;
+  transition: background-color 0.2s ease, border-radius 0.2s ease !important;
+  border-radius: 8px !important;
+}
+
+.sortable-cell:hover {
+  background-color: #e0e0e0 !important;
+  border-radius: 8px !important;
+}
+
+
+.transazioni-page-icon {
+  font-size: 32px !important;
+  background-color: rgba(243, 163, 163, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  color: #ab1a1a !important;
+  position: relative !important;
+  top: 2px !important;
+}
+
+.transazioni-pagination .pagination-buttons {
+  display: flex;
+  gap: 8px; /* spazio tra i bottoni */
+}
+
+.transazioni-pagination button {
+  background-color: #1976D2; /* blu intenso */
+  color: white !important;
+  border: none !important;
+  padding: 3px 8px !important; /* ancora più compatto */
+  border-radius: 5px !important;
+  font-size: 0.75rem !important; /* ancora più piccolo */
+  min-width: auto !important;
+  transition: background-color 0.3s ease;
+}
+
+.transazioni-pagination button:hover:not(:disabled) {
+  background-color: white !important;
+  color: #6ca4dd !important;
+  
+}
+
+.transazioni-pagination button:disabled {
+  background-color: #a0a0a0 !important; /* grigio chiaro per disabilitati */
+  color: #f0f0f0 !important;
+}
+
+

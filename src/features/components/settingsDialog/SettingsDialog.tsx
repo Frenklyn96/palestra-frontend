@@ -220,10 +220,10 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} color="inherit">
+        <Button onClick={handleClose} color="inherit" className='button-general'>
           {t("settings_dialog.buttons.cancel")}
         </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
+        <Button onClick={handleSubmit} variant="contained" color="primary" className='button-general'>
           {isEdit ? t("settings_dialog.buttons.save") : t("settings_dialog.buttons.add")}
         </Button>
       </DialogActions>

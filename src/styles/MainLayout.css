@@ -1,55 +1,130 @@
 /* MainLayout.css */
 
-/* Stili generali per il layout */
+/* Layout base */
 body {
-    margin: 0;
-    font-family: 'Roboto', sans-serif;
-  }
-  
-  .appBar {
-    z-index: 1201; /* AppBar sopra il Drawer */
-    background-color: #1976d2; /* Colore di sfondo della barra superiore */
-  }
-  
-  .drawer {
-    width: 240px;
-    flex-shrink: 0;
-  }
-  
-  .drawer .MuiDrawer-paper {
-    width: 240px;
-    background-color: #f4f4f4;
-  }
-  
+  margin: 0;
+}
+
+.layout {
+  display: flex;
+}
+
+/* Drawer (barra laterale) */
+.drawer {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.drawer .MuiDrawer-paper {
+  width: 240px;
+  box-sizing: border-box;
+  background-color: #3d3c3c; /* sfumatura grigio grafite */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+/* Contenuto interno del Drawer */
+.drawerContent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Lista menu */
+.menuList {
+  flex-grow: 1;
+}
+
+/* Voce menu con icona, hover, bordo stondato */
+.menuItemButton {
+  color: white !important;
+  padding: 10px 16px;
+  border-radius: 8px !important;
+  margin: 4px 8px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menuItemButton:hover {
+  background-color: #f5f5f5 !important;
+  color: #000 !important;
+}
+
+.menuItemText {
+  font-size: 16px;
+  color: inherit;
+}
+
+/* Selettore lingua in basso */
+.languageSelector {
+  padding: 10px 16px;
+  text-align: left;
+}
+
+.languageButtonDrawer {
+  color: white !important;
+  text-transform: none;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: background-color 0.2s ease;
+}
+
+.languageButtonDrawer:hover {
+  background-color: #f5f5f5;
+  color: #000!important;
+}
+
+/* Contenuto principale */
+.mainContent {
+  flex-grow: 1;
+  padding: 20px;
+  margin-left: 100px; /* ridotto da 240px a 180px per spostare il contenuto più a sinistra */
+  transition: margin-left 0.3s ease;
+  margin-right: 100px; /* ridotto da 240px a 180px per spostare il contenuto più a sinistra */
+}
+
+.icon-neutral svg {
+  color: #666666 !important;
+}
+
+.mainContent.shifted {
+  margin-left: 0;
+}
+
+.button-general {
+  border-radius: 12px !important; /* forza arrotondamento anche con MUI */
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px; /* stesso valore usato in ClientiPage */
+}
+
+.hamburgerButton {
+  position: fixed !important;
+  top: 8px !important;
+  left: 8px !important;
+  z-index: 1301 !important; /* typical drawer zIndex + 2 */
+  color: #3d3c3c !important;
+  background-color: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.hamburgerButton:hover {
+  background-color: #979696 !important;
+}
+/* Responsive */
+@media (max-width: 600px) {
   .mainContent {
-    flex-grow: 1;
-    padding: 20px;
-    margin-left: 240px; /* Larghezza del Drawer */
-    transition: margin-left 0.3s ease; /* Transizione per spostare il contenuto quando il Drawer è aperto */
+    margin-left: 0;
   }
-  
-  /* Styling del contenuto quando il Drawer è aperto */
-  .mainContent.shifted {
-    margin-left: 0; /* Quando il drawer è aperto, rimuovi il margine */
-  }
-  
-  /* Stili per il Drawer e la navigazione */
-  .MuiListItem-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    text-align: center;
-  }
-  
-  .MuiListItem-text {
-    font-size: 16px;
-  }
-  
-  /* Quando il menu è aperto, occorre spostare il contenuto */
-  @media (max-width: 768px) {
-    .mainContent {
-      margin-left: 0;
-    }
-  }
-  
+}
