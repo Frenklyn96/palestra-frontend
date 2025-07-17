@@ -32,9 +32,10 @@
 }
 
 .clienti-page-controls {
-  display: flex;
   gap: 0.5rem;
-  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end
 }
 
 .clienti-page-button {
@@ -45,7 +46,6 @@
   cursor: pointer !important;
   padding: 4px 8px !important;
   transition: background-color 0.2s ease, border-radius 0.2s ease !important;
-  border-radius: 8px !important;
   padding: 8px 12px !important; /* aggiungi un po’ di padding per il rettangolo */
 }
 

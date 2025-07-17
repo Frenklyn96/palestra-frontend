@@ -66,11 +66,12 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   return (
     <TextField
       size="small"
+      sx={{ width: '40%' }}
       placeholder={placeholder}
       value={searchTerm}
       onChange={handleSearch}
       InputProps={{
-        startAdornment: (
+        endAdornment: (
           <InputAdornment position="start">
             <SearchIcon />
           </InputAdornment>
