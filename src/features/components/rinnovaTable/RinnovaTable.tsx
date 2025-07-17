@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { eliminaRinnovo, renewAbbonamentoAsync } from '../../slice/clientiSlice';
 import ClienteDialog from '../clienteDialog/ClienteDialog';
 import { useTranslation } from 'react-i18next';
-import './rinnovaTable.css'; // ✅ Import del CSS
+import './RinnovaTable.css'
 
 const RinnovaTable: React.FC = () => {
   const [clienti, setClienti] = useState<Cliente[]>([]);
