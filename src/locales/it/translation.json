@@ -136,7 +136,8 @@
             "rimuovi_filtri": "Rimuovi filtri",
             "pagina_precedente": "Pagina precedente",
             "pagina_successiva": "Pagina successiva",
-            "seleziona_intervallo": "Seleziona un intervallo"
+            "seleziona_intervallo": "Seleziona un intervallo",
+            "label_filter": "Filtra per intervallo di date"
 
         },
         "labels": {

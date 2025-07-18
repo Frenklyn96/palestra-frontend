@@ -138,7 +138,8 @@
         "rimuovi_filtri": "Remove Filters",
         "pagina_precedente": "Previous Page",
         "pagina_successiva": "Next Page",
-        "seleziona_intervallo": "Select Date Range"
+        "seleziona_intervallo": "Select Date Range",
+        "label_filter": "Filter by Date Range"
       },
       "labels": {
         "data_inizio": "Start Date",
