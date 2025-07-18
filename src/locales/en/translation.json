@@ -137,7 +137,8 @@
         "applica_filtro": "Apply Filter",
         "rimuovi_filtri": "Remove Filters",
         "pagina_precedente": "Previous Page",
-        "pagina_successiva": "Next Page"
+        "pagina_successiva": "Next Page",
+        "seleziona_intervallo": "Select Date Range"
       },
       "labels": {
         "data_inizio": "Start Date",

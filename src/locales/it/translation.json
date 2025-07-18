@@ -135,7 +135,9 @@
             "applica_filtro": "Applica filtro",
             "rimuovi_filtri": "Rimuovi filtri",
             "pagina_precedente": "Pagina precedente",
-            "pagina_successiva": "Pagina successiva"
+            "pagina_successiva": "Pagina successiva",
+            "seleziona_intervallo": "Seleziona un intervallo"
+
         },
         "labels": {
             "data_inizio": "Data Inizio",

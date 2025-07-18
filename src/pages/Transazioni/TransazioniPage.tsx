@@ -17,12 +17,10 @@ import GenericSearchTable, { TableNames } from '../../features/components/generi
 import ConfirmDialog from '../../features/components/generic/ConfirmDialog';
 import { clearResults, updateResult } from '../../features/slice/genericSlice';
 import { fetchClienteById } from '../../features/slice/clientiSlice';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { it } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import './TransazioniPage.css';
 import PaymentIcon from '@mui/icons-material/Payment';
+import ResponsiveDateTimeRangePicker from '../../features/components/DatePickerWithExternButton/ResponsiveDateTimeRangePicker';
 
 const TransazioniPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -179,48 +177,19 @@ const TransazioniPage: React.FC = () => {
 
         {/* Filtro date */}
         <Box className="transazioni-filtro-date">
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-            <DateTimePicker
-              label={t('transazioni_page.labels.data_inizio')}
-              value={startDate ? new Date(startDate) : null}
-              onChange={(e) => setStartDate(e)}
-              views={['year', 'month', 'day']}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
-            <DateTimePicker
-              label={t('transazioni_page.labels.data_fine')}
-              value={endDate ? new Date(endDate) : null}
-              onChange={(e) => setEndDate(e)}
-              views={['year', 'month', 'day']}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </LocalizationProvider>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              searchTerm ? setPageGenericSearch(1) : setPage(1);
-              setFilterApplied(true);
+         <ResponsiveDateTimeRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
             }}
-            disabled={!startDate && !endDate}
-          >
-            {t('transazioni_page.buttons.applica_filtro')}
-          </Button>
-          {(startDate || endDate) && (
-            <Button
-              variant="text"
-              color="error"
-              onClick={() => {
-                setStartDate(null);
-                setEndDate(null);
-                searchTerm ? setPageGenericSearch(1) : setPage(1);
-                setFilterApplied(true);
-              }}
-            >
-              {t('transazioni_page.buttons.rimuovi_filtri')}
-            </Button>
-          )}
+            searchTerm={searchTerm}
+            setPageGenericSearch={setPageGenericSearch}
+            setPage={setPage}
+            setFilterApplied={setFilterApplied}
+            t={t}
+          />
         </Box>
 
         {/* Tabella */}
