@@ -53,20 +53,22 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const fetchData = async () => {
-      // Prima carica le tariffe (una sola volta)
-      await dispatch(fetchTariffe(userId!));
-  
-      // Carica i dati del cliente solo se siamo in modalità di modifica o rinnovo
-      if ((isEditMode || isRinnovoMode) && clienteToEdit) {
-        await dispatch(fetchClienteById(clienteToEdit));
-      }   
-      setLoading(false);
-    };
-  
-    fetchData(); // Chiamata alla funzione asincrona
+  const fetchData = async () => {
+    if (!open) return;
 
-  }, [isEditMode, isRinnovoMode, clienteToEdit, dispatch]);
+    setLoading(true); // <-- spostato qui
+    await dispatch(fetchTariffe(userId!));
+
+    if ((isEditMode || isRinnovoMode) && clienteToEdit) {
+      await dispatch(fetchClienteById(clienteToEdit));
+    }
+
+    setLoading(false);
+  };
+
+  fetchData();
+}, [open, isEditMode, isRinnovoMode, clienteToEdit, dispatch]);
+
 
   useEffect(() => {
     if (selectedCliente) {
@@ -191,8 +193,6 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
     setTariffaSelezionata('');
     dispatch(removeSelectCliente());
     onClose();
-    setLoading(true);
-
   };
 
 return (
