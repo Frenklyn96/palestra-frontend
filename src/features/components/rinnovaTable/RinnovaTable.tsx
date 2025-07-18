@@ -116,8 +116,6 @@ const RinnovaTable: React.FC = () => {
         <Box className="rinnova-loading">
           <CircularProgress />
         </Box>
-      ) : clienti.length === 0 ? (
-        <Typography>{t("rinnovaTable.no_clients")}</Typography>
       ) : (
         <TableContainer component={Paper}>
           <Table className="rinnova-table" aria-label="tabella clienti">
