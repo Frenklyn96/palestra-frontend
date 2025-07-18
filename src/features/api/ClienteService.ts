@@ -150,3 +150,7 @@ export const renewAbbonamento = async (data: RenewAbbonamneto) => {
   return response.data;
 };
 
+export const getNumberMembers = async () => {
+  const response =  await axios.get(`${API_URL}/GetNumberMembers`);
+  return response.data.numberMembers;
+};

@@ -17,6 +17,7 @@ import './Home.css'; // ✅ Importazione CSS corretta
 import RinnovaTable from '../../features/components/rinnovaTable/RinnovaTable';
 import ClienteDialog from '../../features/components/clienteDialog/ClienteDialog';
 import { getFotoHomeAsync } from '../../features/slice/settingsSlice';
+import {  getNumberMembersAsync } from '../../features/slice/clientiSlice';
 import { createClienteAsync } from '../../features/slice/clientiSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { useTranslation } from 'react-i18next';
@@ -24,13 +25,15 @@ import { Cliente } from '../../features/class/Cliente';
 import TransazioneDialog from '../../features/components/transazioneDialog/TransazioneDialog';
 
 const Home: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const fotoHome = useSelector((state: RootState) => state.settings.foto);
+  const {foto} = useSelector((state: RootState) => state.settings);
+  const {numberMembers} = useSelector((state: RootState) => state.clienti);
+
   const { t } = useTranslation();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [openTransazioneDialog, setOpenTransazioneDialog] = useState(false);
+  const dispatch =  useDispatch<AppDispatch>();
 
   const handleOpenTransazioneDialog = () => {
     setOpenTransazioneDialog(true);
@@ -42,6 +45,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     dispatch(getFotoHomeAsync());
+    dispatch(getNumberMembersAsync());
   }, [dispatch]);
 
   const handleOpenDialog = () => {
@@ -80,7 +84,7 @@ const Home: React.FC = () => {
             </Avatar>
             <Box>
               <Typography variant="h6">{t('home.clientiTesserati')}</Typography>
-              <Typography variant="h3">135</Typography>
+              <Typography variant="h3">{numberMembers}</Typography>
             </Box>
           </Paper>
 
@@ -166,10 +170,10 @@ const Home: React.FC = () => {
           sx={{ display: 'flex', flexDirection: 'column' }}
         >
           <Paper elevation={3} sx={{ flex: 1, borderRadius: 2, overflow: 'hidden' }}>
-            {fotoHome && fotoHome.startsWith('data:') ? (
+            {foto && foto.startsWith('data:') ? (
               <Box
                 sx={{
-                  backgroundImage: `url(${fotoHome})`,
+                  backgroundImage: `url(${foto})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   height: '100%',

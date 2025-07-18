@@ -14,7 +14,7 @@ const initialState: SettingsState = {
   tariffe: [],
   loading: false,
   error: null,
-  foto: null
+  foto: null,
 };
 
 // Thunk per ottenere tutte le tariffe
@@ -93,6 +93,7 @@ export const getFotoHomeAsync = createAsyncThunk(
       }
     }
 );
+
 
 // Slice
 const settingsSlice = createSlice({
