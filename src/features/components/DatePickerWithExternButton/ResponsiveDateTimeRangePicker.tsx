@@ -121,8 +121,8 @@ const ResponsiveDateTimeRangePicker = ({
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{ className: "popover-paper" }}
       >
         <Typography variant="h6" mb={1}>

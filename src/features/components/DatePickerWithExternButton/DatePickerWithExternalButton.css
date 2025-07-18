@@ -11,7 +11,7 @@
   border: 1px solid gray;
   background-color: transparent;
   transition: border-color 0.3s ease;
-  margin-bottom: 8px; /* margin sotto bottone principale */
+  margin-bottom: 8px !important; /* margin sotto bottone principale */
 
 }
 
