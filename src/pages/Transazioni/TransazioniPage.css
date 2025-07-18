@@ -44,7 +44,7 @@
   display: flex;
   gap: 16px;
   margin: 16px 0;
-  width: 30%;
+  flex-direction: row-reverse;
 }
 
 /* Riga tabella cliccabile */
