@@ -1,6 +1,10 @@
 {
-  "home":{
-    "imagePlaceholder": "Upload an image in the Settings panel."
+   "home": {
+    "clientiTesserati": "Member Clients",
+    "aggiungiCliente": "Add Client",
+    "aggiungiTransazione": "Add Transaction",
+    "imagePlaceholder": "No image available",
+    "panoramica": "Home"
   },
   "rinnovaTable":{
     "title": "Clients with expired subscription",

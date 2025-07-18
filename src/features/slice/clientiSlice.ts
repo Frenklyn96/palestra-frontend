@@ -9,6 +9,8 @@ interface ClientiState {
   selectedCliente: Cliente | null;
   totalCount: number;
   loadingSelectedCliente: boolean;
+  numberMembers: number;
+
 }
 
 const initialState: ClientiState = {
@@ -17,6 +19,7 @@ const initialState: ClientiState = {
   selectedCliente: null,  
   totalCount: 0,
   loadingSelectedCliente: false,
+  numberMembers: 0
 };
 
 // Thunk: carica clienti da backend
@@ -95,6 +98,17 @@ export const renewAbbonamentoAsync = createAsyncThunk(
   }
 );
 
+export const getNumberMembersAsync = createAsyncThunk(
+  'clienti/getNumberMembers',
+    async (_,thunkAPI) => {
+      try {
+        const number = await clienteApi.getNumberMembers();
+        return number;
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.message);
+      }
+    }
+);
 
 // Slice
 const clientiSlice = createSlice({
@@ -159,6 +173,9 @@ const clientiSlice = createSlice({
       .addCase(fetchClienteById.fulfilled, (state, action)=>{
         state.selectedCliente = action.payload;
         state.loadingSelectedCliente = false;
+      })
+      .addCase(getNumberMembersAsync.fulfilled, (state, action)=> {
+        state.numberMembers = action.payload as number;
       });
 
   },

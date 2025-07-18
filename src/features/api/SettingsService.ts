@@ -91,3 +91,4 @@ export const getFotoHome = async () => {
   const response = await axios.get(`${BASE_URL_UTILITY}/GetHomeImage`);
   return response.data.foto;
 };
+
