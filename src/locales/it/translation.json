@@ -1,7 +1,11 @@
 {
 
-  "home":{
-    "imagePlaceholder": "Carica la tua immagine nei Settings."
+    "home": {
+    "clientiTesserati": "Clienti tesserati",
+    "aggiungiCliente": "Aggiungi Cliente",
+    "aggiungiTransazione": "Aggiungi Transazione",
+    "imagePlaceholder": "Nessuna immagine disponibile",
+    "panoramica": "Home"
   },
   "rinnovaTable":{
         "title": "Clienti con abbonamento scaduto",

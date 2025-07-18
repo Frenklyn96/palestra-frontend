@@ -110,11 +110,11 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
     setShowErrors(true);
 
     const isCausaleValid = !!transazione.causale?.trim();
-    const isMetodoPagamentoValid = !!transazione.metodoPagamento?.trim();
-    const isImportoValid = transazione.importo > 0;
+    // const isMetodoPagamentoValid = !!transazione.metodoPagamento?.trim();
+    // const isImportoValid = transazione.importo > 0;
     const isClienteValid = !!transazione.clienteId;
 
-    if (!isCausaleValid || !isMetodoPagamentoValid || !isImportoValid || !isClienteValid) {
+    if (!isCausaleValid || !isClienteValid) {
       return; // blocca il submit
     }
 
