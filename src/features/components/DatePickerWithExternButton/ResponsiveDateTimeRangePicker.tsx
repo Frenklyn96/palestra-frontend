@@ -98,25 +98,26 @@ const ResponsiveDateTimeRangePicker = ({
 
   return (
     <>
-      <Button
-        variant="outlined"
-        onClick={handleClick}
-        startIcon={
-          <EventIcon
-            sx={{
-              color: hasFilterApplied ? theme.palette.primary.main : "gray",
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          />
-        }
-        className={`datepicker-button ${hasFilterApplied ? "has-filter" : ""}`}
-        aria-label={buttonLabel || t("transazioni_page.buttons.seleziona_intervallo")}
-      >
-        {buttonLabel}
-      </Button>
-
+      <Tooltip title={t("transazioni_page.buttons.label_filter")}>
+        <Button
+          variant="outlined"
+          onClick={handleClick}
+          startIcon={
+            <EventIcon
+              sx={{
+                color: hasFilterApplied ? theme.palette.primary.main : "gray",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            />
+          }
+          className={`datepicker-button ${hasFilterApplied ? "has-filter" : ""}`}
+          aria-label={buttonLabel || t("transazioni_page.buttons.seleziona_intervallo")}
+        >
+          {buttonLabel}
+        </Button>
+      </Tooltip>
       <Popover
         open={open}
         anchorEl={anchorEl}
