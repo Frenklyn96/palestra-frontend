@@ -66,7 +66,8 @@ const GenericSearchTable: React.FC<GenericSearchTableProps> = ({
   return (
     <TextField
       size="small"
-      sx={{ width: '40%' }}
+      sx={{    width: tableName === TableNames.CLIENTIRICERCATRANSAZIONE ? '100%' : '40%'
+ }}
       placeholder={placeholder}
       value={searchTerm}
       onChange={handleSearch}
