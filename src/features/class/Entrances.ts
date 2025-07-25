@@ -1,10 +1,9 @@
-import { Cliente } from "./Cliente";
 
 export interface Entrance {
   id: string;
   dataOra: Date;
   clienteId: string;
-  cliente?: Cliente;
+  clienteName?: string;
   userId:string
 }
 

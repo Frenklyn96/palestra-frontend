@@ -69,6 +69,9 @@
   background-color: red;
 }
 
+.clienti-page-status-dot.featureActivation {
+  background-color: #1976D2;
+}
 .clienti-page-pagination-container {
   display: flex;
   justify-content: space-between;
@@ -113,5 +116,38 @@
   position: relative;
   min-height: 200px;
 }
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* spazio tra bottoni e menu */
+  flex-wrap: nowrap; /* evita che si rompano su più righe */
+}
 
+.actions-buttons,
+.actions-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative; /* evita problemi se hai position absolute dentro */
+}
 
+/* Se usi media query per nascondere uno o l'altro, assicurati che non ci siano position o z-index strani */
+
+/* Esempio: */
+@media (max-width: 600px) {
+  .actions-buttons {
+    display: none;
+  }
+  .actions-menu {
+    display: flex;
+  }
+}
+
+@media (min-width: 601px) {
+  .actions-buttons {
+    display: flex;
+  }
+  .actions-menu {
+    display: none;
+  }
+}

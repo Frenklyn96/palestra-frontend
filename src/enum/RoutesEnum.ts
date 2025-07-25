@@ -24,4 +24,5 @@ export enum RoutesEnum {
   CLIENTI = '/clienti',
   TRANSAZIONI = '/transazioni',
   SETTINGS = '/settings',
+  INGRESSI = '/ingressi',
 }

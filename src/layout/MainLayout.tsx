@@ -24,6 +24,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu';
+import LoginIcon  from '@mui/icons-material/Login';
 
 import '../styles/MainLayout.css';
 
@@ -40,6 +41,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { label: 'Home', route: RoutesEnum.HOME, icon: <HomeIcon /> },
     { label: 'Clienti', route: RoutesEnum.CLIENTI, icon: <PeopleIcon /> },
     { label: 'Transazioni', route: RoutesEnum.TRANSAZIONI, icon: <PaymentIcon /> },
+    { label: 'Ingressi', route: RoutesEnum.INGRESSI, icon: <LoginIcon /> },
     { label: 'Settings', route: RoutesEnum.SETTINGS, icon: <SettingsIcon /> },
   ];
 

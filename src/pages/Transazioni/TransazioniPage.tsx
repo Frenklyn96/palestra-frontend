@@ -48,7 +48,7 @@ const TransazioniPage: React.FC = () => {
   const [pageGenericSearch, setPageGenericSearch] = useState(1);
   const [transazioniToRender, setTransazioniToRender] = useState<Transazione[] | undefined>(undefined);
   const { clienteId } = useParams<{ clienteId: string }>();
-  const [isFilterActive] =useState <boolean>(clienteId!==undefined);
+  const isFilterActive = !!clienteId;
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -66,7 +66,6 @@ const TransazioniPage: React.FC = () => {
           ascending,
           userId: userId!
         }) as any);
-        setFilterApplied(false);
       }
     };
     
