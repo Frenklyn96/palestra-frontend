@@ -5,7 +5,9 @@
     "aggiungiCliente": "Aggiungi Cliente",
     "aggiungiTransazione": "Aggiungi Transazione",
     "imagePlaceholder": "Nessuna immagine disponibile",
-    "panoramica": "Home"
+    "panoramica": "Home",
+    "aggiungiIngresso": "Aggiungi Ingresso"
+
   },
   "rinnovaTable":{
         "title": "Clienti con abbonamento scaduto",
@@ -71,6 +73,9 @@
         "table": {
             "headers": {
             "active": "Attivo",
+            "enable": "Attivo",
+            "expired": "Scaduto",
+            "fatureActivation": "Attivo dal ",
             "card_number": "Tessera",
             "first_name": "Nome",
             "last_name": "Cognome",
@@ -94,7 +99,8 @@
             "tooltip_enteries":"Scala ingresso",
             "edit":"Modifica",
             "transactions":"Transazioni cliente",
-            "delete":"Elimina cliente"
+            "delete":"Elimina cliente",
+            "all_entrances": "Tutti gli ingressi"
         }
     },
     "trnsazioni_dialog":{
@@ -215,7 +221,49 @@
             "mesi": "Mesi",
             "anni": "Anni"
         }
+        },
+    "ingressi_page":{
+        "table":{
+            "cliente": "Cliente",
+            "data_entrance": "Data Ingresso",
+            "azioni": "Azioni",
+            "nessun_risultato": "Nessun ingresso trovato.",
+            "title":"Ingressi"
+        },
+        "actions": {
+            "delete": "Elimina",
+            "edit": "Modifica",
+            "add": "Aggiungi Ingresso"
+        },
+        "buttons": {
+            "applica_filtro": "Applica Filtro",
+            "rimuovi_filtri": "Rimuovi Filtri",
+            "pagina_precedente": "Pagina Precedente",
+            "pagina_successiva": "Pagina Successiva",
+            "seleziona_intervallo": "Seleziona un Intervallo",
+            "label_filter": "Filtra per Intervallo di Date",
+            "aggiungi": "Aggiungi Ingresso",
+            "torna_clienti": "Torna alla scheda Clienti"
+        },
+        "generic_search": {
+            "search_placeholder": "Cerca..."
+        },
+         "common": {
+        "cancel": "Annulla",
+        "apply": "Applica",
+        "delete_message": "Sei sicuro di voler eliminare questo ingresso?"
+    }
+    },
+    "ingressi_dialog": {
+                "title": "Seleziona Cliente",
+                "search_placeholder": "Cerca cliente...",
+                "selected_cliente": "Cliente Selezionato",
+                "select_client_error": "Seleziona un cliente prima di applicare",
+                "data_ora": "Data e Ora"
+            },
+        "common": {
+            "cancel": "Annulla",
+            "apply": "Applica"
         }
-
-
+   
 }

@@ -10,6 +10,7 @@ import { PrivateRoute } from './PrivateRoute';
 import { useUser } from '@clerk/clerk-react'; // Import Clerk
 import { useAppDispatch } from './store/hooks'; // Import your Redux hooks
 import { setUserInfo } from './features/slice/userSlice';
+import IngressiPage from './pages/Ingressi/IngressiPage';
 
 function App() {
   const { user, isSignedIn } = useUser(); // Clerk hook to check user status
@@ -58,6 +59,23 @@ function App() {
             element={
               <PrivateRoute>
                 <TransazioniPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={RoutesEnum.INGRESSI}
+
+            element={
+              <PrivateRoute>
+                <IngressiPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/clienti/:clienteId/ingressi"
+            element={
+              <PrivateRoute>
+                <IngressiPage />
               </PrivateRoute>
             }
           />

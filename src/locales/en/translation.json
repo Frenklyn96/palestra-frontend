@@ -4,7 +4,10 @@
     "aggiungiCliente": "Add Client",
     "aggiungiTransazione": "Add Transaction",
     "imagePlaceholder": "No image available",
-    "panoramica": "Home"
+    "panoramica": "Home",
+    "aggiungiIngresso": "Add Entrance"
+
+    
   },
   "rinnovaTable":{
     "title": "Clients with expired subscription",
@@ -72,6 +75,9 @@
       "table": {
         "headers": {
           "active": "Active",
+          "enable": "Enabled",
+          "expired": "Expired",
+          "fatureActivation": "Enable from ",
           "card_number": "Card Number",
           "first_name": "First Name",
           "last_name": "Last Name",
@@ -95,7 +101,9 @@
             "tooltip_enteries": "Deduct entry",
             "edit": "Edit",
             "transactions": "Client transactions",
-            "delete": "Delete client"
+            "delete": "Delete client",
+             "all_entrances": "All entries"
+
         }
   },
   "trnsazioni_dialog":
@@ -217,9 +225,52 @@
         "mesi": "Months",
         "anni": "Years"
       }
-    }
-
-
-
+    },
+    "ingressi_page": {
+        "table": {
+            "cliente": "Client",
+            "data_entrance": "Entrance Date",
+            "azioni": "Actions",
+            "nessun_risultato": "No entrances found.",
+            "title": "Entrances"
+        },
+        "actions": {
+            "delete": "Delete",
+            "edit": "Edit",
+            "add": "Add Entrance"
+        },
+        "buttons": {
+            "applica_filtro": "Apply Filter",
+            "rimuovi_filtri": "Remove Filters",
+            "pagina_precedente": "Previous Page",
+            "pagina_successiva": "Next Page",
+            "seleziona_intervallo": "Select a Range",
+            "label_filter": "Filter by Date Range",
+            "aggiungi": "Add Entrance",
+            "torna_clienti": "Back to Clients Tab"
+        },
+        "generic_search": {
+            "search_placeholder": "Search..."
+        },
+        "common": {
+            "cancel": "Cancel",
+            "apply": "Apply",
+            "delete_message": "Are you sure you want to delete this entrance?"
+        }
+    },
+    "ingressi_dialog": {
+        "title": "Select Client",
+        "search_placeholder": "Search client...",
+        "selected_cliente": "Selected Client",
+        "select_client_error": "Select a client before applying",
+        "data_ora": "Date and Time"
+    },
+    "common": {
+        "cancel": "Cancel",
+        "apply": "Apply"
+    },
+    "generic_search": {
+          "search_placeholder": "Search..."
+      }
 
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, MenuItem, TextField
+  Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, MenuItem, TextField,
+  Menu
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,6 +24,8 @@ import './ClientiPage.css';
 import '../../styles/MainLayout.css'
 import AddIcon from '@mui/icons-material/Add';
 import { Paper } from '@mui/material';
+import DownloadingIcon from '@mui/icons-material/Downloading';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 type ClienteKeys = keyof Cliente;
 
@@ -52,7 +55,19 @@ const ClientiPage: React.FC = () => {
   const { t } = useTranslation();
 
   const navigate = useNavigate();
- 
+ const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
+  const openMenu = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, cliente: Cliente) => {
+    setAnchorEl(event.currentTarget);
+    setMenuCliente(cliente);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuCliente(null);
+  };
   useEffect(() => {
     const fetchData = async () => {
       await dispatch(fetchClienti({
@@ -115,6 +130,10 @@ const ClientiPage: React.FC = () => {
   const handleSelectCliente = (cliente: Cliente) => {
     dispatch(selectCliente(cliente));
     navigate(`/clienti/${cliente.id}/transazioni`);
+  };
+ const handleEntrancesSelectCliente = (cliente: Cliente) => {
+    dispatch(selectCliente(cliente));
+    navigate(`/clienti/${cliente.id}/ingressi`);
   };
 
   const handleOpenDeleteDialog = (clienteId: string) => {
@@ -240,13 +259,41 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                     >
                       <TableCell>
                         {cliente.scadenza && (
-                          <Box
-                            className={`clienti-page-status-dot ${
-                              new Date(cliente.scadenza) > new Date()
-                                ? 'active'
-                                : 'inactive'
-                            }`}
-                          />
+                          <Tooltip
+                            title={
+                              new Date(cliente.scadenza) <= new Date()
+                                ? t('cliente_page.table.headers.expired')
+                                : cliente.giorniTariffa &&
+                                  new Date(
+                                    new Date(cliente.scadenza).setDate(
+                                      new Date(cliente.scadenza).getDate() - cliente.giorniTariffa
+                                    )
+                                  ) > new Date()
+                                ? t('cliente_page.table.headers.fatureActivation') +
+                                  ' ' +
+                                  new Date(
+                                    new Date(cliente.scadenza).setDate(
+                                      new Date(cliente.scadenza).getDate() - cliente.giorniTariffa
+                                    )
+                                  ).toLocaleDateString('it-IT')
+                                : t('cliente_page.table.headers.enable')
+                            }
+                          >
+                            <Box
+                              className={`clienti-page-status-dot ${
+                                new Date(cliente.scadenza) > new Date()
+                                  ? cliente.giorniTariffa &&
+                                    new Date(
+                                      new Date(cliente.scadenza).setDate(
+                                        new Date(cliente.scadenza).getDate() - cliente.giorniTariffa
+                                      )
+                                    ) > new Date()
+                                    ? 'featureActivation'
+                                    : 'active'
+                                  : 'inactive'
+                              }`}
+                            />
+                          </Tooltip>
                         )}
                       </TableCell>
                       <TableCell>{cliente.numeroTessera}</TableCell>
@@ -254,39 +301,137 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                       <TableCell>{cliente.cognome}</TableCell>
                       <TableCell>{cliente.ingressiResidui ? '' : scadenzaFormatted}</TableCell>
                       <TableCell>{cliente.ingressiResidui}</TableCell>
-                      <TableCell align="right">
-                        {cliente.ingressiResidui != null && (
-                          <Tooltip title={cliente.ingressiResidui === 0 ? t('cliente_page.actions.tooltip_enteries_zero'): t('cliente_page.actions.tooltip_enteries')}>
-                            <span>
+                     <TableCell align="right" className="actions-cell">
+                          <div className="actions-container">
+
+                            {/* Bottoni singoli (grandi schermi) */}
+                            <div className="actions-buttons">
+                              {/* DownloadingIcon qui */}
+                              {cliente.ingressiResidui != null && (
+                                <Tooltip
+                                  title={
+                                    cliente.ingressiResidui === 0
+                                      ? t('cliente_page.actions.tooltip_enteries_zero')
+                                      : t('cliente_page.actions.tooltip_enteries')
+                                  }
+                                >
+                                  <span>
+                                    <IconButton
+                                      color="secondary"
+                                      disabled={cliente.ingressiResidui === 0}
+                                      onClick={() => handleScalaEntrances(cliente)}
+                                      className="icon-neutral"
+                                      size="small"
+                                    >
+                                      <DownloadingIcon />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              )}
+
+                              {/* Altri bottoni */}
+                              <Tooltip title={t('cliente_page.actions.edit')}>
+                                <IconButton onClick={() => handleOpenEditDialog(cliente)} className="icon-neutral" size="small">
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={t('cliente_page.actions.transactions')}>
+                                <IconButton onClick={() => handleSelectCliente(cliente)} className="icon-neutral" size="small">
+                                  <PaymentIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={t('cliente_page.actions.all_entrances')}>
+                                <IconButton onClick={() => handleEntrancesSelectCliente(cliente)} className="icon-neutral" size="small">
+                                  <LoginIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={t('cliente_page.actions.delete')}>
+                                <IconButton onClick={() => handleOpenDeleteDialog(cliente.id)} size="small">
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+
+                            {/* Menu a tendina (piccoli schermi) */}
+                            <div className="actions-menu">
                               <IconButton
-                                color="secondary"
-                                disabled={cliente.ingressiResidui === 0}
-                                onClick={() => handleScalaEntrances(cliente)}
+                                onClick={(e) => handleMenuClick(e, cliente)}
                                 className="icon-neutral"
+                                size="small"
+                                aria-controls={openMenu ? 'actions-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={openMenu ? 'true' : undefined}
                               >
-                                <LoginIcon />
+                                <MoreVertIcon />
                               </IconButton>
-                            </span>
-                          </Tooltip>
-                        )}
-                        <Tooltip title={t('cliente_page.actions.edit')}>
-                          <IconButton onClick={() => handleOpenEditDialog(cliente)} className="icon-neutral">
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
 
-                        <Tooltip title={t('cliente_page.actions.transactions')}>
-                          <IconButton onClick={() => handleSelectCliente(cliente)} className="icon-neutral">
-                            <PaymentIcon />
-                          </IconButton>
-                        </Tooltip>
+                              <Menu
+                                id="actions-menu"
+                                anchorEl={anchorEl}
+                                open={openMenu}
+                                onClose={handleMenuClose}
+                                PaperProps={{
+                                  sx: {
+                                    boxShadow: '0px 2px 8px rgba(0,0,0,0.12)',
+                                  },
+                                }}
+                              >
+                                {/* DownloadingIcon anche nel menu */}
+                                {cliente.ingressiResidui != null && (
+                                  <MenuItem
+                                    onClick={() => {
+                                      handleScalaEntrances(cliente);
+                                      handleMenuClose();
+                                    }}
+                                    disabled={cliente.ingressiResidui === 0}
+                                  >
+                                    <DownloadingIcon sx={{ mr: 1 }} fontSize="small" />{' '}
+                                    {cliente.ingressiResidui === 0
+                                      ? t('cliente_page.actions.tooltip_enteries_zero')
+                                      : t('cliente_page.actions.tooltip_enteries')}
+                                  </MenuItem>
+                                )}
 
-                        <Tooltip title={t('cliente_page.actions.delete')}>
-                          <IconButton onClick={() => handleOpenDeleteDialog(cliente.id)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>  
-                      </TableCell>
+                                <MenuItem
+                                  onClick={() => {
+                                    handleOpenEditDialog(menuCliente!);
+                                    handleMenuClose();
+                                  }}
+                                >
+                                  <EditIcon sx={{ mr: 1 }} fontSize="small" /> {t('cliente_page.actions.edit')}
+                                </MenuItem>
+
+                                <MenuItem
+                                  onClick={() => {
+                                    handleSelectCliente(menuCliente!);
+                                    handleMenuClose();
+                                  }}
+                                >
+                                  <PaymentIcon sx={{ mr: 1 }} fontSize="small" /> {t('cliente_page.actions.transactions')}
+                                </MenuItem>
+
+                                <MenuItem
+                                  onClick={() => {
+                                    handleEntrancesSelectCliente(menuCliente!);
+                                    handleMenuClose();
+                                  }}
+                                >
+                                  <LoginIcon sx={{ mr: 1 }} fontSize="small" /> {t('cliente_page.actions.all_entrances')}
+                                </MenuItem>
+
+                                <MenuItem
+                                  onClick={() => {
+                                    handleOpenDeleteDialog(menuCliente!.id);
+                                    handleMenuClose();
+                                  }}
+                                >
+                                  <DeleteIcon sx={{ mr: 1 }} fontSize="small" /> {t('cliente_page.actions.delete')}
+                                </MenuItem>
+                              </Menu>
+                            </div>
+                          </div>
+                        </TableCell>
+
                     </TableRow>
                   );
                 })

@@ -10,7 +10,8 @@ export interface Cliente {
     foto: string;
     tariffaNome: string;
     userId:string
-    ingressiResidui?: number; // Aggiunto per visualizzare gli ingressi residui
+    ingressiResidui?: number;
+    giorniTariffa?: number
   }
 
 export interface  CreateCliente {

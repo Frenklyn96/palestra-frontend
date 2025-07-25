@@ -10,10 +10,11 @@ import HomeIcon from '@mui/icons-material/Home';
 import {
   Person,
   People as PeopleIcon,
-  Payment as PaymentIcon
+  Payment as PaymentIcon,
+  Login as LoginIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
-import './Home.css'; // ✅ Importazione CSS corretta
+import './Home.css';
 import RinnovaTable from '../../features/components/rinnovaTable/RinnovaTable';
 import ClienteDialog from '../../features/components/clienteDialog/ClienteDialog';
 import { getFotoHomeAsync } from '../../features/slice/settingsSlice';
@@ -23,6 +24,7 @@ import { AppDispatch, RootState } from '../../store/store';
 import { useTranslation } from 'react-i18next';
 import { Cliente } from '../../features/class/Cliente';
 import TransazioneDialog from '../../features/components/transazioneDialog/TransazioneDialog';
+import IngressiDialog from '../../features/components/ingressiDialog/IngressiDialog';
 
 const Home: React.FC = () => {
   const {foto} = useSelector((state: RootState) => state.settings);
@@ -34,6 +36,7 @@ const Home: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [openTransazioneDialog, setOpenTransazioneDialog] = useState(false);
   const dispatch =  useDispatch<AppDispatch>();
+const [openIngressiDialog, setOpenIngressiDialog] = useState(false);
 
   const handleOpenTransazioneDialog = () => {
     setOpenTransazioneDialog(true);
@@ -41,6 +44,13 @@ const Home: React.FC = () => {
 
   const handleCloseTransazioneDialog = () => {
     setOpenTransazioneDialog(false);
+  };
+const handleOpenIngressiDialog = () => {
+    setOpenIngressiDialog(true);
+  };
+
+  const handleCloseIngressiDialog = () => {
+    setOpenIngressiDialog(false);
   };
 
   useEffect(() => {
@@ -90,60 +100,96 @@ const Home: React.FC = () => {
 
           {/* Azioni affiancate come card cliccabili */}
           <Grid container spacing={2}>
-  {/* Aggiungi cliente */}
-  <Grid
-    size={{ xs: 12, md: 6 }}
-    sx={{
-      cursor: 'pointer',
-      '&:hover': { boxShadow: 6 },
-    }}
-    onClick={handleOpenDialog}
-  >
-    <Paper
-      elevation={3}
-      sx={{
-        p: 3,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        overflow: 'hidden',
-      }}
-    >
-      <PeopleIcon className="clienti-page-icon" />
+          {/* Aggiungi cliente */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': { boxShadow: 6 },
+              }}
+              onClick={handleOpenDialog}
+            >
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  overflow: 'hidden',
+                }}
+              >
+               <PeopleIcon className="clienti-page-icon" />
 
-      <Box sx={{ whiteSpace: 'pre-line' }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontSize: { xs: '14px', sm: '15px', md: '16px' },
-            lineHeight: 1.2,
-          }}
-        >
-          {t('home.aggiungiCliente').replace(' ', '\n')}
-        </Typography>
-      </Box>
-    </Paper>
-  </Grid>
+                <Box sx={{ whiteSpace: 'pre-line' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: '14px', sm: '15px', md: '16px' },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {t('home.aggiungiCliente').replace(' ', '\n')}
+                  </Typography>
+                </Box>
+              </Paper>
+           </Grid>
 
-  {/* Aggiungi transazione */}
-  <Grid
-    size={{ xs: 12, md: 6 }}
-    sx={{
-      cursor: 'pointer',
-      '&:hover': { boxShadow: 6 },
-    }}
-    onClick={handleOpenTransazioneDialog}
-  >
-    <Paper
-      elevation={3}
-      sx={{
-        p: 3,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        overflow: 'hidden',
-      }}
-    >
+          {/* Aggiungi ingresso */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': { boxShadow: 6 },
+              }}
+              onClick={handleOpenIngressiDialog}
+            >
+             <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  overflow: 'hidden',
+                }}
+              >
+                <LoginIcon className="ingressi-page-icon" />
+
+                <Box sx={{ whiteSpace: 'pre-line' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: '14px', sm: '15px', md: '16px' },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {t('home.aggiungiIngresso').replace(' ', '\n')}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+
+          {/* Aggiungi transazione */}
+          <Grid
+            size={{ xs: 12, md: 6 }}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': { boxShadow: 6 },
+            }}
+            onClick={handleOpenTransazioneDialog}
+          >
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                overflow: 'hidden',
+              }}
+            >
       <PaymentIcon className="transazioni-page-icon" />
 
       <Box sx={{ whiteSpace: 'pre-line' }}>
@@ -222,6 +268,11 @@ const Home: React.FC = () => {
         clienteNome={null}
         clienteId={null}
         isFilterActive={false}
+      />
+
+      <IngressiDialog
+        open={openIngressiDialog}
+        onClose={handleCloseIngressiDialog}
       />
     </Box>
   );

@@ -21,6 +21,7 @@ export enum TableNames {
   CLIENTI = 'Clienti',
   TRANSAZIONI = 'Transazioni',
   CLIENTIRICERCATRANSAZIONE = 'ClientiRicercaTransazione',
+  ENTRANCES = 'Entrances',
   // Aggiungi altri nomi di tabelle qui
 }
 

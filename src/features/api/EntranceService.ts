@@ -11,6 +11,18 @@ interface GetEntrancesParams {
 }
 
 // GET paginato con filtri
+interface GetEntrancesParams {
+  page?: number;
+  pageSize?: number;
+  orderBy: string;
+  ascending?: boolean;
+  userId: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
+  clienteId?: string | null;
+}
+
+// GET paginato con filtri
 export const getEntrances = async (params: GetEntrancesParams) => {
   const queryParams: any = {
     userId: params.userId,
@@ -21,6 +33,10 @@ export const getEntrances = async (params: GetEntrancesParams) => {
   if (params.page) queryParams.page = params.page;
   if (params.pageSize) queryParams.pageSize = params.pageSize;
 
+  if (params.startDate) queryParams.startDate = params.startDate;
+  if (params.endDate) queryParams.endDate = params.endDate;
+  if (params.clienteId) queryParams.clientId = params.clienteId;
+
   const response = await axios.get(API_URL, { params: queryParams });
 
   return {
@@ -28,6 +44,7 @@ export const getEntrances = async (params: GetEntrancesParams) => {
     totalCount: response.data.totalCount,
   };
 };
+
 
 // GET by ID
 export const getEntranceById = async (id: string) => {

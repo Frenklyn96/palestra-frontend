@@ -63,7 +63,7 @@ export const createTransazione = async (transazione: CreateTransazione) => {
 export const updateTransazione = async (id: string, transazione: Transazione) => {
   const payload = {
     id: transazione.id,  // Assicurati che 'id' sia un GUID valido
-    dataTransazione: transazione.dataTransazione.toString(), // Converte la data in formato ISO
+    dataTransazione: transazione.dataTransazione.toISOString(), // Converte la data in formato ISO
     metodoPagamento: transazione.metodoPagamento,
     importo: transazione.importo,
     causale: transazione.causale,

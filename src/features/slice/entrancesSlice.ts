@@ -26,6 +26,9 @@ export const fetchEntrances = createAsyncThunk(
       orderBy: string;
       ascending?: boolean;
       userId: string;
+      startDate?: Date | null;
+      endDate?: Date | null;
+      clienteId?: string | null;
     },
     thunkAPI
   ) => {
@@ -37,6 +40,7 @@ export const fetchEntrances = createAsyncThunk(
     }
   }
 );
+
 
 // Async thunk: fetch entrance by ID
 export const fetchEntranceById = createAsyncThunk(
