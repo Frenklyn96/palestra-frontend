@@ -7,24 +7,47 @@ import SettingsPage from './pages/Settings/SettingsPage';
 import ClientiPage from './pages/Clienti/ClientiPage';
 import { RoutesEnum } from './enum/RoutesEnum';
 import { PrivateRoute } from './PrivateRoute';
-import { useUser } from '@clerk/clerk-react'; // Import Clerk
-import { useAppDispatch } from './store/hooks'; // Import your Redux hooks
+import { useUser } from '@clerk/clerk-react';
+import { useAppDispatch } from './store/hooks';
 import { setUserInfo } from './features/slice/userSlice';
 import IngressiPage from './pages/Ingressi/IngressiPage';
 
+import { CircularProgress, Box } from '@mui/material';
+
+function LoadingScreen() {
+  return (
+    <Box
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+}
+
 function App() {
-  const { user, isSignedIn } = useUser(); // Clerk hook to check user status
+  const { user, isSignedIn, isLoaded } = useUser();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (isSignedIn && user) {
-      // Dispatch the user info when the user is signed in
-      dispatch(setUserInfo({
-        userId: user.id,
-        email: user.primaryEmailAddress?.emailAddress ?? ''
-      }));
+      dispatch(
+        setUserInfo({
+          userId: user.id,
+          email: user.primaryEmailAddress?.emailAddress ?? '',
+        })
+      );
     }
   }, [isSignedIn, user, dispatch]);
+
+  // Se Clerk non è ancora caricato, NON montare il router né layout
+  if (!isLoaded) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Router>
@@ -64,7 +87,6 @@ function App() {
           />
           <Route
             path={RoutesEnum.INGRESSI}
-
             element={
               <PrivateRoute>
                 <IngressiPage />
