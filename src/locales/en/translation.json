@@ -9,6 +9,19 @@
 
     
   },
+
+  "mainLayout": {
+    "drawerTitle": "Menu",
+    "home": "Home",
+    "languageSelector": "Select Language",
+    "logout": "Logout",
+    "settings": "Settings",
+    "clients": "Clients",
+    "transactions": "Transactions",
+    "subscriptions": "Subscriptions",
+    "entries": "Entries"
+  },
+
   "rinnovaTable":{
     "title": "Clients with expired subscription",
     "no_clients": "No clients with expired subscription.",
