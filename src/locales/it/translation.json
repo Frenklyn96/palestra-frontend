@@ -9,6 +9,18 @@
     "aggiungiIngresso": "Aggiungi Ingresso"
 
   },
+  "mainLayout": {
+    "drawerTitle": "Menu",
+    "home": "Home",
+    "languageSelector": "Seleziona Lingua",
+    "logout": "Logout",
+    "settings": "settings",
+    "clients": "Clienti",
+    "transactions": "Transazioni",
+    "subscriptions": "Abbonamenti",
+    "entries": "Ingressi"
+  },
+
   "rinnovaTable":{
         "title": "Clienti con abbonamento scaduto",
         "no_clients": "Nessun cliente con abbonamento scaduto.",

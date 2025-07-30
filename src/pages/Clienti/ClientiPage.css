@@ -118,9 +118,10 @@
 }
 .actions-container {
   display: flex;
-  align-items: center;
   gap: 8px; /* spazio tra bottoni e menu */
   flex-wrap: nowrap; /* evita che si rompano su più righe */
+  align-items: flex-end; /* allinea verticalmente */
+  justify-content:flex-end;
 }
 
 .actions-buttons,
