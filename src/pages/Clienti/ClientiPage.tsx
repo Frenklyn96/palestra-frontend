@@ -358,7 +358,7 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                                 onClick={(e) => handleMenuClick(e, cliente)}
                                 className="icon-neutral"
                                 size="small"
-                                aria-controls={openMenu ? 'actions-menu' : undefined}
+                                aria-controls={openMenu ? `actions-menu-${cliente.id}` : undefined}
                                 aria-haspopup="true"
                                 aria-expanded={openMenu ? 'true' : undefined}
                               >
@@ -366,9 +366,9 @@ const handleScalaEntrances = async (cliente: Cliente) => {
                               </IconButton>
 
                               <Menu
-                                id="actions-menu"
+                                id={`actions-menu-${cliente.id}`}
                                 anchorEl={anchorEl}
-                                open={openMenu}
+                                open={openMenu && menuCliente?.id=== cliente.id }
                                 onClose={handleMenuClose}
                                 PaperProps={{
                                   sx: {
