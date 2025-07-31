@@ -44,17 +44,27 @@
   background-color: rgba(163, 196, 243, 0.3) !important;
   border-radius: 12px !important;
   padding: 8px !important;
-  color: #1A3DAB !important;
+  color: #1a3dab !important;
   position: relative !important;
   top: 2px !important;
 }
 
 .ingressi-page-icon {
   font-size: 32px !important;
-  background-color: #158b8533!important;
+  background-color: #158b8533 !important;
   border-radius: 12px !important;
   padding: 8px !important;
   color: #158b86 !important;
+  position: relative !important;
+  top: 2px !important;
+}
+
+.settings-page-icon {
+  font-size: 32px !important;
+  background-color: rgba(224, 163, 243, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  color: #a61aab !important;
   position: relative !important;
   top: 2px !important;
 }

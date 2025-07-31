@@ -1,13 +1,18 @@
 {
-
-    "home": {
+  "app": {
+    "error": {
+      "head": "Impossibile connettersi al backend",
+      "body": "Riprova più tardi o controlla la tua connessione."
+    }
+  },
+  "home": {
     "clientiTesserati": "Clienti tesserati",
     "aggiungiCliente": "Aggiungi Cliente",
     "aggiungiTransazione": "Aggiungi Transazione",
     "imagePlaceholder": "Nessuna immagine disponibile",
     "panoramica": "Home",
-    "aggiungiIngresso": "Aggiungi Ingresso"
-
+    "aggiungiIngresso": "Aggiungi Ingresso",
+    "settings": "Aggiungi Tariffa"
   },
   "mainLayout": {
     "drawerTitle": "Menu",
@@ -21,261 +26,257 @@
     "entries": "Ingressi"
   },
 
-  "rinnovaTable":{
-        "title": "Clienti con abbonamento scaduto",
-        "no_clients": "Nessun cliente con abbonamento scaduto.",
-        "table": {
-            "nome": "Nome",
-            "scadenza": "Scadenza",
-            "azioni": "Azioni"
-        },
-        "buttons": {
-            "rinnova": "Rinnova",
-            "elimina": "Elimina",
-            "rinnova_tutti": "Rinnova Tutti"
-        },
-        "confirmDialog": {
-            "title": "Conferma Eliminazione",
-            "message": "Sei sicuro di voler eliminare {{nome}} {{cognome}}?"
-        }
+  "rinnovaTable": {
+    "title": "Clienti con abbonamento scaduto",
+    "no_clients": "Nessun cliente con abbonamento scaduto.",
+    "table": {
+      "nome": "Nome",
+      "scadenza": "Scadenza",
+      "azioni": "Azioni"
     },
-  "cliente_dialog": {
-        "title": {
-        "add": "Aggiungi Cliente",
-        "edit": "Modifica Cliente",
-        "renew": "Rinnova Abbonamento",
-        "warning": "Attenzione"
-        },
-        "photo": {
-        "upload": "Carica Foto",
-        "preview": "Anteprima Foto"
-        },
-        "fields": {
-        "nome": "Nome",
-        "cognome": "Cognome",
-        "email": "Email",
-        "telefono": "Telefono",
-        "data_nascita": "Data di Nascita",
-        "numero_tessera": "Numero Tessera",
-        "tariffa": "Tariffa",
-        "scadenza": "Scadenza Tessera"
-        },
-        "errors": {
-        "required": "Campo obbligatorio",
-        "invalid_email": "Email non valida (deve contenere @)",
-        "no_tariffa": "Per poter aggiungere un cliente è necessario prima creare almeno una tariffa."
-        },
-        "buttons": {
-        "submit": {
-            "add": "Aggiungi",
-            "edit": "Modifica",
-            "renew": "Rinnova"
-        },
-        "cancel": "Annulla",
-        "close": "Chiudi"
-        }
+    "buttons": {
+      "rinnova": "Rinnova",
+      "elimina": "Elimina",
+      "rinnova_tutti": "Rinnova Tutti"
     },
-    "cliente_page":{
-        "page_title": "Clienti",
-        "buttons": {
-            "add_client": "Aggiungi",
-            "previous_page": "Pagina precedente",
-            "next_page": "Pagina successiva"
-        },
-        "table": {
-            "headers": {
-            "active": "Attivo",
-            "enable": "Attivo",
-            "expired": "Scaduto",
-            "fatureActivation": "Attivo dal ",
-            "card_number": "Tessera",
-            "first_name": "Nome",
-            "last_name": "Cognome",
-            "expiration": "Scadenza",
-            "remaining_entries": "Ingressi Residui",
-            "actions": "Azioni"
-            },
-            "no_clients_found": "Nessun cliente trovato."
-        },
-        "pagination": {
-            "items_per_page": "Elementi per pagina"
-        },
-        "dialog": {
-            "confirm_delete_title": "Conferma Eliminazione"
-        },
-        "generic_search": {
-            "search_placeholder": "Cerca..."
-        },
-        "actions":{
-            "tooltip_enteries_zero": "Nessun ingresso disponibile",
-            "tooltip_enteries":"Scala ingresso",
-            "edit":"Modifica",
-            "transactions":"Transazioni cliente",
-            "delete":"Elimina cliente",
-            "all_entrances": "Tutti gli ingressi"
-        }
-    },
-    "trnsazioni_dialog":{
-        "dialog": {
-            "title": {
-            "add": "Aggiungi Transazione",
-            "edit": "Modifica Transazione"
-            },
-            "fields": {
-            "cliente_selezionato": "Cliente Selezionato",
-            "search_placeholder": "Cerca Cliente",
-            "causale": "Causale",
-            "metodo_pagamento": "Metodo di Pagamento",
-            "data_transazione": "Data Transazione",
-            "importo": "Importo"
-            },
-            "errors": {
-            "required": "Campo obbligatorio"
-            },
-            "buttons": {
-            "cancel": "Annulla",
-            "submit_add": "Aggiungi",
-            "submit_edit": "Salva"
-            }
-        }
-    },
-    "transazioni_page":
-    {
-        "table": {
-            "title": "Transazioni",
-            "cliente": "Cliente",
-            "causale": "Causale",
-            "metodo_pagamento": "Metodo di Pagamento",
-            "data_transazione": "Data Transazione",
-            "importo": "Importo",
-            "azioni": "Azioni",
-            "nessun_risultato": "Nessuna transazione trovata."
-        },
-        "buttons": {
-            "aggiungi": "Aggiungi",
-            "torna_clienti": "Torna alla scheda Clienti",
-            "applica_filtro": "Applica filtro",
-            "rimuovi_filtri": "Rimuovi filtri",
-            "pagina_precedente": "Pagina precedente",
-            "pagina_successiva": "Pagina successiva",
-            "seleziona_intervallo": "Seleziona un intervallo",
-            "label_filter": "Filtra per intervallo di date"
-
-        },
-        "labels": {
-            "data_inizio": "Data Inizio",
-            "data_fine": "Data Fine",
-            "elementi_per_pagina": "Elementi per pagina"
-        },
-        "dialogs": {
-            "conferma_eliminazione": "Conferma Eliminazione"
-        },
-        "generic_search":{
-            "search_placeholder": "Cerca..."
-        },
-        "actions":{
-            "delete": "Elimina",
-            "edit":"Modifica"
-        }
-    },
-    "settings_page":
-    {
-        "title": "Gestione Tariffe",
-        "buttons": {
-            "aggiungi_tariffa": "Aggiungi"
-        },
-        "table": {
-            "nome_tariffa": "Nome Tariffa",
-            "durata": "Durata",
-            "costo": "Costo",
-            "azioni": "Azioni"
-        },
-        "dialogs": {
-            "conferma_eliminazione": "Conferma Eliminazione",
-            "elimina_messaggio": "Sei sicuro di voler eliminare la tariffa \"{{nome}}\"?"
-        },
-        "upload": {
-            "immagine_home": "Immagine Home"
-        },
-        "error": {
-            "tariffa_duplicata": "Esiste già una tariffa con questo nome."
-        },
-        "actions":{
-            "delete": "Elimina",
-            "edit":"Modifica"
-        }
-    },
-    "settings_dialog":{
-        "title": {
-            "add": "Aggiungi Tariffa",
-            "edit": "Modifica Tariffa"
-        },
-        "labels": {
-            "nome": "Nome Tariffa",
-            "durata": "Durata",
-            "unita": "Unità",
-            "costo": "Costo (€)",
-            "toCount": "Da scalare"
-        },
-        "helperText": {
-            "nome_required": "Il nome è obbligatorio",
-            "durata_positive": "La durata deve essere maggiore di 0",
-            "costo_positive": "Il costo deve essere maggiore di 0",
-            "tariffa_duplicata": "Una tariffa con questo nome esiste già."
-        },
-        "buttons": {
-            "cancel": "Annulla",
-            "save": "Salva",
-            "add": "Aggiungi"
-        },
-        "selectOptions": {
-            "giorni": "Giorni",
-            "mesi": "Mesi",
-            "anni": "Anni"
-        }
-        },
-    "ingressi_page":{
-        "table":{
-            "cliente": "Cliente",
-            "data_entrance": "Data Ingresso",
-            "azioni": "Azioni",
-            "nessun_risultato": "Nessun ingresso trovato.",
-            "title":"Ingressi"
-        },
-        "actions": {
-            "delete": "Elimina",
-            "edit": "Modifica",
-            "add": "Aggiungi Ingresso"
-        },
-        "buttons": {
-            "applica_filtro": "Applica Filtro",
-            "rimuovi_filtri": "Rimuovi Filtri",
-            "pagina_precedente": "Pagina Precedente",
-            "pagina_successiva": "Pagina Successiva",
-            "seleziona_intervallo": "Seleziona un Intervallo",
-            "label_filter": "Filtra per Intervallo di Date",
-            "aggiungi": "Aggiungi Ingresso",
-            "torna_clienti": "Torna alla scheda Clienti"
-        },
-        "generic_search": {
-            "search_placeholder": "Cerca..."
-        },
-         "common": {
-        "cancel": "Annulla",
-        "apply": "Applica",
-        "delete_message": "Sei sicuro di voler eliminare questo ingresso?"
+    "confirmDialog": {
+      "title": "Conferma Eliminazione",
+      "message": "Sei sicuro di voler eliminare {{nome}} {{cognome}}?"
     }
+  },
+  "cliente_dialog": {
+    "title": {
+      "add": "Aggiungi Cliente",
+      "edit": "Modifica Cliente",
+      "renew": "Rinnova Abbonamento",
+      "warning": "Attenzione"
     },
-    "ingressi_dialog": {
-                "title": "Seleziona Cliente",
-                "search_placeholder": "Cerca cliente...",
-                "selected_cliente": "Cliente Selezionato",
-                "select_client_error": "Seleziona un cliente prima di applicare",
-                "data_ora": "Data e Ora"
-            },
-        "common": {
-            "cancel": "Annulla",
-            "apply": "Applica"
-        }
-   
+    "photo": {
+      "upload": "Carica Foto",
+      "preview": "Anteprima Foto"
+    },
+    "fields": {
+      "nome": "Nome",
+      "cognome": "Cognome",
+      "email": "Email",
+      "telefono": "Telefono",
+      "data_nascita": "Data di Nascita",
+      "numero_tessera": "Numero Tessera",
+      "tariffa": "Tariffa",
+      "scadenza": "Scadenza Tessera"
+    },
+    "errors": {
+      "required": "Campo obbligatorio",
+      "invalid_email": "Email non valida (deve contenere @)",
+      "no_tariffa": "Per poter aggiungere un cliente è necessario prima creare almeno una tariffa."
+    },
+    "buttons": {
+      "submit": {
+        "add": "Aggiungi",
+        "edit": "Modifica",
+        "renew": "Rinnova"
+      },
+      "cancel": "Annulla",
+      "close": "Chiudi"
+    }
+  },
+  "cliente_page": {
+    "page_title": "Clienti",
+    "buttons": {
+      "add_client": "Aggiungi",
+      "previous_page": "Pagina precedente",
+      "next_page": "Pagina successiva"
+    },
+    "table": {
+      "headers": {
+        "active": "Attivo",
+        "enable": "Attivo",
+        "expired": "Scaduto",
+        "fatureActivation": "Attivo dal ",
+        "card_number": "Tessera",
+        "first_name": "Nome",
+        "last_name": "Cognome",
+        "expiration": "Scadenza",
+        "remaining_entries": "Ingressi Residui",
+        "actions": "Azioni"
+      },
+      "no_clients_found": "Nessun cliente trovato."
+    },
+    "pagination": {
+      "items_per_page": "Elementi per pagina"
+    },
+    "dialog": {
+      "confirm_delete_title": "Conferma Eliminazione"
+    },
+    "generic_search": {
+      "search_placeholder": "Cerca..."
+    },
+    "actions": {
+      "tooltip_enteries_zero": "Nessun ingresso disponibile",
+      "tooltip_enteries": "Scala ingresso",
+      "edit": "Modifica",
+      "transactions": "Transazioni cliente",
+      "delete": "Elimina cliente",
+      "all_entrances": "Tutti gli ingressi"
+    }
+  },
+  "trnsazioni_dialog": {
+    "dialog": {
+      "title": {
+        "add": "Aggiungi Transazione",
+        "edit": "Modifica Transazione"
+      },
+      "fields": {
+        "cliente_selezionato": "Cliente Selezionato",
+        "search_placeholder": "Cerca Cliente",
+        "causale": "Causale",
+        "metodo_pagamento": "Metodo di Pagamento",
+        "data_transazione": "Data Transazione",
+        "importo": "Importo"
+      },
+      "errors": {
+        "required": "Campo obbligatorio"
+      },
+      "buttons": {
+        "cancel": "Annulla",
+        "submit_add": "Aggiungi",
+        "submit_edit": "Salva"
+      }
+    }
+  },
+  "transazioni_page": {
+    "table": {
+      "title": "Transazioni",
+      "cliente": "Cliente",
+      "causale": "Causale",
+      "metodo_pagamento": "Metodo di Pagamento",
+      "data_transazione": "Data Transazione",
+      "importo": "Importo",
+      "azioni": "Azioni",
+      "nessun_risultato": "Nessuna transazione trovata."
+    },
+    "buttons": {
+      "aggiungi": "Aggiungi",
+      "torna_clienti": "Torna alla scheda Clienti",
+      "applica_filtro": "Applica filtro",
+      "rimuovi_filtri": "Rimuovi filtri",
+      "pagina_precedente": "Pagina precedente",
+      "pagina_successiva": "Pagina successiva",
+      "seleziona_intervallo": "Seleziona un intervallo",
+      "label_filter": "Filtra per intervallo di date"
+    },
+    "labels": {
+      "data_inizio": "Data Inizio",
+      "data_fine": "Data Fine",
+      "elementi_per_pagina": "Elementi per pagina"
+    },
+    "dialogs": {
+      "conferma_eliminazione": "Conferma Eliminazione"
+    },
+    "generic_search": {
+      "search_placeholder": "Cerca..."
+    },
+    "actions": {
+      "delete": "Elimina",
+      "edit": "Modifica"
+    }
+  },
+  "settings_page": {
+    "title": "Gestione Tariffe",
+    "buttons": {
+      "aggiungi_tariffa": "Aggiungi"
+    },
+    "table": {
+      "nome_tariffa": "Nome Tariffa",
+      "durata": "Durata",
+      "costo": "Costo",
+      "azioni": "Azioni"
+    },
+    "dialogs": {
+      "conferma_eliminazione": "Conferma Eliminazione",
+      "elimina_messaggio": "Sei sicuro di voler eliminare la tariffa \"{{nome}}\"?"
+    },
+    "upload": {
+      "immagine_home": "Immagine Home"
+    },
+    "error": {
+      "tariffa_duplicata": "Esiste già una tariffa con questo nome."
+    },
+    "actions": {
+      "delete": "Elimina",
+      "edit": "Modifica"
+    }
+  },
+  "settings_dialog": {
+    "title": {
+      "add": "Aggiungi Tariffa",
+      "edit": "Modifica Tariffa"
+    },
+    "labels": {
+      "nome": "Nome Tariffa",
+      "durata": "Durata",
+      "unita": "Unità",
+      "costo": "Costo (€)",
+      "toCount": "Da scalare"
+    },
+    "helperText": {
+      "nome_required": "Il nome è obbligatorio",
+      "durata_positive": "La durata deve essere maggiore di 0",
+      "costo_positive": "Il costo deve essere maggiore di 0",
+      "tariffa_duplicata": "Una tariffa con questo nome esiste già."
+    },
+    "buttons": {
+      "cancel": "Annulla",
+      "save": "Salva",
+      "add": "Aggiungi"
+    },
+    "selectOptions": {
+      "giorni": "Giorni",
+      "mesi": "Mesi",
+      "anni": "Anni"
+    }
+  },
+  "ingressi_page": {
+    "table": {
+      "cliente": "Cliente",
+      "data_entrance": "Data Ingresso",
+      "azioni": "Azioni",
+      "nessun_risultato": "Nessun ingresso trovato.",
+      "title": "Ingressi"
+    },
+    "actions": {
+      "delete": "Elimina",
+      "edit": "Modifica",
+      "add": "Aggiungi Ingresso"
+    },
+    "buttons": {
+      "applica_filtro": "Applica Filtro",
+      "rimuovi_filtri": "Rimuovi Filtri",
+      "pagina_precedente": "Pagina Precedente",
+      "pagina_successiva": "Pagina Successiva",
+      "seleziona_intervallo": "Seleziona un Intervallo",
+      "label_filter": "Filtra per Intervallo di Date",
+      "aggiungi": "Aggiungi Ingresso",
+      "torna_clienti": "Torna alla scheda Clienti"
+    },
+    "generic_search": {
+      "search_placeholder": "Cerca..."
+    },
+    "common": {
+      "cancel": "Annulla",
+      "apply": "Applica",
+      "delete_message": "Sei sicuro di voler eliminare questo ingresso?"
+    }
+  },
+  "ingressi_dialog": {
+    "title": "Seleziona Cliente",
+    "search_placeholder": "Cerca cliente...",
+    "selected_cliente": "Cliente Selezionato",
+    "select_client_error": "Seleziona un cliente prima di applicare",
+    "data_ora": "Data e Ora"
+  },
+  "common": {
+    "cancel": "Annulla",
+    "apply": "Applica"
+  }
 }

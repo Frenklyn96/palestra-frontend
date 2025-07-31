@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,11 +12,13 @@ import {
   FormControl,
   Typography,
   FormControlLabel,
-  Checkbox
-} from '@mui/material';
-import { Tariffa, UnitaDurata } from '../../class/Tariffa';
-import './SettingsDialog.css'; // Importa il file CSS
-import { useTranslation } from 'react-i18next';
+  Checkbox,
+} from "@mui/material";
+import { Tariffa, UnitaDurata } from "../../class/Tariffa";
+import "./SettingsDialog.css"; // Importa il file CSS
+import { useTranslation } from "react-i18next";
+import { RootState } from "../../../store/store";
+import { useSelector } from "react-redux";
 
 type Props = {
   open: boolean;
@@ -24,19 +26,26 @@ type Props = {
   onSubmit: (tariffa: Tariffa) => void;
   initialData?: Tariffa | null;
   errorCode?: string | null;
-  userId: string;
 };
 
-const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialData, errorCode, userId }) => {
+const TariffaFormDialog: React.FC<Props> = ({
+  open,
+  onClose,
+  onSubmit,
+  initialData,
+  errorCode,
+}) => {
   const isEdit = !!initialData;
 
   // Riferimento per memorizzare i valori originali
   const initialValuesRef = useRef<Tariffa | null>(null);
 
-  const [nome, setNome] = useState('');
+  const [nome, setNome] = useState("");
   const [durata, setDurata] = useState(1);
-  const [unitaDurata, setUnitaDurata] = useState<UnitaDurata>(UnitaDurata.Giorni);
-  const [costo, setCosto] = useState<string>(''); // Gestiamo il costo come stringa per permettere la cancellazione
+  const [unitaDurata, setUnitaDurata] = useState<UnitaDurata>(
+    UnitaDurata.Giorni
+  );
+  const [costo, setCosto] = useState<string>(""); // Gestiamo il costo come stringa per permettere la cancellazione
   const [toCount, setToCount] = useState(false);
 
   // Stato per gestire gli errori sui campi
@@ -44,6 +53,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   const [errorDurata, setErrorDurata] = useState(false);
   const [errorCosto, setErrorCosto] = useState(false);
   const { t } = useTranslation();
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   // Effetto per aggiornare i dati iniziali quando cambiano (modalità edit)
   useEffect(() => {
@@ -57,10 +67,10 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
     } else {
       // Reset dei campi quando si passa alla modalità di aggiunta (senza initialData)
       initialValuesRef.current = null; // Non c'è valore iniziale
-      setNome('');
+      setNome("");
       setDurata(1);
       setUnitaDurata(UnitaDurata.Giorni);
-      setCosto('');
+      setCosto("");
       setToCount(false);
     }
   }, [initialData]); // Solo quando initialData cambia
@@ -83,7 +93,7 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       setErrorDurata(false);
     }
 
-    if (costo === '' || parseFloat(costo) <= 0) {
+    if (costo === "" || parseFloat(costo) <= 0) {
       setErrorCosto(true);
       isValid = false;
     } else {
@@ -93,23 +103,23 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
     if (!isValid) return; // Se ci sono errori, non inviamo il form
 
     const tariffa = {
-      ...(initialData ?? { id: '' }),  // Aggiungi l'ID se non esiste
+      ...(initialData ?? { id: "" }), // Aggiungi l'ID se non esiste
       nome,
       durata,
       unitaDurata,
       costo: parseFloat(costo),
       userId: userId!, // Convertiamo il costo da stringa a numero
-      toCount
+      toCount,
     };
 
     onSubmit(tariffa);
 
     // ✅ Se in modalità "aggiunta", resetta il form dopo submit
     if (!isEdit) {
-      setNome('');
+      setNome("");
       setDurata(1);
       setUnitaDurata(UnitaDurata.Giorni);
-      setCosto('');
+      setCosto("");
     }
   };
 
@@ -126,10 +136,10 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       }
     } else {
       // Se siamo in modalità Aggiungi, resettiamo i valori
-      setNome('');
+      setNome("");
       setDurata(1);
       setUnitaDurata(UnitaDurata.Giorni);
-      setCosto('');
+      setCosto("");
       setToCount(false);
     }
   };
@@ -137,7 +147,9 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>
-        {isEdit ? t("settings_dialog.title.edit") : t("settings_dialog.title.add")}
+        {isEdit
+          ? t("settings_dialog.title.edit")
+          : t("settings_dialog.title.add")}
       </DialogTitle>
 
       <DialogContent>
@@ -150,9 +162,11 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               error={errorNome || !!errorCode}
-              helperText={errorNome ? t("settings_dialog.helperText.nome_required") : ''}
+              helperText={
+                errorNome ? t("settings_dialog.helperText.nome_required") : ""
+              }
             />
-            {errorCode === 'TARIFFA_DUPLICATA' && (
+            {errorCode === "TARIFFA_DUPLICATA" && (
               <Typography color="error" variant="body2" mt={0.5}>
                 {t("settings_dialog.helperText.tariffa_duplicata")}
               </Typography>
@@ -170,7 +184,11 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
                 onChange={(e) => setDurata(Number(e.target.value))}
                 inputProps={{ min: 1 }}
                 error={errorDurata}
-                helperText={errorDurata ? t("settings_dialog.helperText.durata_positive") : ''}
+                helperText={
+                  errorDurata
+                    ? t("settings_dialog.helperText.durata_positive")
+                    : ""
+                }
               />
             </div>
 
@@ -180,12 +198,20 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
                 <Select
                   value={toCount ? UnitaDurata.Giorni : unitaDurata}
                   label={t("settings_dialog.labels.unita")}
-                  onChange={(e) => setUnitaDurata(e.target.value as UnitaDurata)}
+                  onChange={(e) =>
+                    setUnitaDurata(e.target.value as UnitaDurata)
+                  }
                   disabled={toCount}
                 >
-                  <MenuItem value={UnitaDurata.Giorni}>{t("settings_dialog.selectOptions.giorni")}</MenuItem>
-                  <MenuItem value={UnitaDurata.Mesi}>{t("settings_dialog.selectOptions.mesi")}</MenuItem>
-                  <MenuItem value={UnitaDurata.Anni}>{t("settings_dialog.selectOptions.anni")}</MenuItem>
+                  <MenuItem value={UnitaDurata.Giorni}>
+                    {t("settings_dialog.selectOptions.giorni")}
+                  </MenuItem>
+                  <MenuItem value={UnitaDurata.Mesi}>
+                    {t("settings_dialog.selectOptions.mesi")}
+                  </MenuItem>
+                  <MenuItem value={UnitaDurata.Anni}>
+                    {t("settings_dialog.selectOptions.anni")}
+                  </MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -201,7 +227,9 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
               onChange={(e) => setCosto(e.target.value)}
               inputProps={{ min: 0 }}
               error={errorCosto}
-              helperText={errorCosto ? t("settings_dialog.helperText.costo_positive") : ''}
+              helperText={
+                errorCosto ? t("settings_dialog.helperText.costo_positive") : ""
+              }
             />
           </div>
         </div>
@@ -220,11 +248,22 @@ const TariffaFormDialog: React.FC<Props> = ({ open, onClose, onSubmit, initialDa
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} color="inherit" className='button-general'>
+        <Button
+          onClick={handleClose}
+          color="inherit"
+          className="button-general"
+        >
           {t("settings_dialog.buttons.cancel")}
         </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary" className='button-general'>
-          {isEdit ? t("settings_dialog.buttons.save") : t("settings_dialog.buttons.add")}
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          color="primary"
+          className="button-general"
+        >
+          {isEdit
+            ? t("settings_dialog.buttons.save")
+            : t("settings_dialog.buttons.add")}
         </Button>
       </DialogActions>
     </Dialog>
