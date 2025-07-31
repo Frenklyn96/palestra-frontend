@@ -1,42 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Typography,
-  Box,
-  Paper,
-  Avatar
-} from '@mui/material';
-import Grid from '@mui/material/Grid';
-import HomeIcon from '@mui/icons-material/Home';
+import React, { useEffect, useState } from "react";
+import { Typography, Box, Paper, Avatar } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import HomeIcon from "@mui/icons-material/Home";
 import {
   Person,
   People as PeopleIcon,
   Payment as PaymentIcon,
-  Login as LoginIcon
-} from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
-import './Home.css';
-import RinnovaTable from '../../features/components/rinnovaTable/RinnovaTable';
-import ClienteDialog from '../../features/components/clienteDialog/ClienteDialog';
-import { getFotoHomeAsync } from '../../features/slice/settingsSlice';
-import {  getNumberMembersAsync } from '../../features/slice/clientiSlice';
-import { createClienteAsync } from '../../features/slice/clientiSlice';
-import { AppDispatch, RootState } from '../../store/store';
-import { useTranslation } from 'react-i18next';
-import { Cliente } from '../../features/class/Cliente';
-import TransazioneDialog from '../../features/components/transazioneDialog/TransazioneDialog';
-import IngressiDialog from '../../features/components/ingressiDialog/IngressiDialog';
+  Login as LoginIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
+
+import { useDispatch, useSelector } from "react-redux";
+import "./Home.css";
+import RinnovaTable from "../../features/components/rinnovaTable/RinnovaTable";
+import ClienteDialog from "../../features/components/clienteDialog/ClienteDialog";
+import {
+  addTariffaAsync,
+  getFotoHomeAsync,
+} from "../../features/slice/settingsSlice";
+import { getNumberMembersAsync } from "../../features/slice/clientiSlice";
+import { createClienteAsync } from "../../features/slice/clientiSlice";
+import { AppDispatch, RootState } from "../../store/store";
+import { useTranslation } from "react-i18next";
+import { Cliente } from "../../features/class/Cliente";
+import TransazioneDialog from "../../features/components/transazioneDialog/TransazioneDialog";
+import IngressiDialog from "../../features/components/ingressiDialog/IngressiDialog";
+import TariffaFormDialog from "../../features/components/settingsDialog/SettingsDialog";
+import { Tariffa } from "../../features/class/Tariffa";
 
 const Home: React.FC = () => {
-  const {foto} = useSelector((state: RootState) => state.settings);
-  const {numberMembers} = useSelector((state: RootState) => state.clienti);
+  const { foto } = useSelector((state: RootState) => state.settings);
+  const { numberMembers } = useSelector((state: RootState) => state.clienti);
 
   const { t } = useTranslation();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [openTransazioneDialog, setOpenTransazioneDialog] = useState(false);
-  const dispatch =  useDispatch<AppDispatch>();
-const [openIngressiDialog, setOpenIngressiDialog] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const [openIngressiDialog, setOpenIngressiDialog] = useState(false);
+  const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   const handleOpenTransazioneDialog = () => {
     setOpenTransazioneDialog(true);
@@ -45,7 +50,7 @@ const [openIngressiDialog, setOpenIngressiDialog] = useState(false);
   const handleCloseTransazioneDialog = () => {
     setOpenTransazioneDialog(false);
   };
-const handleOpenIngressiDialog = () => {
+  const handleOpenIngressiDialog = () => {
     setOpenIngressiDialog(true);
   };
 
@@ -72,12 +77,31 @@ const handleOpenIngressiDialog = () => {
     handleCloseDialog();
   };
 
+  const handleOpenSettingsDialog = () => {
+    setOpenSettingsDialog(true);
+  };
+
+  const handleSubmitTariffa = async (tariffa: Tariffa) => {
+    const resultAction = await dispatch(
+      addTariffaAsync({ ...tariffa, userId: userId! })
+    );
+
+    if (resultAction.meta.requestStatus === "rejected") {
+      const errorMessage = resultAction.payload as string;
+      if (errorMessage === "TARIFFA_DUPLICATA") {
+        setErrorCode("TARIFFA_DUPLICATA");
+      }
+    }
+
+    setOpenSettingsDialog(false);
+  };
+
   return (
     <Box className="homeContainer" sx={{ p: 3 }}>
       {/* Titolo */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <HomeIcon className='home-page-icon' sx={{ mr: 1 }} />
-        <Typography variant="h5">{t('home.panoramica')}</Typography>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+        <HomeIcon className="home-page-icon" sx={{ mr: 1 }} />
+        <Typography variant="h5">{t("home.panoramica")}</Typography>
       </Box>
 
       {/* Layout a due colonne con altezza sincronizzata */}
@@ -85,27 +109,30 @@ const handleOpenIngressiDialog = () => {
         {/* Colonna sinistra */}
         <Grid
           size={{ xs: 12, md: 6 }}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
           {/* Clienti tesserati */}
-          <Paper elevation={3} sx={{ p: 6, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56 }}>
+          <Paper
+            elevation={3}
+            sx={{ p: 6, display: "flex", alignItems: "center", gap: 2 }}
+          >
+            <Avatar sx={{ bgcolor: "primary.main", width: 56, height: 56 }}>
               <Person fontSize="large" />
             </Avatar>
             <Box>
-              <Typography variant="h6">{t('home.clientiTesserati')}</Typography>
+              <Typography variant="h6">{t("home.clientiTesserati")}</Typography>
               <Typography variant="h3">{numberMembers}</Typography>
             </Box>
           </Paper>
 
           {/* Azioni affiancate come card cliccabili */}
           <Grid container spacing={2}>
-          {/* Aggiungi cliente */}
+            {/* Aggiungi cliente */}
             <Grid
               size={{ xs: 12, md: 6 }}
               sx={{
-                cursor: 'pointer',
-                '&:hover': { boxShadow: 6 },
+                cursor: "pointer",
+                "&:hover": { boxShadow: 6 },
               }}
               onClick={handleOpenDialog}
             >
@@ -113,131 +140,165 @@ const handleOpenIngressiDialog = () => {
                 elevation={3}
                 sx={{
                   p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 2,
-                  overflow: 'hidden',
+                  overflow: "hidden",
                 }}
               >
-               <PeopleIcon className="clienti-page-icon" />
+                <PeopleIcon className="clienti-page-icon" />
 
-                <Box sx={{ whiteSpace: 'pre-line' }}>
+                <Box sx={{ whiteSpace: "pre-line" }}>
                   <Typography
                     variant="h6"
                     sx={{
-                      fontSize: { xs: '14px', sm: '15px', md: '16px' },
+                      fontSize: { xs: "14px", sm: "15px", md: "16px" },
                       lineHeight: 1.2,
                     }}
                   >
-                    {t('home.aggiungiCliente').replace(' ', '\n')}
-                  </Typography>
-                </Box>
-              </Paper>
-           </Grid>
-
-          {/* Aggiungi ingresso */}
-            <Grid
-              size={{ xs: 12, md: 6 }}
-              sx={{
-                cursor: 'pointer',
-                '&:hover': { boxShadow: 6 },
-              }}
-              onClick={handleOpenIngressiDialog}
-            >
-             <Paper
-                elevation={3}
-                sx={{
-                  p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  overflow: 'hidden',
-                }}
-              >
-                <LoginIcon className="ingressi-page-icon" />
-
-                <Box sx={{ whiteSpace: 'pre-line' }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontSize: { xs: '14px', sm: '15px', md: '16px' },
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {t('home.aggiungiIngresso').replace(' ', '\n')}
+                    {t("home.aggiungiCliente").replace(" ", "\n")}
                   </Typography>
                 </Box>
               </Paper>
             </Grid>
 
-
-          {/* Aggiungi transazione */}
-          <Grid
-            size={{ xs: 12, md: 6 }}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': { boxShadow: 6 },
-            }}
-            onClick={handleOpenTransazioneDialog}
-          >
-            <Paper
-              elevation={3}
+            {/* Aggiungi ingresso */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
               sx={{
-                p: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                overflow: 'hidden',
+                cursor: "pointer",
+                "&:hover": { boxShadow: 6 },
               }}
+              onClick={handleOpenIngressiDialog}
             >
-      <PaymentIcon className="transazioni-page-icon" />
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <LoginIcon className="ingressi-page-icon" />
 
-      <Box sx={{ whiteSpace: 'pre-line' }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontSize: { xs: '14px', sm: '15px', md: '16px' },
-            lineHeight: 1.2,
-          }}
-        >
-          {t('home.aggiungiTransazione').replace(' ', '\n')}
-        </Typography>
-      </Box>
-    </Paper>
-  </Grid>
-</Grid>
+                <Box sx={{ whiteSpace: "pre-line" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: "14px", sm: "15px", md: "16px" },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {t("home.aggiungiIngresso").replace(" ", "\n")}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
 
+            {/* Aggiungi transazione */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{
+                cursor: "pointer",
+                "&:hover": { boxShadow: 6 },
+              }}
+              onClick={handleOpenTransazioneDialog}
+            >
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <PaymentIcon className="transazioni-page-icon" />
 
+                <Box sx={{ whiteSpace: "pre-line" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: "14px", sm: "15px", md: "16px" },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {t("home.aggiungiTransazione").replace(" ", "\n")}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+            {/* Impostazioni */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{
+                cursor: "pointer",
+                "&:hover": { boxShadow: 6 },
+              }}
+              onClick={handleOpenSettingsDialog}
+            >
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <SettingsIcon className="settings-page-icon" />{" "}
+                {/* Cambia icona se vuoi */}
+                <Box sx={{ whiteSpace: "pre-line" }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: "14px", sm: "15px", md: "16px" },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {t("home.settings").replace(" ", "\n")}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
         </Grid>
 
         {/* Colonna destra: immagine palestra */}
         <Grid
           size={{ xs: 12, md: 6 }}
-          sx={{ display: 'flex', flexDirection: 'column' }}
+          sx={{ display: "flex", flexDirection: "column" }}
         >
-          <Paper elevation={3} sx={{ flex: 1, borderRadius: 2, overflow: 'hidden' }}>
-            {foto && foto.startsWith('data:') ? (
+          <Paper
+            elevation={3}
+            sx={{ flex: 1, borderRadius: 2, overflow: "hidden" }}
+          >
+            {foto && foto.startsWith("data:") ? (
               <Box
                 sx={{
                   backgroundImage: `url(${foto})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  height: '100%',
-                  width: '100%',
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  height: "100%",
+                  width: "100%",
                 }}
               />
             ) : (
               <Box
                 sx={{
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   p: 2,
                 }}
               >
                 <Typography variant="body1" className="imagePlaceholder">
-                  {t('home.imagePlaceholder')}
+                  {t("home.imagePlaceholder")}
                 </Typography>
               </Box>
             )}
@@ -273,6 +334,14 @@ const handleOpenIngressiDialog = () => {
       <IngressiDialog
         open={openIngressiDialog}
         onClose={handleCloseIngressiDialog}
+      />
+
+      <TariffaFormDialog
+        open={openSettingsDialog}
+        onClose={() => setOpenSettingsDialog(false)}
+        initialData={null}
+        onSubmit={handleSubmitTariffa}
+        errorCode={errorCode}
       />
     </Box>
   );
