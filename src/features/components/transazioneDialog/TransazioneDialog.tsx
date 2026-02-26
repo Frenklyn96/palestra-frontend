@@ -1,21 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField, Button, Box, List, ListItem, ListItemText
-} from '@mui/material';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Transazione } from '../../class/Transazione';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../store/store';
-import { createTransazioneAsync, updateTransazioneAsync } from '../../slice/transazioniSlice';
-import './TransazioneDialog.css';
-import GenericSearchTable, { TableNames } from '../generic/GenericSearchTable';
-import { clearResults } from '../../slice/genericSlice';
-import { it } from 'date-fns/locale';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import { useTranslation } from 'react-i18next';
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Button,
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { Transazione } from "../../class/Transazione";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../store/store";
+import {
+  createTransazioneAsync,
+  updateTransazioneAsync,
+} from "../../slice/transazioniSlice";
+import "./TransazioneDialog.css";
+import GenericSearchTable, { TableNames } from "../generic/GenericSearchTable";
+import { clearResults } from "../../slice/genericSlice";
+import { it } from "date-fns/locale";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import { useTranslation } from "react-i18next";
 
 interface TransazioneDialogProps {
   open: boolean;
@@ -34,26 +45,28 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
   transazioneToEdit,
   clienteId,
   clienteNome,
-  isFilterActive
+  isFilterActive,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.userId);
 
   // Stato per la transazione
   const [transazione, setTransazione] = useState<Transazione>({
-    id: '',
+    id: "",
     dataTransazione: new Date(),
-    metodoPagamento: '',
-    causale: '',
+    metodoPagamento: "",
+    causale: "",
     importo: 0,
     clienteId: clienteId || null,
-    clienteNome: clienteNome || '',
-    userId: userId!  // Nome completo cliente (nome + cognome)
+    clienteNome: clienteNome || "",
+    userId: userId!, // Nome completo cliente (nome + cognome)
   });
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredClienti, setFilteredClienti] = useState<{ id: string; nome: string; cognome: string; numeroTessera: string }[]>([]);
-  const { results} = useSelector((state: RootState) => state.generic);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredClienti, setFilteredClienti] = useState<
+    { id: string; nome: string; cognome: string; numeroTessera: string }[]
+  >([]);
+  const { results } = useSelector((state: RootState) => state.generic);
   const [showErrors, setShowErrors] = useState(false);
   const { t } = useTranslation();
 
@@ -66,43 +79,46 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
       } else {
         // Se siamo in modalità aggiungi, resetta il form a valori vuoti
         setTransazione({
-          id: '',
+          id: "",
           dataTransazione: new Date(),
-          metodoPagamento: '',
-          causale: '',
+          metodoPagamento: "",
+          causale: "",
           importo: 0,
           clienteId: clienteId || null,
-          clienteNome: clienteNome || '', 
-          userId: userId!
+          clienteNome: clienteNome || "",
+          userId: userId!,
         });
       }
     }
   }, [open, isEditMode, transazioneToEdit, clienteId, clienteNome]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setFilteredClienti(results);
     clearResults();
-  },[results] )
+  }, [results]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTransazione((prev) => ({
       ...prev,
-      [name]: name === 'importo' ? parseFloat(value) : value,
+      [name]: name === "importo" ? parseFloat(value) : value,
     }));
   };
 
   const handleDateChange = (date: Date | null) => {
-    setTransazione((prev) => ({ ...prev, dataTransazione: date ? date : new Date() }));
+    setTransazione((prev) => ({
+      ...prev,
+      dataTransazione: date ? date : new Date(),
+    }));
   };
 
   const handleSelectCliente = (id: string, nome: string, cognome: string) => {
     setTransazione((prev) => ({
       ...prev,
       clienteId: id,
-      clienteNome: `${nome} ${cognome}`,  // Concatenare nome e cognome
+      clienteNome: `${nome} ${cognome}`, // Concatenare nome e cognome
     }));
-    setSearchTerm('');
+    setSearchTerm("");
     setFilteredClienti([]);
   };
 
@@ -129,13 +145,12 @@ const TransazioneDialog: React.FC<TransazioneDialogProps> = ({
     onClose();
   };
 
-
-return (
+  return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
         {isEditMode
-          ? t('trnsazioni_dialog.dialog.title.edit')
-          : t('trnsazioni_dialog.dialog.title.add')}
+          ? t("trnsazioni_dialog.dialog.title.edit")
+          : t("trnsazioni_dialog.dialog.title.add")}
       </DialogTitle>
 
       <DialogContent>
@@ -143,7 +158,7 @@ return (
           {/* Cliente */}
           {transazione.clienteNome && !isFilterActive ? (
             <TextField
-              label={t('trnsazioni_dialog.dialog.fields.cliente_selezionato')}
+              label={t("trnsazioni_dialog.dialog.fields.cliente_selezionato")}
               value={transazione.clienteNome}
               disabled
               fullWidth
@@ -155,7 +170,7 @@ return (
                       setTransazione((prev) => ({
                         ...prev,
                         clienteId: null,
-                        clienteNome: '',
+                        clienteNome: "",
                       }))
                     }
                     size="small"
@@ -167,17 +182,21 @@ return (
             />
           ) : (
             <Box className="form-row">
-              <GenericSearchTable
-                tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                page={null}
-                pageSize={null}
-                orderBy={null}
-                orderDirection={'desc'}
-                userId={userId!}
-                placeholder={t('trnsazioni_dialog.dialog.fields.search_placeholder')}
-              />
+              {!isFilterActive && (
+                <GenericSearchTable
+                  tableName={TableNames.CLIENTIRICERCATRANSAZIONE}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  page={null}
+                  pageSize={null}
+                  orderBy={null}
+                  orderDirection={"desc"}
+                  userId={userId!}
+                  placeholder={t(
+                    "trnsazioni_dialog.dialog.fields.search_placeholder",
+                  )}
+                />
+              )}
               {searchTerm && filteredClienti && filteredClienti.length > 0 && (
                 <List>
                   {filteredClienti.map((cliente) => (
@@ -185,7 +204,11 @@ return (
                       key={cliente.id}
                       component="button"
                       onClick={() =>
-                        handleSelectCliente(cliente.id, cliente.nome, cliente.cognome)
+                        handleSelectCliente(
+                          cliente.id,
+                          cliente.nome,
+                          cliente.cognome,
+                        )
                       }
                     >
                       <ListItemText
@@ -200,7 +223,7 @@ return (
 
           {/* Causale */}
           <TextField
-            label={t('trnsazioni_dialog.dialog.fields.causale')}
+            label={t("trnsazioni_dialog.dialog.fields.causale")}
             name="causale"
             value={transazione.causale}
             onChange={handleChange}
@@ -210,14 +233,14 @@ return (
             error={showErrors && !transazione.causale?.trim()}
             helperText={
               showErrors && !transazione.causale?.trim()
-                ? t('trnsazioni_dialog.dialog.errors.required')
-                : ''
+                ? t("trnsazioni_dialog.dialog.errors.required")
+                : ""
             }
           />
 
           {/* Metodo di pagamento */}
           <TextField
-            label={t('trnsazioni_dialog.dialog.fields.metodo_pagamento')}
+            label={t("trnsazioni_dialog.dialog.fields.metodo_pagamento")}
             name="metodoPagamento"
             value={transazione.metodoPagamento}
             onChange={handleChange}
@@ -228,20 +251,20 @@ return (
           {/* Data transazione */}
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
             <DateTimePicker
-              label={t('trnsazioni_dialog.dialog.fields.data_transazione')}
+              label={t("trnsazioni_dialog.dialog.fields.data_transazione")}
               value={
                 transazione.dataTransazione
                   ? new Date(transazione.dataTransazione)
                   : new Date()
               }
               onChange={handleDateChange}
-              views={['year', 'month', 'day']}
+              views={["year", "month", "day"]}
             />
           </LocalizationProvider>
 
           {/* Importo */}
           <TextField
-            label={t('trnsazioni_dialog.dialog.fields.importo')}
+            label={t("trnsazioni_dialog.dialog.fields.importo")}
             name="importo"
             type="number"
             value={transazione.importo}
@@ -253,18 +276,21 @@ return (
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} color="secondary" className='button-general'>
-          {t('trnsazioni_dialog.dialog.buttons.cancel')}
+        <Button onClick={onClose} color="secondary" className="button-general">
+          {t("trnsazioni_dialog.dialog.buttons.cancel")}
         </Button>
-        <Button onClick={handleSubmit} color="primary" className='button-general'>
+        <Button
+          onClick={handleSubmit}
+          color="primary"
+          className="button-general"
+        >
           {isEditMode
-            ? t('trnsazioni_dialog.dialog.buttons.submit_edit')
-            : t('trnsazioni_dialog.dialog.buttons.submit_add')}
+            ? t("trnsazioni_dialog.dialog.buttons.submit_edit")
+            : t("trnsazioni_dialog.dialog.buttons.submit_add")}
         </Button>
       </DialogActions>
     </Dialog>
   );
-
 };
 
 export default TransazioneDialog;
