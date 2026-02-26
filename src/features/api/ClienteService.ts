@@ -1,20 +1,18 @@
-import axios from 'axios';
-import { Cliente, CreateCliente, RenewAbbonamneto } from '../class/Cliente';
-import { BASE_URL_CLIENTI as API_URL} from '../../enum/RoutesEnum';
-
-
+import axios from "axios";
+import { Cliente, CreateCliente, RenewAbbonamneto } from "../class/Cliente";
+import { BASE_URL_CLIENTI as API_URL } from "../../enum/RoutesEnum";
 
 interface GetClientiParams {
   page?: number;
   pageSize?: number;
   orderBy: string;
   ascending?: boolean;
-  userId:string;
+  userId: string;
 }
-export const getClienti = async ( params:GetClientiParams) => {
+export const getClienti = async (params: GetClientiParams) => {
   const queryParams: any = {};
 
-  queryParams.userId= params.userId;
+  queryParams.userId = params.userId;
   if (params.page) queryParams.page = params.page;
   if (params.pageSize) queryParams.pageSize = params.pageSize;
   if (params.orderBy) queryParams.orderBy = params.orderBy;
@@ -35,7 +33,7 @@ export const getClienteById = async (id: string) => {
 
 export const createCliente = async (cliente: CreateCliente) => {
   const formData = new FormData();
-  formData.append("userId",cliente.userId!);
+  formData.append("userId", cliente.userId!);
   // Aggiungi sempre tutti i campi
   formData.append("nome", cliente.nome || "");
   formData.append("cognome", cliente.cognome || "");
@@ -45,10 +43,13 @@ export const createCliente = async (cliente: CreateCliente) => {
   formData.append("tariffaNome", cliente.tariffaNome || "");
 
   if (cliente.dataNascita)
-    formData.append("dataNascita",  new Date(cliente.dataNascita).toDateString());
+    formData.append(
+      "dataNascita",
+      new Date(cliente.dataNascita).toDateString(),
+    );
 
   if (cliente.scadenza)
-    formData.append("scadenza",  new Date(cliente.scadenza).toDateString());
+    formData.append("scadenza", new Date(cliente.scadenza).toDateString());
 
   // Gestione della foto se presente
   if (cliente.foto && cliente.foto.startsWith("data:image")) {
@@ -74,10 +75,9 @@ export const createCliente = async (cliente: CreateCliente) => {
   return response.data;
 };
 
-
 export const updateCliente = async (id: string, cliente: Cliente) => {
   const formData = new FormData();
-  formData.append("userId",cliente.userId!);
+  formData.append("userId", cliente.userId!);
   formData.append("nome", cliente.nome);
   formData.append("cognome", cliente.cognome);
   formData.append("numeroTessera", cliente.numeroTessera);
@@ -86,10 +86,13 @@ export const updateCliente = async (id: string, cliente: Cliente) => {
   formData.append("tariffaNome", cliente.tariffaNome);
 
   if (cliente.dataNascita)
-    formData.append("dataNascita",  new Date(cliente.dataNascita).toDateString());
+    formData.append(
+      "dataNascita",
+      new Date(cliente.dataNascita).toDateString(),
+    );
 
   if (cliente.scadenza)
-    formData.append("scadenza",  new Date(cliente.scadenza).toDateString());
+    formData.append("scadenza", new Date(cliente.scadenza).toDateString());
 
   // Foto: da base64 a Blob
   if (cliente.foto && cliente.foto.startsWith("data:image")) {
@@ -108,49 +111,53 @@ export const updateCliente = async (id: string, cliente: Cliente) => {
 
   const response = await axios.put(`${API_URL}/${id}`, formData, {
     headers: {
-      "Content-Type": "multipart/form-data"
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   return response.data;
 };
 
-
 export const deleteCliente = async (id: string) => {
   await axios.delete(`${API_URL}/${id}`);
 };
 
-export const fetchClientiAbbondamentoScaduto = async(userId: string) => {
+export const fetchClientiAbbondamentoScaduto = async (userId: string) => {
   const response = await axios.get(`${API_URL}/AbbonamentoScaduto/${userId}`);
   return response.data;
-}
+};
 
-export const rinnovaTutti = async(clienti: Cliente[]) => {
-  const response = await axios.get(`${API_URL}/rinnovaTutti`, { params: { clienti } });
+export const rinnovaTutti = async (clienti: Cliente[]) => {
+  const response = await axios.get(`${API_URL}/rinnovaTutti`, {
+    params: { clienti },
+  });
   return response.data;
-}
-
+};
 
 export async function eliminaRinnovo(id: string) {
   await axios.delete(`${API_URL}/EliminaRinnovo/${id}`);
 }
 
 export const renewAbbonamento = async (data: RenewAbbonamneto) => {
-  const response = await axios.put(`${API_URL}/RinnovoAbbonamento`, {
-  clienteId: data.clienteId,
-  tariffaNome: data.tariffaNome,
-  userId: data.userId,
-  scadenza: data.scadenza ? new Date(data.scadenza).toISOString() : null
-}, {
-  headers: {
-    "Content-Type": "application/json"
-  }
-});
+  const response = await axios.put(
+    `${API_URL}/RinnovoAbbonamento`,
+    {
+      clienteId: data.clienteId,
+      tariffaNome: data.tariffaNome,
+      userId: data.userId,
+      scadenza: data.scadenza ? new Date(data.scadenza).toISOString() : null,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
 
   return response.data;
 };
 
-export const getNumberMembers = async () => {
-  const response =  await axios.get(`${API_URL}/GetNumberMembers`);
+export const getNumberMembers = async (id: string) => {
+  const response = await axios.get(`${API_URL}/GetNumberMembers/${id}`);
   return response.data.numberMembers;
 };
