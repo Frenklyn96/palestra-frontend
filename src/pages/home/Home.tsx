@@ -333,6 +333,7 @@ const Home: React.FC = () => {
 
       <IngressiDialog
         open={openIngressiDialog}
+        clienteId=""
         onClose={handleCloseIngressiDialog}
       />
 
