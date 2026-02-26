@@ -60,7 +60,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     dispatch(getFotoHomeAsync());
-    dispatch(getNumberMembersAsync());
+    dispatch(getNumberMembersAsync(userId!));
   }, [dispatch]);
 
   const handleOpenDialog = () => {
@@ -83,7 +83,7 @@ const Home: React.FC = () => {
 
   const handleSubmitTariffa = async (tariffa: Tariffa) => {
     const resultAction = await dispatch(
-      addTariffaAsync({ ...tariffa, userId: userId! })
+      addTariffaAsync({ ...tariffa, userId: userId! }),
     );
 
     if (resultAction.meta.requestStatus === "rejected") {
