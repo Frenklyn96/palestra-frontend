@@ -65,7 +65,8 @@
       "data_nascita": "Birth Date",
       "numero_tessera": "Card Number",
       "tariffa": "Rate Plan",
-      "scadenza": "Card Expiry"
+      "scadenza": "Card Expiry",
+      "note": "Notes"
     },
     "errors": {
       "required": "Required field",

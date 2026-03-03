@@ -41,6 +41,7 @@ export const createCliente = async (cliente: CreateCliente) => {
   formData.append("email", cliente.email || "");
   formData.append("telefono", cliente.telefono || "");
   formData.append("tariffaNome", cliente.tariffaNome || "");
+  formData.append("note", cliente.note || "");
 
   if (cliente.dataNascita)
     formData.append(
@@ -84,6 +85,7 @@ export const updateCliente = async (id: string, cliente: Cliente) => {
   formData.append("email", cliente.email);
   formData.append("telefono", cliente.telefono);
   formData.append("tariffaNome", cliente.tariffaNome);
+  formData.append("note", cliente.note || "");
 
   if (cliente.dataNascita)
     formData.append(

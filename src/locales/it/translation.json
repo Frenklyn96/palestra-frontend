@@ -63,7 +63,8 @@
       "data_nascita": "Data di Nascita",
       "numero_tessera": "Numero Tessera",
       "tariffa": "Tariffa",
-      "scadenza": "Scadenza Tessera"
+      "scadenza": "Scadenza Tessera",
+      "note": "Note"
     },
     "errors": {
       "required": "Campo obbligatorio",
