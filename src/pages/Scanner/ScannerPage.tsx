@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Box, Paper, CircularProgress } from "@mui/material";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import ClienteCard from "../../features/components/clienteCard/ClienteCard";
-import { Cliente } from "../../features/class/Cliente";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
-import {
-  fetchClienteById,
-  removeSelectCliente,
-} from "../../features/slice/clientiSlice";
+import { fetchClienteById } from "../../features/slice/clientiSlice";
 import { useTranslation } from "react-i18next";
 
 const ScannerPage: React.FC = () => {
