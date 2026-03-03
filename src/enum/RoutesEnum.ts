@@ -25,4 +25,5 @@ export enum RoutesEnum {
   TRANSAZIONI = "/transazioni",
   SETTINGS = "/settings",
   INGRESSI = "/ingressi",
+  SCANNER = "/scanner",
 }

@@ -276,6 +276,12 @@
     "select_client_error": "Seleziona un cliente prima di applicare",
     "data_ora": "Data e Ora"
   },
+  "scanner": {
+    "title": "Scanner QR",
+    "instructions": "Inquadra il QR contenente il GUID del cliente.",
+    "scanAnother": "Scansiona altro",
+    "notFound": "Cliente non trovato o errore di rete"
+  },
   "common": {
     "cancel": "Annulla",
     "apply": "Applica"

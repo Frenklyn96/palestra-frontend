@@ -278,6 +278,12 @@
     "select_client_error": "Select a client before applying",
     "data_ora": "Date and Time"
   },
+  "scanner": {
+    "title": "QR Scanner",
+    "instructions": "Point the QR code containing the client's GUID.",
+    "scanAnother": "Scan another",
+    "notFound": "Client not found or network error"
+  },
   "common": {
     "cancel": "Cancel",
     "apply": "Apply"

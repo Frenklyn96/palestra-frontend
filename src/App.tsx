@@ -5,6 +5,7 @@ import MainLayout from "./layout/MainLayout";
 import TransazioniPage from "./pages/Transazioni/TransazioniPage";
 import SettingsPage from "./pages/Settings/SettingsPage";
 import ClientiPage from "./pages/Clienti/ClientiPage";
+import ScannerPage from "./pages/Scanner/ScannerPage";
 import { RoutesEnum } from "./enum/RoutesEnum";
 import { PrivateRoute } from "./PrivateRoute";
 import { useUser } from "@clerk/clerk-react";
@@ -97,6 +98,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ClientiPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={RoutesEnum.SCANNER}
+            element={
+              <PrivateRoute>
+                <ScannerPage />
               </PrivateRoute>
             }
           />

@@ -68,7 +68,7 @@ const ClienteDialog: React.FC<ClienteDialogProps> = ({
   const { selectedCliente, loadingSelectedCliente } = useSelector(
     (state: RootState) => state.clienti,
   );
-  const [firstOpen, setFirstOpen] = useState(true); // ✅ Nuovo stato per gestire il primo open
+  const [firstOpen, setFirstOpen] = useState(true);
   const [showErrors, setShowErrors] = useState(false);
   const { t } = useTranslation();
 

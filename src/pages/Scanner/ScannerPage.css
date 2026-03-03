@@ -1,0 +1,25 @@
+.scanner-container {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.scanner-cam {
+  flex: 1 1 360px;
+  max-width: 640px;
+}
+
+.scanner-result {
+  flex: 1 1 300px;
+  min-width: 260px;
+}
+
+.scanner-error {
+  color: #d32f2f;
+  margin-bottom: 8px;
+}
+
+.scanner-instructions {
+  color: #666;
+}
