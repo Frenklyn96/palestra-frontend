@@ -25,7 +25,6 @@
     "subscriptions": "Abbonamenti",
     "entries": "Ingressi"
   },
-
   "rinnovaTable": {
     "title": "Clienti con abbonamento scaduto",
     "no_clients": "Nessun cliente con abbonamento scaduto.",
@@ -280,7 +279,24 @@
     "title": "Scanner QR",
     "instructions": "Inquadra il QR contenente il GUID del cliente.",
     "scanAnother": "Scansiona altro",
-    "notFound": "Cliente non trovato o errore di rete"
+    "notFound": "Cliente non trovato o errore di rete",
+    "aiVideoInfo": " Videocamera IA",
+    "connectingAi": "Connessione allo stream IA...",
+    "peopleCounter": "Persone ",
+    "connecting": "In connessione...",
+    "live": "In Diretta",
+    "disconnected": "Disconnesso",
+    "errorFetchCliente": "Errore nel recupero del cliente",
+    "errorDecrement": "Fallita chiamata a decrementPeopleCounter",
+    "qrError": "Errore QR",
+    "extractedId": "ID Estratto:",
+    "wsConnecting": "Connessione al WebSocket:",
+    "wsConnected": "WebSocket connesso al People Counter",
+    "wsReceived": "Ricevuto dal WebSocket:",
+    "wsParseError": "Errore nel parsing del messaggio WebSocket:",
+    "wsError": "Errore WebSocket:",
+    "wsDisconnectedReconnect": "WebSocket disconnesso, tentativo di riconnessione...",
+    "wsConnectError": "Errore di connessione al WebSocket:"
   },
   "common": {
     "cancel": "Annulla",

@@ -14,7 +14,6 @@
     "aggiungiIngresso": "Add Entrance",
     "settings": "Add Rate"
   },
-
   "mainLayout": {
     "drawerTitle": "Menu",
     "home": "Home",
@@ -26,7 +25,6 @@
     "subscriptions": "Subscriptions",
     "entries": "Entries"
   },
-
   "rinnovaTable": {
     "title": "Clients with expired subscription",
     "no_clients": "No clients with expired subscription.",
@@ -45,7 +43,6 @@
       "message": "Are you sure you want to delete {{nome}} {{cognome}}?"
     }
   },
-
   "cliente_dialog": {
     "title": {
       "add": "Add Client",
@@ -282,7 +279,24 @@
     "title": "QR Scanner",
     "instructions": "Point the QR code containing the client's GUID.",
     "scanAnother": "Scan another",
-    "notFound": "Client not found or network error"
+    "notFound": "Client not found or network error",
+    "aiVideoInfo": " AI Stream",
+    "connectingAi": "Connecting to AI stream...",
+    "peopleCounter": "People Counter ",
+    "connecting": "Connecting...",
+    "live": "Live",
+    "disconnected": "Disconnected",
+    "errorFetchCliente": "Error fetching client by ID",
+    "errorDecrement": "Failed to call decrementPeopleCounter",
+    "qrError": "QR Error",
+    "extractedId": "Extracted ID:",
+    "wsConnecting": "Connecting to WebSocket:",
+    "wsConnected": "WebSocket connected to People Counter",
+    "wsReceived": "Received from WebSocket:",
+    "wsParseError": "Error parsing WebSocket message:",
+    "wsError": "WebSocket error:",
+    "wsDisconnectedReconnect": "WebSocket disconnected, attempting to reconnect...",
+    "wsConnectError": "Error connecting to WebSocket:"
   },
   "common": {
     "cancel": "Cancel",

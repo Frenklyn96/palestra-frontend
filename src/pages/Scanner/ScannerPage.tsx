@@ -12,7 +12,9 @@ import ClienteCard from "../../features/components/clienteCard/ClienteCard";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import { fetchClienteById } from "../../features/slice/clientiSlice";
+import { decrementPeopleCounter } from "../../features/api/AICounterService";
 import { useTranslation } from "react-i18next";
+import "./ScannerPage.css";
 
 const ScannerPage: React.FC = () => {
   const { t } = useTranslation();
@@ -37,7 +39,7 @@ const ScannerPage: React.FC = () => {
   const [aiStreamConnected, setAiStreamConnected] = useState<boolean>(false);
 
   const handleError = (err: any) => {
-    console.error("QR error", err);
+    console.error(t("scanner.qrError"), err);
     setError(String(err));
   };
 
@@ -46,12 +48,12 @@ const ScannerPage: React.FC = () => {
     const connectWebSocket = () => {
       try {
         const wsUrl = import.meta.env.VITE_WS_PEOPLE_COUNTER_URL;
-        console.log("Connecting to WebSocket:", wsUrl);
+        console.log(t("scanner.wsConnecting"), wsUrl);
 
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-          console.log("WebSocket connected to People Counter");
+          console.log(t("scanner.wsConnected"));
           setWsConnected(true);
           // Clear reconnect timeout on successful connection
           if (reconnectTimeoutRef.current) {
@@ -63,24 +65,24 @@ const ScannerPage: React.FC = () => {
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            console.log("Received from WebSocket:", data);
+            console.log(t("scanner.wsReceived"), data);
 
             // Update people count from the 'enter' field
             if (typeof data.enter === "number") {
               setPeopleCount(data.enter);
             }
           } catch (err) {
-            console.error("Error parsing WebSocket message:", err);
+            console.error(t("scanner.wsParseError"), err);
           }
         };
 
         ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
+          console.error(t("scanner.wsError"), error);
           setWsConnected(false);
         };
 
         ws.onclose = () => {
-          console.log("WebSocket disconnected, attempting to reconnect...");
+          console.log(t("scanner.wsDisconnectedReconnect"));
           setWsConnected(false);
 
           // Attempt to reconnect after 3 seconds
@@ -91,7 +93,7 @@ const ScannerPage: React.FC = () => {
 
         wsRef.current = ws;
       } catch (err) {
-        console.error("Error connecting to WebSocket:", err);
+        console.error(t("scanner.wsConnectError"), err);
         setWsConnected(false);
 
         // Retry connection after 3 seconds
@@ -116,33 +118,25 @@ const ScannerPage: React.FC = () => {
 
   // Initialize AI stream URL
   useEffect(() => {
-    const streamUrl =
-      import.meta.env.VITE_AI_STREAM_URL || "http://localhost:8000/video_feed";
+    const streamUrl = import.meta.env.VITE_AI_STREAM_URL;
     setAiStreamUrl(streamUrl);
     setAiStreamConnected(true);
   }, []);
 
   return (
-    <Paper sx={{ padding: 2 }}>
+    <Paper className="scanner-page-paper">
       <h1>{t("scanner.title")}</h1>
 
-      <Box sx={{ display: "flex", gap: 2, height: "600px" }}>
+      <Box className="scanner-main-layout">
         {/* Scanner QR a sinistra */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              overflow: "hidden",
-              borderRadius: 1,
-            }}
-          >
+        <Box className="scanner-left-panel">
+          <Box className="scanner-qr-box">
             <Scanner
               onScan={(result: any) => {
                 if (!result || result.length === 0) return;
 
                 const id = result[0]?.rawValue;
-                console.log("Extracted ID:", id);
+                console.log(t("scanner.extractedId"), id);
 
                 if (!id) return;
 
@@ -165,25 +159,14 @@ const ScannerPage: React.FC = () => {
 
                       // 2. Manda la chiamata POST all'AI-backend per togliere 1 dal contatore fisico generale
                       try {
-                        const counterUrl = import.meta.env
-                          .VITE_WS_PEOPLE_COUNTER_URL
-                          ? import.meta.env.VITE_WS_PEOPLE_COUNTER_URL.replace(
-                              "ws://",
-                              "http://",
-                            ).replace("/ws", "/api/decrement")
-                          : "http://localhost:8000/api/decrement";
-
-                        await fetch(counterUrl, { method: "POST" });
+                        await decrementPeopleCounter();
                       } catch (err) {
-                        console.error(
-                          "Errore nel decremento del contatore",
-                          err,
-                        );
+                        console.error(t("scanner.errorDecrement"), err);
                       }
                     }
                   })
                   .catch((err: any) => {
-                    console.error("Errore fetchClienteById", err);
+                    console.error(t("scanner.errorFetchCliente"), err);
                     setError(t("scanner.notFound"));
                   });
               }}
@@ -194,47 +177,16 @@ const ScannerPage: React.FC = () => {
         </Box>
 
         {/* Video Stream AI nel centro */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Card
-            sx={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <CardContent
-              sx={{
-                padding: 1,
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-                overflow: "hidden",
-                background: "#000",
-              }}
-            >
+        <Box className="scanner-center-panel">
+          <Card className="scanner-ai-card">
+            <CardContent className="scanner-ai-content">
               {aiStreamConnected && aiStreamUrl ? (
                 <>
                   <img
                     src={aiStreamUrl}
                     alt="AI Video Stream"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      borderRadius: "4px",
-                    }}
-                    onError={(e) => {
+                    className="scanner-ai-img"
+                    onError={() => {
                       setTimeout(() => {
                         setAiStreamUrl((prevUrl) => {
                           const base = prevUrl.split("?")[0];
@@ -244,27 +196,15 @@ const ScannerPage: React.FC = () => {
                     }}
                     onLoad={() => setAiStreamConnected(true)}
                   />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      backgroundColor: "rgba(0, 255, 0, 0.7)",
-                      color: "white",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    🎥 AI Stream
+                  <Box className="scanner-ai-badge">
+                    {t("scanner.aiVideoInfo")}
                   </Box>
                 </>
               ) : (
-                <Box sx={{ textAlign: "center", color: "white" }}>
-                  <CircularProgress sx={{ marginBottom: 2 }} />
+                <Box className="scanner-ai-loader-container">
+                  <CircularProgress className="scanner-ai-spinner" />
                   <Typography variant="body2">
-                    Connecting to AI stream...
+                    {t("scanner.connectingAi")}
                   </Typography>
                 </Box>
               )}
@@ -273,87 +213,42 @@ const ScannerPage: React.FC = () => {
         </Box>
 
         {/* Info a destra: conteggio persone + cliente */}
-        <Box
-          sx={{
-            width: "320px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "stretch",
-            gap: 2,
-          }}
-        >
+        <Box className="scanner-right-panel">
           {/* People Counter Card */}
           <Card
-            sx={{
-              background: wsConnected
-                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                : "#f5f5f5",
-              color: wsConnected ? "white" : "#666",
-              textAlign: "center",
-              transition: "all 0.3s ease",
-              boxShadow: wsConnected
-                ? "0 4px 20px rgba(102, 126, 234, 0.4)"
-                : "0 2px 4px rgba(0, 0, 0, 0.1)",
-            }}
+            className={`scanner-counter-card ${
+              wsConnected ? "connected" : "disconnected"
+            }`}
           >
             <CardContent>
-              <Typography
-                variant="subtitle2"
-                sx={{ opacity: 0.9, marginBottom: 1 }}
-              >
-                {wsConnected ? "People Counter 👥" : "Connecting..."}
+              <Typography variant="subtitle2" className="scanner-counter-title">
+                {wsConnected
+                  ? t("scanner.peopleCounter")
+                  : t("scanner.connecting")}
               </Typography>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontSize: "64px",
-                  fontWeight: "bold",
-                  margin: 0,
-                  transition: "transform 0.2s ease",
-                }}
-              >
+              <Typography variant="h2" className="scanner-counter-number">
                 {peopleCount}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {wsConnected ? "Live" : "Disconnected"}
+              <Typography variant="caption" className="scanner-counter-status">
+                {wsConnected ? t("scanner.live") : t("scanner.disconnected")}
               </Typography>
             </CardContent>
           </Card>
 
           {/* Cliente Card Section */}
-          <Box sx={{ overflowY: "auto", flex: 1 }}>
+          <Box className="scanner-info-container">
             {loading && <CircularProgress />}
-            {error && (
-              <div
-                style={{ color: "red", textAlign: "center", fontSize: "14px" }}
-              >
-                {error}
-              </div>
-            )}
+            {error && <div className="scanner-error-message">{error}</div>}
             {cliente && (
-              <div style={{ width: "100%" }}>
+              <div className="scanner-cliente-wrapper">
                 <ClienteCard cliente={cliente} />
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontSize: "12px",
-                    color: "#999",
-                    marginTop: "8px",
-                  }}
-                >
+                <div className="scanner-instructions-small">
                   {t("scanner.instructions")}
                 </div>
               </div>
             )}
             {!cliente && !loading && !error && (
-              <div
-                style={{
-                  textAlign: "center",
-                  fontSize: "14px",
-                  color: "#666",
-                }}
-              >
+              <div className="scanner-instructions-normal">
                 {t("scanner.instructions")}
               </div>
             )}
