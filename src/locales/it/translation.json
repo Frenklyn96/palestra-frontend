@@ -116,8 +116,13 @@
       "tooltip_enteries": "Scala ingresso",
       "edit": "Modifica",
       "transactions": "Transazioni cliente",
+      "download_qrcode": "Scarica QR code",
       "delete": "Elimina cliente",
       "all_entrances": "Tutti gli ingressi"
+    },
+    "errors": {
+      "create_entrance": "Errore nel creare l'ingresso:",
+      "download_qrcode": "Errore durante il download del QR code cliente:"
     }
   },
   "trnsazioni_dialog": {

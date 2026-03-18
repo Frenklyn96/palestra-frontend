@@ -116,8 +116,13 @@
       "tooltip_enteries": "Deduct entry",
       "edit": "Edit",
       "transactions": "Client transactions",
+      "download_qrcode": "Download QR code",
       "delete": "Delete client",
       "all_entrances": "All entries"
+    },
+    "errors": {
+      "create_entrance": "Error while creating the entry:",
+      "download_qrcode": "Error while downloading the client QR code:"
     }
   },
   "trnsazioni_dialog": {
