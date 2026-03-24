@@ -7,7 +7,6 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
-import { Scanner } from "@yudiel/react-qr-scanner";
 import ClienteCard from "../../features/components/clienteCard/ClienteCard";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
@@ -28,6 +27,91 @@ const ScannerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
 
+  const [scannedCode, setScannedCode] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Maintain focus on the input to ensure the scanner works
+  useEffect(() => {
+    inputRef.current?.focus();
+
+    // Gestione globale dell'ascolto della tastiera per far funzionare lo scanner ovunque
+    let buffer = "";
+    let timeoutId: NodeJS.Timeout;
+
+    const handleGlobalKeyDown = async (e: KeyboardEvent) => {
+      // Ignora l'input se l'utente sta digitando dentro un vero campo di input (es. un campo di ricerca da un'altra parte)
+      // ma consentiamo al nostro input nascosto di funzionare
+      if (
+        e.target instanceof HTMLInputElement &&
+        e.target !== inputRef.current
+      ) {
+        return;
+      }
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+
+        // Se il buffer è vuoto, ignoriamo (potrebbe essere un enter casuale)
+        if (!buffer) return;
+
+        // Rimuovi gli apici singoli scansionati accidentalmente a causa del layout tastiera dello scanner
+        const rawId = buffer.trim();
+        const id = rawId.replace(/'/g, "-");
+
+        // Pulizia dello stato per la prossima scansione
+        buffer = "";
+        setScannedCode("");
+
+        if (!id) return;
+        if (id === lastScanned) return;
+
+        console.log(t("=====> scanner.extractedId"), id);
+        setLastScanned(id);
+        setError(null);
+
+        try {
+          // Assicurati che l'ID sia stato convertito correttamente
+          const res = await dispatch(fetchClienteById(id)).unwrap();
+
+          const isAbbonamentoValido =
+            res.scadenza && new Date(res.scadenza) >= new Date();
+
+          if (isAbbonamentoValido) {
+            setPeopleCount((prev) => Math.max(0, prev - 1));
+            try {
+              await decrementPeopleCounter();
+            } catch (err) {
+              console.error(t("scanner.errorDecrement"), err);
+            }
+          }
+        } catch (err: any) {
+          console.error(t("scanner.errorFetchCliente"), err);
+          setError(t("scanner.notFound"));
+        }
+      } else {
+        // Accumula i caratteri solo se non sono tasti speciali
+        if (e.key.length === 1) {
+          buffer += e.key;
+
+          // Imposta un timeout per svuotare il buffer se passano più di 500ms fra i tasti.
+          // Lo scanner è molto veloce (<20ms per carattere), gli umani sono lenti.
+          // Questo previene che digitazioni accidentali si sovrappongano alla scansione.
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            buffer = "";
+          }, 500);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      clearTimeout(timeoutId);
+    };
+  }, [dispatch, lastScanned, t]);
+
   // WebSocket states
   const [peopleCount, setPeopleCount] = useState<number>(0);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
@@ -37,11 +121,6 @@ const ScannerPage: React.FC = () => {
   // AI Stream states
   const [aiStreamUrl, setAiStreamUrl] = useState<string>("");
   const [aiStreamConnected, setAiStreamConnected] = useState<boolean>(false);
-
-  const handleError = (err: any) => {
-    console.error(t("scanner.qrError"), err);
-    setError(String(err));
-  };
 
   // WebSocket connection logic
   useEffect(() => {
@@ -124,59 +203,33 @@ const ScannerPage: React.FC = () => {
   }, []);
 
   return (
-    <Paper className="scanner-page-paper">
+    <Paper
+      className="scanner-page-paper"
+      onClick={() => inputRef.current?.focus()}
+      // Rimuoviamo gli eventi tastiera locali che si basavano sull'input singolo, stiamo gestendo tutto globally
+      tabIndex={0}
+      style={{ outline: "none" }}
+    >
       <h1>{t("scanner.title")}</h1>
 
+      <input
+        ref={inputRef}
+        type="text"
+        value={scannedCode}
+        onChange={(e) => setScannedCode(e.target.value)}
+        // non serve più onKeyDown qui!
+        style={{
+          opacity: 0,
+          position: "absolute",
+          pointerEvents: "none",
+          width: 0,
+          height: 0,
+        }}
+        autoFocus
+      />
+
       <Box className="scanner-main-layout">
-        {/* Scanner QR a sinistra */}
-        <Box className="scanner-left-panel">
-          <Box className="scanner-qr-box">
-            <Scanner
-              onScan={(result: any) => {
-                if (!result || result.length === 0) return;
-
-                const id = result[0]?.rawValue;
-                console.log(t("scanner.extractedId"), id);
-
-                if (!id) return;
-
-                // Se scansioni lo stesso QR, ignora
-                if (id === lastScanned) return;
-
-                // Nuovo QR: resetta e fattispone la nuova ricerca
-                setLastScanned(id);
-                setError(null);
-                dispatch(fetchClienteById(id))
-                  .unwrap()
-                  .then(async (res: any) => {
-                    // Controlla la validità dell'abbonamento valutando la data 'scadenza'
-                    const isAbbonamentoValido =
-                      res.scadenza && new Date(res.scadenza) >= new Date();
-
-                    if (isAbbonamentoValido) {
-                      // 1. Decrementa l'interfaccia istantaneamente limitando a 0 il minimo
-                      setPeopleCount((prev) => Math.max(0, prev - 1));
-
-                      // 2. Manda la chiamata POST all'AI-backend per togliere 1 dal contatore fisico generale
-                      try {
-                        await decrementPeopleCounter();
-                      } catch (err) {
-                        console.error(t("scanner.errorDecrement"), err);
-                      }
-                    }
-                  })
-                  .catch((err: any) => {
-                    console.error(t("scanner.errorFetchCliente"), err);
-                    setError(t("scanner.notFound"));
-                  });
-              }}
-              onError={handleError}
-              constraints={{ facingMode: "environment" }}
-            />
-          </Box>
-        </Box>
-
-        {/* Video Stream AI nel centro */}
+        {/* Video Stream AI nel centro (ora a sinistra per occupare il posto) */}
         <Box className="scanner-center-panel">
           <Card className="scanner-ai-card">
             <CardContent className="scanner-ai-content">
