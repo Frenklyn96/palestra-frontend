@@ -241,6 +241,12 @@ const IngressiPage: React.FC = () => {
                   >
                     {t("ingressi_page.table.data_entrance")}
                   </TableCell>
+                  <TableCell
+                    onClick={() => handleSort("dataOra")}
+                    className="sortable-cell"
+                  >
+                    {t("ingressi_page.table.ora_entrance")}
+                  </TableCell>
                   <TableCell align="right">
                     {t("ingressi_page.table.azioni")}
                   </TableCell>
@@ -253,6 +259,9 @@ const IngressiPage: React.FC = () => {
                       <TableCell>{entrance.clienteName || ""}</TableCell>
                       <TableCell>
                         {new Date(entrance.dataOra).toLocaleDateString("it-IT")}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(entrance.dataOra).toLocaleTimeString("it-IT")}
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title={t("ingressi_page.actions.delete")}>
@@ -270,7 +279,7 @@ const IngressiPage: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={4} align="center">
                       {t("ingressi_page.table.nessun_risultato")}
                     </TableCell>
                   </TableRow>

@@ -67,6 +67,19 @@ export const deleteEntranceAsync = createAsyncThunk(
   }
 );
 
+// Async thunk: process QR scan entrance
+export const processQrScanAsync = createAsyncThunk(
+  'entrances/processQrScan',
+  async (request: entranceApi.QrScanRequest, thunkAPI) => {
+    try {
+      const result = await entranceApi.processQrScan(request);
+      return result;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
 const entrancesSlice = createSlice({
   name: 'entrances',
   initialState,
