@@ -245,6 +245,7 @@
     "table": {
       "cliente": "Cliente",
       "data_entrance": "Data Ingresso",
+      "ora_entrance": "Ora Ingresso",
       "azioni": "Azioni",
       "nessun_risultato": "Nessun ingresso trovato.",
       "title": "Ingressi"
@@ -301,7 +302,25 @@
     "wsParseError": "Errore nel parsing del messaggio WebSocket:",
     "wsError": "Errore WebSocket:",
     "wsDisconnectedReconnect": "WebSocket disconnesso, tentativo di riconnessione...",
-    "wsConnectError": "Errore di connessione al WebSocket:"
+    "wsConnectError": "Errore di connessione al WebSocket:",
+    "aiServiceOfflineTitle": "Servizio AI non raggiungibile",
+    "aiServiceOfflineBody": "Puoi scaricare l'installer per installare Docker e avviare automaticamente il container AI.",
+    "downloadInstaller": "Scarica installer AI",
+    "decrementButton": "Scala",
+    "decrementSuccess": "Contatore decrementato",
+    "decrementError": "Errore nel decremento del contatore"
+  },
+  "webcam": {
+    "settings": "Impostazioni Webcam",
+    "loading": "Caricamento webcam disponibili...",
+    "selectCamera": "Seleziona Webcam",
+    "apply": "Applica",
+    "applying": "Applicando...",
+    "refresh": "Aggiorna lista",
+    "successMessage": "Webcam cambiata con successo! Il video verrà aggiornato tra pochi secondi.",
+    "errorMessage": "Errore nel cambio webcam",
+    "noCameras": "Nessuna webcam rilevata. Assicurati che sia collegata e non in uso da altre applicazioni.",
+    "permissionHint": "Per vedere i nomi reali delle webcam, concedi i permessi quando richiesto dal browser."
   },
   "common": {
     "cancel": "Annulla",

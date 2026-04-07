@@ -167,7 +167,6 @@ const IngressiDialog: React.FC<IngressiDialogProps> = ({
                 setEntrance((prev) => ({ ...prev, dataOra: newValue }));
               }
             }}
-            views={["year", "month", "day"]}
             slotProps={{ textField: { fullWidth: true } }}
           />
         </LocalizationProvider>

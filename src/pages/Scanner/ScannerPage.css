@@ -25,6 +25,19 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.scanner-ai-warning {
+  border: 1px solid #f4c66d;
+}
+
+.scanner-ai-warning-text {
+  margin-bottom: 10px !important;
+}
+
+.scanner-ai-installer-btn {
+  text-transform: none !important;
 }
 
 .scanner-ai-card {

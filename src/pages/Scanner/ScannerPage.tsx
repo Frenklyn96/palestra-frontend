@@ -6,11 +6,21 @@ import {
   Card,
   CardContent,
   Typography,
+  Alert,
+  Button,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import ClienteCard from "../../features/components/clienteCard/ClienteCard";
+import WebcamSelector from "./WebcamSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
-import { fetchClienteById } from "../../features/slice/clientiSlice";
+import {
+  fetchClienteById,
+  removeSelectCliente,
+} from "../../features/slice/clientiSlice";
+import { processQrScanAsync } from "../../features/slice/entrancesSlice";
 import { decrementPeopleCounter } from "../../features/api/AICounterService";
 import { useTranslation } from "react-i18next";
 import "./ScannerPage.css";
@@ -18,6 +28,7 @@ import "./ScannerPage.css";
 const ScannerPage: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.user.userId);
   const cliente = useSelector(
     (state: RootState) => state.clienti.selectedCliente,
   );
@@ -26,6 +37,10 @@ const ScannerPage: React.FC = () => {
   );
   const [error, setError] = useState<string | null>(null);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
+  const [decrementFeedback, setDecrementFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const [scannedCode, setScannedCode] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,20 +84,31 @@ const ScannerPage: React.FC = () => {
         setLastScanned(id);
         setError(null);
 
+        // Reset del cliente precedente per mostrare il caricamento
+        dispatch(removeSelectCliente());
+
         try {
-          // Assicurati che l'ID sia stato convertito correttamente
-          const res = await dispatch(fetchClienteById(id)).unwrap();
+          // Prima recupera SEMPRE i dati del cliente per mostrare la card
+          await dispatch(fetchClienteById(id)).unwrap();
 
-          const isAbbonamentoValido =
-            res.scadenza && new Date(res.scadenza) >= new Date();
+          // Poi chiama l'endpoint qr-scan per validare e registrare l'ingresso
+          const result = await dispatch(
+            processQrScanAsync({ clienteId: id, userId: userId! }),
+          ).unwrap();
 
-          if (isAbbonamentoValido) {
+          if (result.success && result.entrance) {
+            // Ingresso effettuato con successo
+            // Decrementa il contatore persone
             setPeopleCount((prev) => Math.max(0, prev - 1));
             try {
               await decrementPeopleCounter();
             } catch (err) {
               console.error(t("scanner.errorDecrement"), err);
             }
+          } else if (!result.success && result.errorMessage) {
+            // Mostra l'errore (abbonamento scaduto o ingresso recente)
+            // La card del cliente è già visualizzata
+            setError(result.errorMessage);
           }
         } catch (err: any) {
           console.error(t("scanner.errorFetchCliente"), err);
@@ -110,7 +136,7 @@ const ScannerPage: React.FC = () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
       clearTimeout(timeoutId);
     };
-  }, [dispatch, lastScanned, t]);
+  }, [dispatch, lastScanned, t, userId]);
 
   // WebSocket states
   const [peopleCount, setPeopleCount] = useState<number>(0);
@@ -121,6 +147,29 @@ const ScannerPage: React.FC = () => {
   // AI Stream states
   const [aiStreamUrl, setAiStreamUrl] = useState<string>("");
   const [aiStreamConnected, setAiStreamConnected] = useState<boolean>(false);
+  const [aiServiceReachable, setAiServiceReachable] = useState<boolean>(true);
+
+  // Handler per il bottone di decremento manuale
+  const handleManualDecrement = async () => {
+    try {
+      await decrementPeopleCounter();
+      setPeopleCount((prev) => Math.max(0, prev - 1));
+      setDecrementFeedback({
+        type: "success",
+        message: t("scanner.decrementSuccess"),
+      });
+      // Nascondi il feedback dopo 2 secondi
+      setTimeout(() => setDecrementFeedback(null), 2000);
+    } catch (err) {
+      console.error(t("scanner.errorDecrement"), err);
+      setDecrementFeedback({
+        type: "error",
+        message: t("scanner.decrementError"),
+      });
+      // Nascondi il feedback dopo 3 secondi
+      setTimeout(() => setDecrementFeedback(null), 3000);
+    }
+  };
 
   // WebSocket connection logic
   useEffect(() => {
@@ -202,6 +251,47 @@ const ScannerPage: React.FC = () => {
     setAiStreamConnected(true);
   }, []);
 
+  // Health-check for AI service. If it is offline, show installer download.
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_AI_API_URL;
+
+    if (!apiUrl) {
+      setAiServiceReachable(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const checkHealth = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      try {
+        const response = await fetch(`${apiUrl}/health`, {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (!mounted) return;
+        setAiServiceReachable(response.ok);
+      } catch (err) {
+        if (!mounted) return;
+        setAiServiceReachable(false);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    checkHealth();
+    const intervalId = setInterval(checkHealth, 10000);
+
+    return () => {
+      mounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
     <Paper
       className="scanner-page-paper"
@@ -231,6 +321,28 @@ const ScannerPage: React.FC = () => {
       <Box className="scanner-main-layout">
         {/* Video Stream AI nel centro (ora a sinistra per occupare il posto) */}
         <Box className="scanner-center-panel">
+          {/* Selettore Webcam */}
+          {aiServiceReachable && <WebcamSelector />}
+
+          {!aiServiceReachable && (
+            <Alert severity="warning" className="scanner-ai-warning">
+              <Typography variant="subtitle2" gutterBottom>
+                {t("scanner.aiServiceOfflineTitle")}
+              </Typography>
+              <Typography variant="body2" className="scanner-ai-warning-text">
+                {t("scanner.aiServiceOfflineBody")}
+              </Typography>
+              <Button
+                variant="contained"
+                size="small"
+                className="scanner-ai-installer-btn"
+                href="/ai-installer.zip"
+                download
+              >
+                {t("scanner.downloadInstaller")}
+              </Button>
+            </Alert>
+          )}
           <Card className="scanner-ai-card">
             <CardContent className="scanner-ai-content">
               {aiStreamConnected && aiStreamUrl ? (
@@ -285,6 +397,43 @@ const ScannerPage: React.FC = () => {
               <Typography variant="caption" className="scanner-counter-status">
                 {wsConnected ? t("scanner.live") : t("scanner.disconnected")}
               </Typography>
+
+              {/* Bottone decremento manuale */}
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Tooltip title={t("scanner.decrementButton")}>
+                  <IconButton
+                    onClick={handleManualDecrement}
+                    disabled={!wsConnected || peopleCount === 0}
+                    color="primary"
+                    sx={{
+                      bgcolor: "background.paper",
+                      "&:hover": { bgcolor: "action.hover" },
+                      border: 1,
+                      borderColor: "divider",
+                    }}
+                  >
+                    <RemoveCircleOutlineIcon />
+                  </IconButton>
+                </Tooltip>
+
+                {/* Feedback decremento */}
+                {decrementFeedback && (
+                  <Alert
+                    severity={decrementFeedback.type}
+                    sx={{ mt: 1, py: 0, fontSize: "0.75rem" }}
+                  >
+                    {decrementFeedback.message}
+                  </Alert>
+                )}
+              </Box>
             </CardContent>
           </Card>
 

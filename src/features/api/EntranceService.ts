@@ -73,3 +73,44 @@ const payload = {
 export const deleteEntrance = async (id: string) => {
   await axios.delete(`${API_URL}/${id}`);
 };
+
+// QR Scan - Process entrance with validation
+export interface QrScanRequest {
+  clienteId: string;
+  userId: string;
+}
+
+export interface QrScanResponse {
+  success: boolean;
+  entrance: {
+    id: string;
+    dataOra: string;
+    clienteId: string;
+    clienteName: string;
+  } | null;
+  errorMessage?: string;
+  errorDetails?: {
+    nome: string;
+    cognome: string;
+    tariffaNome: string;
+    ultimoIngressoOra: string;
+  };
+}
+
+export const processQrScan = async (request: QrScanRequest): Promise<QrScanResponse> => {
+  try {
+    const response = await axios.post(`${API_URL}/qr-scan`, request, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    // Se il backend restituisce 400 con i dettagli dell'errore
+    if (error.response && error.response.status === 400 && error.response.data) {
+      return error.response.data;
+    }
+    // Errore generico
+    throw error;
+  }
+};
