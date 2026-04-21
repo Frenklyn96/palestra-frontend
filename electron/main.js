@@ -90,9 +90,6 @@ if (!gotTheLock) {
       backend: process.env.VITE_BE_URL_LOCAL,
       aiWebSocket: process.env.VITE_WS_PEOPLE_COUNTER_URL,
       aiApi: process.env.VITE_AI_API_URL,
-      clerkDomain: process.env.VITE_CLERK_PUBLISHABLE_KEY
-        ? "https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com https://*.clerkinc.com"
-        : "",
     },
   };
 
@@ -163,7 +160,6 @@ if (!gotTheLock) {
         const aiWsUrl = APP_CONFIG.urls.aiWebSocket || "";
         const aiApiUrl = APP_CONFIG.urls.aiApi || "";
         const backendUrl = APP_CONFIG.urls.backend || "";
-        const clerkDomains = APP_CONFIG.urls.clerkDomain || "";
 
         // Estrai protocol e host per CSP
         const wsProtocols = aiWsUrl
@@ -173,17 +169,21 @@ if (!gotTheLock) {
           ? `http://${extractHostFromUrl(aiApiUrl)}:${extractPortFromUrl(aiApiUrl, 8001)}`
           : "";
 
+        const clerkSrc =
+          "https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com https://*.clerkinc.com https://*.clerkstage.dev";
+
         callback({
           responseHeaders: {
             ...details.responseHeaders,
             "Content-Security-Policy": [
               `default-src 'self'; ` +
-                `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${clerkDomains}; ` +
-                `style-src 'self' 'unsafe-inline' ${clerkDomains}; ` +
-                `img-src 'self' data: https: ${httpProtocols}; ` +
-                `font-src 'self' data: ${clerkDomains}; ` +
-                `worker-src 'self' blob: ${clerkDomains}; ` +
-                `connect-src 'self' ${wsProtocols} ${httpProtocols} ${backendUrl} ${clerkDomains};`,
+                `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${clerkSrc}; ` +
+                `style-src 'self' 'unsafe-inline' ${clerkSrc} https://fonts.googleapis.com; ` +
+                `img-src 'self' data: https: blob: ${httpProtocols}; ` +
+                `font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com ${clerkSrc}; ` +
+                `worker-src 'self' blob: ${clerkSrc}; ` +
+                `frame-src 'self' ${clerkSrc}; ` +
+                `connect-src 'self' ${wsProtocols} ${httpProtocols} ${backendUrl} ${clerkSrc} https:;`,
             ],
           },
         });
