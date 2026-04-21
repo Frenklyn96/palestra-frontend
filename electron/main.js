@@ -71,13 +71,17 @@ if (!gotTheLock) {
     },
     python: {
       // In development, usa il percorso relativo al progetto
-      // In production, python sarà embedded nell'installer
+      // In production, python sara embedded nell'installer
       scriptPath: isDev
         ? path.join(__dirname, "..", "AI", "ai-service", "app.py")
         : path.join(process.resourcesPath, "ai-service", "app.py"),
-      pythonExecutable: isDev
-        ? "python" // Usa python dal PATH in dev
-        : path.join(process.resourcesPath, "python", "python.exe"), // Embedded in prod
+      pythonExecutable:
+        isDev ||
+        !require("fs").existsSync(
+          path.join(process.resourcesPath, "python", "python.exe"),
+        )
+          ? "python" // Usa python dal PATH
+          : path.join(process.resourcesPath, "python", "python.exe"), // Embedded in prod
       port: extractPortFromUrl(process.env.VITE_AI_API_URL, 8001),
     },
     urls: {
