@@ -11,6 +11,8 @@ import {
   SelectChangeEvent,
   IconButton,
   Collapse,
+  Slider,
+  Typography,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -36,6 +38,8 @@ const WebcamSelector: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [currentLineRatio, setCurrentLineRatio] = useState<number>(0.5);
+  const [selectedLineRatio, setSelectedLineRatio] = useState<number>(0.5);
 
   // Carica lista webcam dal BROWSER (più affidabile!)
   const loadCamerasFromBrowser = async () => {
@@ -59,19 +63,92 @@ const WebcamSelector: React.FC = () => {
 
       setCameras(browserCameras);
 
-      // Carica sorgente corrente dal backend
+      // Carica sorgente corrente dal backend e applica la preferenza salvata
       try {
         const response = await fetch(`${AI_SERVICE_URL}/api/video-source`);
         if (response.ok) {
           const data = await response.json();
           setCurrentSource(data.source);
           setSelectedSource(data.source);
+
+          // Controlla Electron Store per vedere se avevamo un'altra preferenza
+          if (window.electronAPI?.getStoreValue) {
+            const savedSource =
+              await window.electronAPI.getStoreValue("preferred-webcam");
+
+            // Se c'è una preferenza salvata diversa, ed è disponibile
+            if (
+              savedSource &&
+              savedSource !== data.source &&
+              browserCameras.some((c) => String(c.index) === savedSource)
+            ) {
+              setSelectedSource(savedSource);
+              console.log("Applying saved webcam preference:", savedSource);
+
+              // Applica la preferenza in background
+              fetch(`${AI_SERVICE_URL}/api/video-source`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ source: savedSource }),
+              })
+                .then((res) => res.json())
+                .then((resData) => {
+                  if (resData.source) {
+                    setCurrentSource(resData.source);
+                  }
+                })
+                .catch((err) =>
+                  console.warn("Failed to apply saved webcam:", err),
+                );
+            }
+          }
         }
       } catch (err) {
         console.warn("Could not fetch current source from AI service:", err);
         // Usa default
         setCurrentSource("0");
         setSelectedSource("0");
+      }
+
+      // Load line ratio
+      try {
+        const lineResponse = await fetch(`${AI_SERVICE_URL}/api/line-ratio`);
+        if (lineResponse.ok) {
+          const lineData = await lineResponse.json();
+          let ratio = lineData.line_y_ratio;
+
+          if (window.electronAPI?.getStoreValue) {
+            const savedRatioStr = await window.electronAPI.getStoreValue(
+              "preferred-line-ratio",
+            );
+            if (savedRatioStr !== undefined && savedRatioStr !== null) {
+              const savedRatio = parseFloat(savedRatioStr);
+              if (
+                !isNaN(savedRatio) &&
+                savedRatio >= 0 &&
+                savedRatio <= 1 &&
+                savedRatio !== ratio
+              ) {
+                ratio = savedRatio;
+                console.log(
+                  "Applying saved line ratio preference:",
+                  savedRatio,
+                );
+                fetch(`${AI_SERVICE_URL}/api/line-ratio`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ line_y_ratio: savedRatio }),
+                }).catch((err) =>
+                  console.warn("Failed to apply saved line ratio:", err),
+                );
+              }
+            }
+          }
+          setCurrentLineRatio(ratio);
+          setSelectedLineRatio(ratio);
+        }
+      } catch (err) {
+        console.warn("Could not fetch line ratio from AI service:", err);
       }
     } catch (err) {
       setError(
@@ -95,7 +172,10 @@ const WebcamSelector: React.FC = () => {
   };
 
   const handleApply = async () => {
-    if (selectedSource === currentSource) {
+    if (
+      selectedSource === currentSource &&
+      selectedLineRatio === currentLineRatio
+    ) {
       return; // Nessun cambio
     }
 
@@ -104,27 +184,62 @@ const WebcamSelector: React.FC = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch(`${AI_SERVICE_URL}/api/video-source`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ source: selectedSource }),
-      });
+      if (selectedSource !== currentSource) {
+        const response = await fetch(`${AI_SERVICE_URL}/api/video-source`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ source: selectedSource }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to change video source");
+        if (!response.ok) {
+          throw new Error("Failed to change video source");
+        }
+
+        const data = await response.json();
+        setCurrentSource(data.source);
+
+        // Salva preferenza in Electron Store
+        if (window.electronAPI?.setStoreValue) {
+          await window.electronAPI.setStoreValue(
+            "preferred-webcam",
+            selectedSource,
+          );
+        }
       }
 
-      const data = await response.json();
-      setCurrentSource(data.source);
-      setSuccess(true);
+      if (selectedLineRatio !== currentLineRatio) {
+        const lineResponse = await fetch(`${AI_SERVICE_URL}/api/line-ratio`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ line_y_ratio: selectedLineRatio }),
+        });
 
+        if (!lineResponse.ok) {
+          throw new Error("Failed to change line ratio");
+        }
+
+        const lineData = await lineResponse.json();
+        setCurrentLineRatio(lineData.line_y_ratio);
+
+        // Salva preferenza in Electron Store
+        if (window.electronAPI?.setStoreValue) {
+          await window.electronAPI.setStoreValue(
+            "preferred-line-ratio",
+            selectedLineRatio.toString(),
+          );
+        }
+      }
+
+      setSuccess(true);
       // Nascondi success message dopo 3 secondi
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
-      console.error("Error changing video source:", err);
+      console.error("Error applying settings:", err);
     } finally {
       setChanging(false);
     }
@@ -191,7 +306,11 @@ const WebcamSelector: React.FC = () => {
                   variant="contained"
                   size="small"
                   onClick={handleApply}
-                  disabled={changing || selectedSource === currentSource}
+                  disabled={
+                    changing ||
+                    (selectedSource === currentSource &&
+                      selectedLineRatio === currentLineRatio)
+                  }
                   sx={{ whiteSpace: "nowrap" }}
                 >
                   {changing ? (
@@ -248,6 +367,24 @@ const WebcamSelector: React.FC = () => {
                     )}
                   </Alert>
                 )}
+
+              <Box sx={{ mt: 3 }}>
+                <Typography gutterBottom>
+                  {t("webcam.lineRatio", "Altezza Linea di Rilevamento")} (
+                  {Math.round(selectedLineRatio * 100)}%)
+                </Typography>
+                <Slider
+                  value={selectedLineRatio}
+                  onChange={(_, val) => setSelectedLineRatio(val as number)}
+                  step={0.05}
+                  marks
+                  min={0.1}
+                  max={0.9}
+                  sx={{ width: "100%", maxWidth: 300 }}
+                  valueLabelDisplay="auto"
+                  valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
+                />
+              </Box>
             </>
           )}
         </Box>
