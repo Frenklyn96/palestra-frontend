@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    # Necessario per permettere alla action di creare una Release e fare upload dell'exe
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code
