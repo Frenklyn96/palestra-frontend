@@ -11,6 +11,7 @@
 
 const { app, BrowserWindow, Tray, Menu, ipcMain, dialog } = require("electron");
 const path = require("path");
+const { autoUpdater } = require("electron-updater");
 const isDev = require("electron-is-dev");
 const logger = require("./utils/logger");
 const KeyboardHookManager = require("./keyboardHookManager");
@@ -504,7 +505,51 @@ if (!gotTheLock) {
 
     // Setup IPC
     setupIpcHandlers();
+    // Configura e controlla gli aggiornamenti (se non in dev)
+    if (!isDev) {
+      autoUpdater.logger = logger;
+      autoUpdater.autoDownload = true; // Scarica automaticamente l'aggiornamento quando trovato
 
+      autoUpdater.on("update-available", (info) => {
+        logger.info(`Update available: ${info.version}`);
+        if (mainWindow)
+          mainWindow.webContents.send(
+            "update-status",
+            "available",
+            info.version,
+          );
+      });
+
+      autoUpdater.on("update-downloaded", (info) => {
+        logger.info("Update downloaded. Ready to install.");
+        if (mainWindow)
+          mainWindow.webContents.send(
+            "update-status",
+            "downloaded",
+            info.version,
+          );
+
+        dialog
+          .showMessageBox({
+            type: "info",
+            title: "Aggiornamento Pronto",
+            message: `La versione ${info.version} e' stata scaricata ed e' pronta per l'installazione.`,
+            buttons: ["Installa e Riavvia", "PiÃ¹ Tardi"],
+          })
+          .then((buttonIndex) => {
+            if (buttonIndex.response === 0) {
+              app.isQuitting = true;
+              autoUpdater.quitAndInstall(false, true); // (isSilent, isForceRunAfter)
+            }
+          });
+      });
+
+      try {
+        autoUpdater.checkForUpdatesAndNotify();
+      } catch (err) {
+        logger.error("Error checking for updates:", err);
+      }
+    }
     // 1. Avvia servizio Python (può richiedere tempo)
     await initializePythonService();
 

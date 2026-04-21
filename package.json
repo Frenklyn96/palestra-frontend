@@ -47,6 +47,7 @@
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
     "electron-store": "^11.0.2",
+    "electron-updater": "^6.8.3",
     "i18next": "^24.2.3",
     "node-hid": "^3.3.0",
     "qrcode": "^1.5.4",
@@ -62,6 +63,13 @@
   "build": {
     "appId": "com.gymproject.desktop",
     "productName": "GymProject Desktop",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Frenklyn96",
+        "repo": "palestra-frontend"
+      }
+    ],
     "directories": {
       "buildResources": "electron/assets",
       "output": "dist-electron"

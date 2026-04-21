@@ -35,6 +35,11 @@ const ScannerPage: React.FC = () => {
   const userId = useSelector((state: RootState) => state.user.userId);
   const isElectron = !!(window as any).electronAPI;
 
+  const ghOwner = import.meta.env.VITE_GITHUB_OWNER || "Frenklyn96";
+  const ghRepo = import.meta.env.VITE_GITHUB_REPO || "palestra-frontend";
+  const appVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
+  const downloadDesktopUrl = `https://github.com/${ghOwner}/${ghRepo}/releases/latest/download/GymProject-Desktop-Setup-${appVersion}.exe`;
+
   const cliente = useSelector(
     (state: RootState) => state.clienti.selectedCliente,
   );
@@ -379,7 +384,7 @@ const ScannerPage: React.FC = () => {
           variant="contained"
           size="large"
           startIcon={<DownloadIcon />}
-          href="/README-INSTALLER.md"
+          href={downloadDesktopUrl}
           target="_blank"
           rel="noopener noreferrer"
         >
