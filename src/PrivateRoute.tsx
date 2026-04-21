@@ -15,7 +15,7 @@ export const PrivateRoute = ({ children }: PropsWithChildren) => (
           alignItems: "center",
         }}
       >
-        <SignIn routing="hash" />
+        <SignIn routing="virtual" />
       </Box>
     </SignedOut>
   </>

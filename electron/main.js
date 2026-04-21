@@ -49,6 +49,17 @@ function extractHostFromUrl(url) {
   }
 }
 
+// Registra custom protocol per OAuth callback (es. gymproject://sso-callback?...)
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("gymproject", process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient("gymproject");
+}
+
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -582,14 +593,31 @@ if (!gotTheLock) {
 
   /**
    * Handle second instance (single instance lock)
+   * Su Windows, il deep link (gymproject://...) arriva qui come argv
    */
-  app.on("second-instance", () => {
+  app.on("second-instance", (event, commandLine) => {
     logger.warn("Second instance detected, focusing main window");
 
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.show();
       mainWindow.focus();
+    }
+
+    // Gestisci deep link OAuth callback (Windows)
+    const deepLink = commandLine.find((arg) => arg.startsWith("gymproject://"));
+    if (deepLink && mainWindow) {
+      logger.info("OAuth deep link received (second-instance):", deepLink);
+      mainWindow.webContents.send("oauth-callback", deepLink);
+    }
+  });
+
+  // Gestisci deep link OAuth callback (macOS)
+  app.on("open-url", (event, url) => {
+    event.preventDefault();
+    logger.info("OAuth deep link received (open-url):", url);
+    if (mainWindow) {
+      mainWindow.webContents.send("oauth-callback", url);
     }
   });
 

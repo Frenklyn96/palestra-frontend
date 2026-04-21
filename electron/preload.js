@@ -21,6 +21,7 @@ const validChannels = {
     "qr-processed",
     "python-service-status",
     "scanner-status-changed",
+    "oauth-callback",
   ],
 
   // Canali dal Renderer al Main (invoke)
@@ -208,6 +209,22 @@ const electronAPI = {
     const subscription = (event, data) => {
       if (data && typeof data === "object") {
         callback(data);
+      }
+    };
+    ipcRenderer.on(channel, subscription);
+    return () => ipcRenderer.removeListener(channel, subscription);
+  },
+
+  /**
+   * Ascolta OAuth callback (deep link gymproject://)
+   * @param {Function} callback - Riceve l'URL del deep link
+   * @returns {Function} - Cleanup function
+   */
+  onOAuthCallback: (callback) => {
+    const channel = "oauth-callback";
+    const subscription = (event, url) => {
+      if (typeof url === "string") {
+        callback(url);
       }
     };
     ipcRenderer.on(channel, subscription);
