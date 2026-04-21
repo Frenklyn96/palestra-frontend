@@ -122,8 +122,8 @@ if (!gotTheLock) {
     // Carica subito un piccolo file HTML statico di "Loading..."
     mainWindow.loadFile(path.join(__dirname, "assets", "splash.html"));
 
-    // Open DevTools in development
-    if (isDev) {
+    // Open DevTools in development (or if DEBUG flag is set)
+    if (isDev || process.env.ELECTRON_DEBUG === "1") {
       mainWindow.webContents.openDevTools();
     }
 
