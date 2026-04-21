@@ -392,7 +392,9 @@ if (!gotTheLock) {
     pythonServiceManager = new PythonServiceManager({
       pythonExecutable: APP_CONFIG.python.pythonExecutable,
       scriptPath: APP_CONFIG.python.scriptPath,
-      port: APP_CONFIG.python.port,        startupTimeout: 120000, // 2 minuti di timeout per il boot (spesso lento a caricare PyTorch in RAM)      onStatusChange: (status) => {
+      port: APP_CONFIG.python.port,
+      startupTimeout: 120000, // 2 minuti di timeout per il boot (spesso lento a caricare PyTorch in RAM)
+      onStatusChange: (status) => {
         logger.info("Python service status changed:", status);
 
         // Aggiorna tray menu
@@ -549,7 +551,7 @@ if (!gotTheLock) {
         logger.error("Error checking for updates:", err);
       }
     }
-    
+
     // 0. Crea finestra e mostra subito lo splash screen
     createWindow();
     createTray();
