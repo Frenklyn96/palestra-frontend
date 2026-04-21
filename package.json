@@ -138,8 +138,7 @@
       "allowToChangeInstallationDirectory": true,
       "perMachine": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "license": "LICENSE.txt"
+      "createStartMenuShortcut": true
     }
   }
 }
