@@ -19,9 +19,10 @@ const PythonServiceManager = require("./pythonServiceManager");
 
 let store;
 
-// Carica variabili d'ambiente dal file .env (safe fallback)
+// Carica variabili d'ambiente dal file .env.electron
 try {
-  require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+  const envPath = path.join(__dirname, "..", ".env.electron");
+  require("dotenv").config({ path: envPath });
 } catch (error) {
   console.warn(
     "dotenv not available or .env file not found - using process.env defaults",
@@ -197,6 +198,9 @@ if (!gotTheLock) {
    */
   function createTray() {
     logger.info("Creating tray icon...");
+    if (tray) {
+      tray.destroy();
+    }
 
     const iconPath = path.join(__dirname, "assets", "tray-icon.png");
     tray = new Tray(iconPath);
