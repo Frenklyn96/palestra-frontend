@@ -31,7 +31,7 @@ class PythonServiceManager {
       port: options.port || 8001,
 
       // Host
-      host: options.host || "localhost",
+      host: options.host || "127.0.0.1",
 
       // Callback cambio stato
       onStatusChange: options.onStatusChange || (() => {}),

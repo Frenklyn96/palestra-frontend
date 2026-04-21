@@ -563,11 +563,15 @@ if (!gotTheLock) {
     await initializeKeyboardHook();
 
     // 3. Sposta la navigazione all'app Web React (solo dopo che Python ha finito di svegliarsi)
-    const startUrl = isDev
-      ? APP_CONFIG.urls.viteDevServer // Da .env o default
-      : `file://${path.join(__dirname, "..", "dist", "index.html")}`;
-
-    mainWindow.loadURL(startUrl);
+    if (isDev) {
+      mainWindow
+        .loadURL(APP_CONFIG.urls.viteDevServer || "http://localhost:5173")
+        .catch((e) => logger.error("ViteDevServer load failed:", e));
+    } else {
+      mainWindow
+        .loadFile(path.join(__dirname, "..", "dist", "index.html"))
+        .catch((e) => logger.error("Local file load failed:", e));
+    }
 
     logger.info("App initialization complete");
   });
