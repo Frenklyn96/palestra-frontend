@@ -2,7 +2,7 @@
   "name": "gymproject-desktop",
   "productName": "GymProject Desktop",
   "private": true,
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "GymProject Desktop App con scanner QR globale e AI people counter",
   "author": "GymProject Team",
   "license": "MIT",
@@ -10,12 +10,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:electron": "tsc && vite build --mode electron",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:build:win": "npm run build && electron-builder --win",
-    "electron:build:mac": "npm run build && electron-builder --mac",
-    "electron:build:linux": "npm run build && electron-builder --linux",
+    "electron:build": "npm run build:electron && electron-builder",
+    "electron:build:win": "npm run build:electron && electron-builder --win",
+    "electron:build:mac": "npm run build:electron && electron-builder --mac",
+    "electron:build:linux": "npm run build:electron && electron-builder --linux",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
