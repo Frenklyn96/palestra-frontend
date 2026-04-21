@@ -118,12 +118,8 @@ if (!gotTheLock) {
       },
     });
 
-    // Load URL from config
-    const startUrl = isDev
-      ? APP_CONFIG.urls.viteDevServer // Da .env o default
-      : `file://${path.join(__dirname, "..", "dist", "index.html")}`;
-
-    mainWindow.loadURL(startUrl);
+    // Carica subito un piccolo file HTML statico di "Loading..."
+    mainWindow.loadFile(path.join(__dirname, "assets", "splash.html"));
 
     // Open DevTools in development
     if (isDev) {
@@ -396,8 +392,7 @@ if (!gotTheLock) {
     pythonServiceManager = new PythonServiceManager({
       pythonExecutable: APP_CONFIG.python.pythonExecutable,
       scriptPath: APP_CONFIG.python.scriptPath,
-      port: APP_CONFIG.python.port,
-      onStatusChange: (status) => {
+      port: APP_CONFIG.python.port,        startupTimeout: 120000, // 2 minuti di timeout per il boot (spesso lento a caricare PyTorch in RAM)      onStatusChange: (status) => {
         logger.info("Python service status changed:", status);
 
         // Aggiorna tray menu
@@ -554,15 +549,23 @@ if (!gotTheLock) {
         logger.error("Error checking for updates:", err);
       }
     }
+    
+    // 0. Crea finestra e mostra subito lo splash screen
+    createWindow();
+    createTray();
+
     // 1. Avvia servizio Python (può richiedere tempo)
     await initializePythonService();
 
     // 2. Inizializza keyboard hook
     await initializeKeyboardHook();
 
-    // 3. Crea finestra e tray
-    createWindow();
-    createTray();
+    // 3. Sposta la navigazione all'app Web React (solo dopo che Python ha finito di svegliarsi)
+    const startUrl = isDev
+      ? APP_CONFIG.urls.viteDevServer // Da .env o default
+      : `file://${path.join(__dirname, "..", "dist", "index.html")}`;
+
+    mainWindow.loadURL(startUrl);
 
     logger.info("App initialization complete");
   });
