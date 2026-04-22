@@ -27,4 +27,5 @@ export enum RoutesEnum {
   INGRESSI = "/ingressi",
   SCANNER = "/scanner",
   OAUTH_CALLBACK = "/oauth-callback",
+  SSO_CALLBACK = "/sso-callback",
 }

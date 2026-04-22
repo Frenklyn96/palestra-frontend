@@ -4,7 +4,7 @@ import { PropsWithChildren } from "react";
 import { Box, Button, Typography } from "@mui/material";
 
 const CLERK_SIGN_IN_URL = "https://dynamic-glider-17.accounts.dev/sign-in";
-const CALLBACK_URL = "gymproject://sso-callback";
+const CALLBACK_URL = "https://gymprojectfe-dev.up.railway.app/sso-callback";
 const isElectron = !!(window as any).electronAPI;
 
 function ElectronLoginScreen() {

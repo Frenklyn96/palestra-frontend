@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { setUserInfo } from "./features/slice/userSlice";
 import IngressiPage from "./pages/Ingressi/IngressiPage";
 import OAuthCallbackPage from "./pages/OAuthCallback/OAuthCallbackPage";
+import SsoCallbackPage from "./pages/SsoCallback/SsoCallbackPage";
 import { CircularProgress, Box } from "@mui/material";
 import { checkHealth } from "./features/slice/healthSlice";
 import { useTranslation } from "react-i18next";
@@ -199,6 +200,7 @@ function App() {
             path={RoutesEnum.OAUTH_CALLBACK}
             element={<OAuthCallbackPage />}
           />
+          <Route path={RoutesEnum.SSO_CALLBACK} element={<SsoCallbackPage />} />
         </Routes>
       </MainLayout>
     </Router>
