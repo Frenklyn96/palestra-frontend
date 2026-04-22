@@ -156,8 +156,13 @@ class PythonServiceManager {
             new Error(`Process exited with code ${code}`),
           );
 
-          // Tenta restart automatico
-          this.attemptAutoRestart();
+          // Tenta restart automatico (fire-and-forget con catch obbligatorio)
+          this.attemptAutoRestart().catch((err) => {
+            logger.error(
+              "Unhandled error in attemptAutoRestart (close event):",
+              err,
+            );
+          });
         } else {
           this.updateStatus("stopped");
         }
@@ -271,7 +276,12 @@ class PythonServiceManager {
       } else {
         // Processo morto, tenta restart
         this.updateStatus("error", new Error("Service not responding"));
-        this.attemptAutoRestart();
+        this.attemptAutoRestart().catch((err) => {
+          logger.error(
+            "Unhandled error in attemptAutoRestart (health check):",
+            err,
+          );
+        });
       }
     }
   }
@@ -376,10 +386,13 @@ class PythonServiceManager {
       maxAttempts: this.options.maxRestartAttempts,
     });
 
-    // Attendi prima di riavviare
-    await new Promise((resolve) =>
-      setTimeout(resolve, this.options.restartDelay),
-    );
+    // Su Windows aggiunge un delay extra per permettere al SO di rilasciare la porta
+    const restartDelay =
+      process.platform === "win32"
+        ? Math.max(this.options.restartDelay, 8000)
+        : this.options.restartDelay;
+
+    await new Promise((resolve) => setTimeout(resolve, restartDelay));
 
     try {
       await this.start();

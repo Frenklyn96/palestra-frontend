@@ -12,18 +12,9 @@
  * - Deduplica scansioni consecutive
  */
 
+const { fork } = require("child_process");
+const path = require("path");
 const logger = require("./utils/logger");
-
-// Carica uiohook-napi in modo sicuro: su alcuni Windows/Electron il binario
-// nativo può non essere compatibile e crasherebbe l'intero processo.
-let ioHook = null;
-try {
-  const mod = require("uiohook-napi");
-  ioHook = mod.uIOhook;
-  logger.info("uiohook-napi loaded successfully");
-} catch (e) {
-  logger.warn("uiohook-napi non disponibile su questa piattaforma:", e.message);
-}
 
 class KeyboardHookManager {
   constructor(options = {}) {
@@ -59,6 +50,9 @@ class KeyboardHookManager {
     // Timer per reset buffer
     this.bufferResetTimer = null;
 
+    // Child process che ospita uiohook-napi in isolamento
+    this.workerProcess = null;
+
     // Platform detection
     this.platform = process.platform;
 
@@ -66,7 +60,9 @@ class KeyboardHookManager {
   }
 
   /**
-   * Avvia l'intercettazione globale degli input
+   * Avvia l'intercettazione globale degli input.
+   * uiohook-napi gira in un child process separato: se crasha nativamente
+   * (access violation, SIGSEGV) muore solo il worker, non Electron.
    */
   async start() {
     if (this.isRunning) {
@@ -74,77 +70,97 @@ class KeyboardHookManager {
       return;
     }
 
-    logger.info("Starting keyboard hook...");
+    logger.info("Starting keyboard hook worker...");
 
-    if (!ioHook) {
-      logger.warn(
-        "uiohook-napi non disponibile: scanner QR fisico disabilitato.",
-      );
-      this.isRunning = false;
-      return;
-    }
+    await new Promise((resolve) => {
+      const workerPath = path.join(__dirname, "keyboardHookWorker.js");
 
-    try {
-      // uiohook-napi emette solo keydown/keyup (NON keypress/keychar).
-      // I caratteri vengono estratti dal rawcode (Windows VK code) in handleKeyDown.
-      ioHook.on("keydown", this.handleKeyDown.bind(this));
+      try {
+        this.workerProcess = fork(workerPath, [], {
+          stdio: ["ignore", "ignore", "ignore", "ipc"],
+        });
+      } catch (err) {
+        logger.error("Failed to fork keyboard hook worker:", err.message);
+        resolve();
+        return;
+      }
 
-      // uiohook-napi può emettere errori interni (es. dragEvent not defined)
-      // nel renderer via IPC. Sopprimi silenziosamente nel main process.
-      ioHook.on("error", (err) => {
-        logger.debug(
-          "uiohook internal error (suppressed):",
-          err?.message || err,
-        );
+      const startupTimeout = setTimeout(() => {
+        logger.warn("Keyboard hook worker startup timeout — scanner disabilitato.");
+        resolve();
+      }, 5000);
+
+      this.workerProcess.on("message", (msg) => {
+        if (!msg) return;
+
+        if (msg.type === "ready") {
+          clearTimeout(startupTimeout);
+          this.isRunning = true;
+          logger.info("Keyboard hook worker ready");
+          resolve();
+        } else if (msg.type === "unavailable" || msg.type === "error") {
+          clearTimeout(startupTimeout);
+          logger.warn("Keyboard hook worker non disponibile:", msg.message || "");
+          resolve();
+        } else if (msg.type === "keydown") {
+          this.handleKeyDown({
+            keycode: msg.keycode,
+            rawcode: msg.rawcode,
+            shiftKey: msg.shiftKey,
+          });
+        }
       });
 
-      // Avvia iohook
-      ioHook.start();
+      this.workerProcess.on("exit", (code, signal) => {
+        logger.warn(`Keyboard hook worker uscito (code=${code}, signal=${signal})`);
+        this.isRunning = false;
+        this.workerProcess = null;
+        clearTimeout(startupTimeout);
+        resolve();
+      });
 
-      this.isRunning = true;
-      logger.info("Keyboard hook started successfully");
-
-      // Mostra warning su macOS per permessi
-      if (this.platform === "darwin") {
-        logger.warn(
-          "macOS requires Accessibility permissions. " +
-            "If scanner does not work, grant permissions in System Preferences.",
-        );
-      }
-
-      // Mostra info su Linux
-      if (this.platform === "linux") {
-        logger.info(
-          "Linux may require elevated privileges or udev configuration. " +
-            "See documentation for details.",
-        );
-      }
-    } catch (error) {
-      logger.error("Failed to start keyboard hook:", error);
-      this.options.onError(error);
-      throw error;
-    }
+      this.workerProcess.on("error", (err) => {
+        logger.error("Keyboard hook worker error:", err.message);
+        clearTimeout(startupTimeout);
+        resolve();
+      });
+    });
   }
 
   /**
    * Ferma l'intercettazione
    */
   async stop() {
-    if (!this.isRunning) {
+    if (!this.isRunning && !this.workerProcess) {
       logger.warn("Keyboard hook not running");
       return;
     }
 
-    logger.info("Stopping keyboard hook...");
+    logger.info("Stopping keyboard hook worker...");
 
     try {
-      if (ioHook) {
-        // Rimuovi event listeners
-        ioHook.removeAllListeners("keypress");
-        ioHook.removeAllListeners("keydown");
+      if (this.workerProcess) {
+        // Manda comando stop al worker
+        try { this.workerProcess.send({ type: "stop" }); } catch (_) {}
 
-        // Ferma iohook
-        ioHook.stop();
+        // Attendi max 3 secondi per uscita pulita, poi forza kill
+        await new Promise((resolve) => {
+          const timeout = setTimeout(() => {
+            try { if (this.workerProcess) this.workerProcess.kill("SIGKILL"); } catch (_) {}
+            this.workerProcess = null;
+            resolve();
+          }, 3000);
+          if (this.workerProcess) {
+            this.workerProcess.once("exit", () => {
+              clearTimeout(timeout);
+              this.workerProcess = null;
+              resolve();
+            });
+          } else {
+            clearTimeout(timeout);
+            resolve();
+          }
+        });
       }
 
       this.isRunning = false;
