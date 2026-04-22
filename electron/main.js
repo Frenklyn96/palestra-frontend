@@ -100,8 +100,30 @@ if (!gotTheLock) {
         !require("fs").existsSync(
           path.join(process.resourcesPath, "python", "python.exe"),
         )
-          ? "python" // Usa python dal PATH
-          : path.join(process.resourcesPath, "python", "python.exe"), // Embedded in prod
+          ? (() => {
+              // Su Windows usa py launcher per selezionare 3.12 esplicitamente (numpy 1.26.x non supporta 3.13+)
+              if (process.platform === "win32") {
+                const { spawnSync } = require("child_process");
+                if (
+                  spawnSync("py", ["-3.12", "--version"], { encoding: "utf8" })
+                    .status === 0
+                )
+                  return "py";
+              }
+              return "python";
+            })()
+          : path.join(process.resourcesPath, "python", "python.exe"),
+      pythonArgs:
+        process.platform === "win32" &&
+        (() => {
+          const { spawnSync } = require("child_process");
+          return (
+            spawnSync("py", ["-3.12", "--version"], { encoding: "utf8" })
+              .status === 0
+          );
+        })()
+          ? ["-3.12"]
+          : [],
       port: extractPortFromUrl(process.env.VITE_AI_API_URL, 8001),
     },
     urls: {
@@ -414,6 +436,7 @@ if (!gotTheLock) {
 
     pythonServiceManager = new PythonServiceManager({
       pythonExecutable: APP_CONFIG.python.pythonExecutable,
+      pythonArgs: APP_CONFIG.python.pythonArgs,
       scriptPath: APP_CONFIG.python.scriptPath,
       port: APP_CONFIG.python.port,
       startupTimeout: 120000, // 2 minuti di timeout per il boot (spesso lento a caricare PyTorch in RAM)

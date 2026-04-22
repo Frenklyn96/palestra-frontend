@@ -24,6 +24,9 @@ class PythonServiceManager {
       // Path all'eseguibile Python
       pythonExecutable: options.pythonExecutable || "python",
 
+      // Argomenti extra da passare PRIMA dello script (es. ["-3.13"] per py launcher)
+      pythonArgs: options.pythonArgs || [],
+
       // Path allo script Python (app.py)
       scriptPath: options.scriptPath,
 
@@ -434,78 +437,7 @@ class PythonServiceManager {
       logger.info("Creating Python venv", { venvDir });
       const result = spawnSync(
         this.options.pythonExecutable,
-        ["-m", "venv", ".venv"],
-        {
-          cwd: workingDir,
-          stdio: "pipe",
-          encoding: "utf8",
-        },
-      );
-      if (result.status !== 0) {
-        const msg =
-          result.stderr || result.error?.message || "venv creation failed";
-        logger.error("Failed to create venv", { msg });
-        throw new Error(`Failed to create Python venv: ${msg}`);
-      }
-      logger.info("Python venv created successfully");
-    } else {
-      logger.info("Python venv already exists, skipping creation");
-    }
-
-    // Installa / aggiorna requirements se il file esiste
-    if (fs.existsSync(requirementsPath)) {
-      // Controlla se serve aggiornare: confronta mtime requirements vs sentinel
-      const sentinelPath = path.join(venvDir, ".requirements_installed");
-      const reqMtime = fs.statSync(requirementsPath).mtimeMs;
-      const sentinelMtime = fs.existsSync(sentinelPath)
-        ? fs.statSync(sentinelPath).mtimeMs
-        : 0;
-
-      if (reqMtime > sentinelMtime) {
-        logger.info("Installing requirements into venv...");
-        const pip = spawnSync(
-          venvPython,
-          ["-m", "pip", "install", "-r", requirementsPath],
-          {
-            cwd: workingDir,
-            stdio: "pipe",
-            encoding: "utf8",
-          },
-        );
-        if (pip.status !== 0) {
-          const msg = pip.stderr || pip.error?.message || "pip install failed";
-          logger.error("Failed to install requirements", { msg });
-          throw new Error(`Failed to install Python requirements: ${msg}`);
-        }
-        // Aggiorna il sentinel
-        fs.writeFileSync(sentinelPath, new Date().toISOString());
-        logger.info("Python requirements installed successfully");
-      } else {
-        logger.info("Requirements already up to date, skipping pip install");
-      }
-    }
-
-    return venvPython;
-  }
-
-  /**
-   * Crea (se non esiste) un venv nella workingDir,
-   * installa i requirements e restituisce il path all'eseguibile Python del venv.
-   */
-  ensureVenv(workingDir) {
-    const isWin = process.platform === "win32";
-    const venvDir = path.join(workingDir, ".venv");
-    const venvPython = isWin
-      ? path.join(venvDir, "Scripts", "python.exe")
-      : path.join(venvDir, "bin", "python");
-    const requirementsPath = path.join(workingDir, "requirements.txt");
-
-    // Crea il venv solo se non esiste ancora
-    if (!fs.existsSync(venvPython)) {
-      logger.info("Creating Python venv", { venvDir });
-      const result = spawnSync(
-        this.options.pythonExecutable,
-        ["-m", "venv", ".venv"],
+        [...this.options.pythonArgs, "-m", "venv", ".venv"],
         {
           cwd: workingDir,
           stdio: "pipe",
