@@ -90,13 +90,13 @@ const getDefaultFields = (
     },
     {
       key: "QR",
-      x: Math.round(w * 0.70),
+      x: Math.round(w * 0.7),
       y: Math.round(h * 0.12),
       fontSize: 0,
       color: "#000000",
       bold: false,
-      width: Math.round(h * 0.60),
-      height: Math.round(h * 0.60),
+      width: Math.round(h * 0.6),
+      height: Math.round(h * 0.6),
     },
   ];
   if (toCount) {
@@ -153,7 +153,9 @@ const TemplateFieldEditor: React.FC<Props> = ({
 
     if (tariffa.templateFieldsJson) {
       try {
-        const parsed = JSON.parse(tariffa.templateFieldsJson) as TemplateField[];
+        const parsed = JSON.parse(
+          tariffa.templateFieldsJson,
+        ) as TemplateField[];
         const hasIngressi = parsed.some((f) => f.key === "INGRESSI");
         if (tariffa.toCount && !hasIngressi) {
           parsed.push({
@@ -241,7 +243,8 @@ const TemplateFieldEditor: React.FC<Props> = ({
       <DialogTitle>Configura Campi Tessera — {tariffa.nome}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Trascina i campi per posizionarli. Clicca un campo per modificarne le proprietà.
+          Trascina i campi per posizionarli. Clicca un campo per modificarne le
+          proprietà.
         </Typography>
         <Box
           sx={{
@@ -375,7 +378,9 @@ const TemplateFieldEditor: React.FC<Props> = ({
                       type="color"
                       value={selectedField.color}
                       onChange={(e) =>
-                        updateField(selectedField.key, { color: e.target.value })
+                        updateField(selectedField.key, {
+                          color: e.target.value,
+                        })
                       }
                       InputLabelProps={{ shrink: true }}
                     />
@@ -429,7 +434,9 @@ const TemplateFieldEditor: React.FC<Props> = ({
                   size="small"
                   value={selectedField.x}
                   onChange={(e) =>
-                    updateField(selectedField.key, { x: Number(e.target.value) })
+                    updateField(selectedField.key, {
+                      x: Number(e.target.value),
+                    })
                   }
                 />
                 <TextField
@@ -438,7 +445,9 @@ const TemplateFieldEditor: React.FC<Props> = ({
                   size="small"
                   value={selectedField.y}
                   onChange={(e) =>
-                    updateField(selectedField.key, { y: Number(e.target.value) })
+                    updateField(selectedField.key, {
+                      y: Number(e.target.value),
+                    })
                   }
                 />
               </Box>
