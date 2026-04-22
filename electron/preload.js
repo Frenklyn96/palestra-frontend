@@ -33,6 +33,7 @@ const validChannels = {
     "simulate-qr-scan",
     "get-store-value",
     "set-store-value",
+    "open-auth-browser",
   ],
 };
 
@@ -213,6 +214,14 @@ const electronAPI = {
     };
     ipcRenderer.on(channel, subscription);
     return () => ipcRenderer.removeListener(channel, subscription);
+  },
+
+  /**
+   * Apre il browser di sistema per autenticazione OAuth
+   * @param {string} url - URL di autenticazione Clerk
+   */
+  openAuthBrowser: (url) => {
+    return ipcRenderer.invoke("open-auth-browser", url);
   },
 
   /**

@@ -9,7 +9,15 @@
  * - Lifecycle management
  */
 
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  Tray,
+  Menu,
+  ipcMain,
+  dialog,
+  shell,
+} = require("electron");
 const path = require("path");
 const { autoUpdater } = require("electron-updater");
 const isDev = require("electron-is-dev");
@@ -510,6 +518,11 @@ if (!gotTheLock) {
       return true;
     });
 
+    // Apri il browser di sistema per autenticazione OAuth
+    ipcMain.handle("open-auth-browser", (event, url) => {
+      shell.openExternal(url);
+    });
+
     logger.info("IPC handlers registered");
   }
 
@@ -608,7 +621,7 @@ if (!gotTheLock) {
     const deepLink = commandLine.find((arg) => arg.startsWith("gymproject://"));
     if (deepLink && mainWindow) {
       logger.info("OAuth deep link received (second-instance):", deepLink);
-      mainWindow.webContents.send("oauth-callback", deepLink);
+      handleOAuthDeepLink(deepLink);
     }
   });
 
@@ -616,10 +629,29 @@ if (!gotTheLock) {
   app.on("open-url", (event, url) => {
     event.preventDefault();
     logger.info("OAuth deep link received (open-url):", url);
-    if (mainWindow) {
-      mainWindow.webContents.send("oauth-callback", url);
-    }
+    handleOAuthDeepLink(url);
   });
+
+  /**
+   * Naviga la finestra principale alla route di OAuth callback
+   */
+  function handleOAuthDeepLink(deepLinkUrl) {
+    if (!mainWindow) return;
+    mainWindow.show();
+    mainWindow.focus();
+    // Estrai i query params dal deep link e navigali come hash route
+    const urlObj = new URL(deepLinkUrl);
+    const params = urlObj.searchParams.toString();
+    if (isDev) {
+      mainWindow.loadURL(
+        `${APP_CONFIG.urls.viteDevServer}/#/oauth-callback?${params}`,
+      );
+    } else {
+      mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"), {
+        hash: `/oauth-callback?${params}`,
+      });
+    }
+  }
 
   /**
    * All windows closed (non-macOS)

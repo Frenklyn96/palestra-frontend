@@ -1,11 +1,14 @@
 import { useEffect } from "react";
 import {
-  HashRouter as Router,
+  HashRouter,
+  BrowserRouter,
   Routes,
   Route,
   useNavigate,
   useLocation,
 } from "react-router-dom";
+const isElectron = !!(window as any).electronAPI;
+const Router = isElectron ? HashRouter : BrowserRouter;
 import Home from "./pages/home/Home";
 import MainLayout from "./layout/MainLayout";
 import TransazioniPage from "./pages/Transazioni/TransazioniPage";
@@ -18,6 +21,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { setUserInfo } from "./features/slice/userSlice";
 import IngressiPage from "./pages/Ingressi/IngressiPage";
+import OAuthCallbackPage from "./pages/OAuthCallback/OAuthCallbackPage";
 import { CircularProgress, Box } from "@mui/material";
 import { checkHealth } from "./features/slice/healthSlice";
 import { useTranslation } from "react-i18next";
@@ -186,6 +190,14 @@ function App() {
                 <SettingsPage />
               </PrivateRoute>
             }
+          />{" "}
+          <Route
+            path={RoutesEnum.OAUTH_CALLBACK}
+            element={<OAuthCallbackPage />}
+          />{" "}
+          <Route
+            path={RoutesEnum.OAUTH_CALLBACK}
+            element={<OAuthCallbackPage />}
           />
         </Routes>
       </MainLayout>

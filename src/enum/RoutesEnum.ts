@@ -26,4 +26,5 @@ export enum RoutesEnum {
   SETTINGS = "/settings",
   INGRESSI = "/ingressi",
   SCANNER = "/scanner",
+  OAUTH_CALLBACK = "/oauth-callback",
 }
