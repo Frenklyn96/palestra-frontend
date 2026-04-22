@@ -11,7 +11,6 @@ import {
   FormControlLabel,
   Typography,
   Chip,
-  Tooltip,
 } from "@mui/material";
 import { Tariffa, TemplateField } from "../../class/Tariffa";
 
