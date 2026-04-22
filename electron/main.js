@@ -194,6 +194,33 @@ if (!gotTheLock) {
       mainWindow = null;
     });
 
+    // Evita che un crash del renderer chiuda silenziosamente la finestra
+    mainWindow.webContents.on("render-process-gone", (event, details) => {
+      logger.error("Renderer process crashed:", details);
+      dialog.showErrorBox(
+        "Errore Applicazione",
+        `Il processo UI è andato in crash (${details.reason}).\n\nRiavvia l'applicazione.`,
+      );
+    });
+
+    mainWindow.webContents.on(
+      "did-fail-load",
+      (event, errorCode, errorDescription, validatedURL) => {
+        logger.error("Page failed to load:", {
+          errorCode,
+          errorDescription,
+          validatedURL,
+        });
+        if (errorCode !== -3) {
+          // -3 = ERR_ABORTED (navigazione annullata, normale)
+          dialog.showErrorBox(
+            "Errore Caricamento",
+            `Impossibile caricare l'applicazione.\n\nErrore: ${errorDescription} (${errorCode})`,
+          );
+        }
+      },
+    );
+
     // CSP Headers per sicurezza (da configurazione .env)
     mainWindow.webContents.session.webRequest.onHeadersReceived(
       (details, callback) => {

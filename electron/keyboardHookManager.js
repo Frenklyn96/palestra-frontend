@@ -12,8 +12,18 @@
  * - Deduplica scansioni consecutive
  */
 
-const { uIOhook: ioHook } = require("uiohook-napi");
 const logger = require("./utils/logger");
+
+// Carica uiohook-napi in modo sicuro: su alcuni Windows/Electron il binario
+// nativo può non essere compatibile e crasherebbe l'intero processo.
+let ioHook = null;
+try {
+  const mod = require("uiohook-napi");
+  ioHook = mod.uIOhook;
+  logger.info("uiohook-napi loaded successfully");
+} catch (e) {
+  logger.warn("uiohook-napi non disponibile su questa piattaforma:", e.message);
+}
 
 class KeyboardHookManager {
   constructor(options = {}) {
@@ -65,6 +75,14 @@ class KeyboardHookManager {
     }
 
     logger.info("Starting keyboard hook...");
+
+    if (!ioHook) {
+      logger.warn(
+        "uiohook-napi non disponibile: scanner QR fisico disabilitato.",
+      );
+      this.isRunning = false;
+      return;
+    }
 
     try {
       // uiohook-napi emette solo keydown/keyup (NON keypress/keychar).
@@ -120,12 +138,14 @@ class KeyboardHookManager {
     logger.info("Stopping keyboard hook...");
 
     try {
-      // Rimuovi event listeners
-      ioHook.removeAllListeners("keypress");
-      ioHook.removeAllListeners("keydown");
+      if (ioHook) {
+        // Rimuovi event listeners
+        ioHook.removeAllListeners("keypress");
+        ioHook.removeAllListeners("keydown");
 
-      // Ferma iohook
-      ioHook.stop();
+        // Ferma iohook
+        ioHook.stop();
+      }
 
       this.isRunning = false;
       this.buffer = "";
