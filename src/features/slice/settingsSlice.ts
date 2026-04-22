@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { Tariffa, TemplateField } from '../class/Tariffa';
+import { Tariffa, TemplateField } from "../class/Tariffa";
 import * as settingsService from "../api/SettingsService";
 
 // Stato iniziale

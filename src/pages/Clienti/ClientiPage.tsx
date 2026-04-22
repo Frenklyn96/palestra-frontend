@@ -15,6 +15,8 @@ import {
   MenuItem,
   TextField,
   Menu,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -83,6 +85,7 @@ const ClientiPage: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
   const openMenu = Boolean(anchorEl);
+  const [tesseraError, setTesseraError] = useState<string | null>(null);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -234,13 +237,26 @@ const ClientiPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Errore download tessera", error);
+      setTesseraError(
+        error?.message ?? "Errore durante la generazione della tessera.",
+      );
     }
   };
 
   return (
     <Paper sx={{ padding: 2, position: "relative", minHeight: "200px" }}>
+      <Snackbar
+        open={!!tesseraError}
+        autoHideDuration={6000}
+        onClose={() => setTesseraError(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" onClose={() => setTesseraError(null)}>
+          {tesseraError}
+        </Alert>
+      </Snackbar>
       {loading ? (
         <Box className="loading-container">
           <CircularProgress />
