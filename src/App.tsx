@@ -75,6 +75,18 @@ function App() {
     dispatch(checkHealth());
   }, [dispatch]);
 
+  // Ascolta autenticazione Electron via HTTP callback locale (porta 7654)
+  useEffect(() => {
+    const electronAPI = (window as any).electronAPI;
+    if (!electronAPI?.onElectronAuthSuccess) return;
+    const unsub = electronAPI.onElectronAuthSuccess(
+      (data: { userId: string; email: string }) => {
+        dispatch(setUserInfo({ userId: data.userId, email: data.email }));
+      },
+    );
+    return unsub;
+  }, [dispatch]);
+
   useEffect(() => {
     if (isSignedIn && user) {
       dispatch(

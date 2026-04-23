@@ -22,6 +22,7 @@ const validChannels = {
     "python-service-status",
     "scanner-status-changed",
     "oauth-callback",
+    "electron-auth-success",
   ],
 
   // Canali dal Renderer al Main (invoke)
@@ -234,6 +235,24 @@ const electronAPI = {
     const subscription = (event, url) => {
       if (typeof url === "string") {
         callback(url);
+      }
+    };
+    ipcRenderer.on(channel, subscription);
+    return () => ipcRenderer.removeListener(channel, subscription);
+  },
+
+  /**
+   * Ascolta il risultato dell'autenticazione via HTTP callback locale.
+   * Riceve { userId, email, token } dopo che l'utente si è autenticato
+   * sulla pagina web electron-auth.
+   * @param {Function} callback
+   * @returns {Function} - Cleanup function
+   */
+  onElectronAuthSuccess: (callback) => {
+    const channel = "electron-auth-success";
+    const subscription = (event, data) => {
+      if (data && typeof data === "object" && data.userId) {
+        callback(data);
       }
     };
     ipcRenderer.on(channel, subscription);

@@ -19,6 +19,7 @@ const {
   shell,
 } = require("electron");
 const path = require("path");
+const http = require("http");
 const { autoUpdater } = require("electron-updater");
 const isDev = require("electron-is-dev");
 const logger = require("./utils/logger");
@@ -577,6 +578,87 @@ if (!gotTheLock) {
   }
 
   /**
+   * Avvia HTTP server locale per ricevere il callback di autenticazione Electron.
+   * La pagina web electron-auth chiama POST /auth-callback con userId, email, token.
+   */
+  const AUTH_CALLBACK_PORT = 7654;
+  let authCallbackServer = null;
+
+  function startAuthCallbackServer() {
+    if (authCallbackServer) return;
+
+    authCallbackServer = http.createServer((req, res) => {
+      // CORS: permetti solo la web app deployata
+      res.setHeader(
+        "Access-Control-Allow-Origin",
+        "https://gymprojectfe-dev.up.railway.app",
+      );
+      res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+      if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      if (req.method === "POST" && req.url === "/auth-callback") {
+        let body = "";
+        req.on("data", (chunk) => {
+          body += chunk.toString();
+        });
+        req.on("end", () => {
+          try {
+            const data = JSON.parse(body);
+            const { userId, email, token } = data;
+
+            if (!userId) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "userId required" }));
+              return;
+            }
+
+            logger.info("Electron auth callback received", { userId, email });
+
+            // Invia le credenziali al renderer via IPC
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send("electron-auth-success", {
+                userId,
+                email,
+                token,
+              });
+              // Porta la finestra in primo piano
+              if (!mainWindow.isVisible()) mainWindow.show();
+              mainWindow.focus();
+            }
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: true }));
+          } catch (err) {
+            logger.error("Auth callback parse error:", err);
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "invalid JSON" }));
+          }
+        });
+        return;
+      }
+
+      res.writeHead(404);
+      res.end();
+    });
+
+    authCallbackServer.listen(AUTH_CALLBACK_PORT, "127.0.0.1", () => {
+      logger.info(
+        `Auth callback server listening on port ${AUTH_CALLBACK_PORT}`,
+      );
+    });
+
+    authCallbackServer.on("error", (err) => {
+      logger.error("Auth callback server error:", err.message);
+    });
+  }
+
+  /**
    * App ready event
    */
   app.whenReady().then(async () => {
@@ -584,6 +666,8 @@ if (!gotTheLock) {
 
     // Setup IPC
     setupIpcHandlers();
+    // Avvia server HTTP per callback autenticazione Electron
+    startAuthCallbackServer();
     // Configura e controlla gli aggiornamenti (se non in dev)
     if (!isDev) {
       autoUpdater.logger = logger;
@@ -748,6 +832,12 @@ if (!gotTheLock) {
       if (pythonServiceManager) {
         await pythonServiceManager.stop();
         logger.info("Python service stopped");
+      }
+
+      // Stop auth callback server
+      if (authCallbackServer) {
+        authCallbackServer.close();
+        logger.info("Auth callback server stopped");
       }
     } catch (e) {
       logger.error("Error during cleanup:", e);
