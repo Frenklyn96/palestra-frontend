@@ -3,14 +3,15 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { PropsWithChildren } from "react";
 import { Box, Button, Typography } from "@mui/material";
 
-const CLERK_SIGN_IN_URL = "https://dynamic-glider-17.accounts.dev/sign-in";
-const CALLBACK_URL = "https://gymprojectfe-dev.up.railway.app/sso-callback";
+// URL dell'app web deployata: questa pagina mostra il componente <SignIn> di Clerk
+// con redirectUrl puntato a /sso-callback che fa il deep link verso gymproject://
+const ELECTRON_AUTH_URL =
+  "https://gymprojectfe-dev.up.railway.app/electron-auth";
 const isElectron = !!(window as any).electronAPI;
 
 function ElectronLoginScreen() {
   const handleLogin = () => {
-    const url = `${CLERK_SIGN_IN_URL}?redirect_url=${encodeURIComponent(CALLBACK_URL)}`;
-    (window as any).electronAPI.openAuthBrowser(url);
+    (window as any).electronAPI.openAuthBrowser(ELECTRON_AUTH_URL);
   };
 
   return (
