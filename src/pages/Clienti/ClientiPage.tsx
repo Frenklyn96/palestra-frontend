@@ -15,6 +15,8 @@ import {
   MenuItem,
   TextField,
   Menu,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -44,7 +46,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { Paper } from "@mui/material";
 import DownloadingIcon from "@mui/icons-material/Downloading";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import QrCode2Icon from "@mui/icons-material/QrCode2";
+import BadgeIcon from "@mui/icons-material/Badge";
 import QRCode from "qrcode";
 
 type ClienteKeys = keyof Cliente;
@@ -83,6 +85,7 @@ const ClientiPage: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
   const openMenu = Boolean(anchorEl);
+  const [tesseraError, setTesseraError] = useState<string | null>(null);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -207,28 +210,53 @@ const ClientiPage: React.FC = () => {
     }
   };
 
-  const handleDownloadQrCode = async (cliente: Cliente) => {
+  const handleDownloadTessera = async (cliente: Cliente) => {
     try {
       const qrDataUrl = await QRCode.toDataURL(cliente.id, {
         width: 512,
         margin: 2,
       });
 
-      const link = document.createElement("a");
-      const safeCardNumber = String(cliente.id);
+      const response = await fetch(
+        `${import.meta.env.VITE_BE_URL_LOCAL}/api/Clienti/${cliente.id}/tessera`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ qrDataUrl }),
+        },
+      );
 
-      link.href = qrDataUrl;
-      link.download = `cliente-${safeCardNumber || cliente.id}-qrcode.png`;
+      if (!response.ok) throw new Error(await response.text());
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tessera-${cliente.numeroTessera || cliente.id}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error(t("cliente_page.errors.download_qrcode"), error);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("Errore download tessera", error);
+      setTesseraError(
+        error?.message ?? "Errore durante la generazione della tessera.",
+      );
     }
   };
 
   return (
     <Paper sx={{ padding: 2, position: "relative", minHeight: "200px" }}>
+      <Snackbar
+        open={!!tesseraError}
+        autoHideDuration={6000}
+        onClose={() => setTesseraError(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" onClose={() => setTesseraError(null)}>
+          {tesseraError}
+        </Alert>
+      </Snackbar>
       {loading ? (
         <Box className="loading-container">
           <CircularProgress />
@@ -420,17 +448,13 @@ const ClientiPage: React.FC = () => {
                                   <PaymentIcon />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip
-                                title={t(
-                                  "cliente_page.actions.download_qrcode",
-                                )}
-                              >
+                              <Tooltip title="Scarica Tessera">
                                 <IconButton
-                                  onClick={() => handleDownloadQrCode(cliente)}
+                                  onClick={() => handleDownloadTessera(cliente)}
                                   className="icon-neutral"
                                   size="small"
                                 >
-                                  <QrCode2Icon />
+                                  <BadgeIcon />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip
@@ -536,15 +560,12 @@ const ClientiPage: React.FC = () => {
 
                                 <MenuItem
                                   onClick={() => {
-                                    handleDownloadQrCode(menuCliente!);
+                                    handleDownloadTessera(menuCliente!);
                                     handleMenuClose();
                                   }}
                                 >
-                                  <QrCode2Icon
-                                    sx={{ mr: 1 }}
-                                    fontSize="small"
-                                  />{" "}
-                                  {t("cliente_page.actions.download_qrcode")}
+                                  <BadgeIcon sx={{ mr: 1 }} fontSize="small" />{" "}
+                                  Scarica Tessera
                                 </MenuItem>
 
                                 <MenuItem

@@ -1,5 +1,14 @@
 import { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  HashRouter,
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+const isElectron = !!(window as any).electronAPI;
+const Router = isElectron ? HashRouter : BrowserRouter;
 import Home from "./pages/home/Home";
 import MainLayout from "./layout/MainLayout";
 import TransazioniPage from "./pages/Transazioni/TransazioniPage";
@@ -12,9 +21,31 @@ import { useUser } from "@clerk/clerk-react";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { setUserInfo } from "./features/slice/userSlice";
 import IngressiPage from "./pages/Ingressi/IngressiPage";
+import OAuthCallbackPage from "./pages/OAuthCallback/OAuthCallbackPage";
+import SsoCallbackPage from "./pages/SsoCallback/SsoCallbackPage";
+import ElectronAuthPage from "./pages/ElectronAuth/ElectronAuthPage";
 import { CircularProgress, Box } from "@mui/material";
 import { checkHealth } from "./features/slice/healthSlice";
 import { useTranslation } from "react-i18next";
+
+// Navigates to Scanner page when a QR is processed from any page
+function GlobalQrRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const electronAPI = (window as any).electronAPI;
+    if (!electronAPI?.onQrProcessed) return;
+    const unsub = electronAPI.onQrProcessed(() => {
+      if (location.pathname !== RoutesEnum.SCANNER) {
+        navigate(RoutesEnum.SCANNER);
+      }
+    });
+    return unsub;
+  }, [navigate, location.pathname]);
+
+  return null;
+}
 
 function LoadingScreen() {
   return (
@@ -44,14 +75,38 @@ function App() {
     dispatch(checkHealth());
   }, [dispatch]);
 
+  // Ascolta autenticazione Electron via HTTP callback locale (porta 7654)
+  useEffect(() => {
+    const electronAPI = (window as any).electronAPI;
+    if (!electronAPI?.onElectronAuthSuccess) return;
+    const unsub = electronAPI.onElectronAuthSuccess(
+      (data: { userId: string; email: string }) => {
+        dispatch(setUserInfo({ userId: data.userId, email: data.email }));
+      },
+    );
+    return unsub;
+  }, [dispatch]);
+
   useEffect(() => {
     if (isSignedIn && user) {
       dispatch(
         setUserInfo({
           userId: user.id,
           email: user.primaryEmailAddress?.emailAddress ?? "",
-        })
+        }),
       );
+      // Invia beUrl + userId a Python: da qui Python gestisce direttamente le chiamate BE
+      const beUrl = import.meta.env.VITE_BE_URL_LOCAL ?? "";
+      const aiApiUrl = (
+        import.meta.env.VITE_AI_API_URL ?? "http://localhost:8001/api"
+      ).replace("/api", "");
+      fetch(`${aiApiUrl}/api/set-context`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ beUrl, userId: user.id }),
+      }).catch(() => {
+        /* Python potrebbe non essere ancora pronto */
+      });
     }
   }, [isSignedIn, user, dispatch]);
 
@@ -83,6 +138,7 @@ function App() {
 
   return (
     <Router>
+      <GlobalQrRedirect />
       <MainLayout>
         <Routes>
           <Route
@@ -148,7 +204,17 @@ function App() {
                 <SettingsPage />
               </PrivateRoute>
             }
+          />{" "}
+          <Route
+            path={RoutesEnum.OAUTH_CALLBACK}
+            element={<OAuthCallbackPage />}
+          />{" "}
+          <Route
+            path={RoutesEnum.OAUTH_CALLBACK}
+            element={<OAuthCallbackPage />}
           />
+          <Route path={RoutesEnum.SSO_CALLBACK} element={<SsoCallbackPage />} />
+          <Route path="/electron-auth" element={<ElectronAuthPage />} />
         </Routes>
       </MainLayout>
     </Router>

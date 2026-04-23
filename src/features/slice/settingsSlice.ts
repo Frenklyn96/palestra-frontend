@@ -1,13 +1,13 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { Tariffa } from '../class/Tariffa';
-import * as settingsService from '../api/SettingsService';
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { Tariffa, TemplateField } from "../class/Tariffa";
+import * as settingsService from "../api/SettingsService";
 
 // Stato iniziale
 interface SettingsState {
   tariffe: Tariffa[];
   loading: boolean;
   error: string | null;
-  foto: string | null
+  foto: string | null;
 }
 
 const initialState: SettingsState = {
@@ -19,20 +19,20 @@ const initialState: SettingsState = {
 
 // Thunk per ottenere tutte le tariffe
 export const fetchTariffe = createAsyncThunk(
-  'settings/fetchTariffe',
-  async (userId:string, thunkAPI) => {
+  "settings/fetchTariffe",
+  async (userId: string, thunkAPI) => {
     try {
       const tariffe = await settingsService.getTariffe(userId);
       return tariffe;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Thunk per aggiungere una nuova tariffa
 export const addTariffaAsync = createAsyncThunk(
-  'settings/addTariffa',
+  "settings/addTariffa",
   async (tariffa: Tariffa, thunkAPI) => {
     try {
       const newTariffa = await settingsService.addTariffa(tariffa);
@@ -40,12 +40,12 @@ export const addTariffaAsync = createAsyncThunk(
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data.code);
     }
-  }
+  },
 );
 
 // Thunk per aggiornare una tariffa esistente
 export const updateTariffaAsync = createAsyncThunk(
-  'settings/updateTariffa',
+  "settings/updateTariffa",
   async (tariffa: Tariffa, thunkAPI) => {
     try {
       const updatedTariffa = await settingsService.updateTariffa(tariffa);
@@ -53,12 +53,12 @@ export const updateTariffaAsync = createAsyncThunk(
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data.code);
     }
-  }
+  },
 );
 
 // Thunk per rimuovere una tariffa
 export const removeTariffaAsync = createAsyncThunk(
-  'settings/removeTariffa',
+  "settings/removeTariffa",
   async (id: string, thunkAPI) => {
     try {
       await settingsService.removeTariffa(id);
@@ -66,38 +66,93 @@ export const removeTariffaAsync = createAsyncThunk(
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const uploadFotoAsync = createAsyncThunk(
-  'settings/uploadFoto',
-    async (file: String, thunkAPI) => {
-      try {
-        const uplaodFoto = await settingsService.uploadFoto(file);
-        return uplaodFoto;
-      } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.message);
-      }
+  "settings/uploadFoto",
+  async (file: String, thunkAPI) => {
+    try {
+      const uplaodFoto = await settingsService.uploadFoto(file);
+      return uplaodFoto;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
     }
+  },
 );
-
 
 export const getFotoHomeAsync = createAsyncThunk(
-  'settings/getFotoHome',
-    async (_,thunkAPI) => {
-      try {
-        const uplaodFoto = await settingsService.getFotoHome();
-        return uplaodFoto;
-      } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.message);
-      }
+  "settings/getFotoHome",
+  async (_, thunkAPI) => {
+    try {
+      const uplaodFoto = await settingsService.getFotoHome();
+      return uplaodFoto;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
     }
+  },
 );
 
+export const uploadTemplateAsync = createAsyncThunk(
+  "settings/uploadTemplate",
+  async ({ tariffaId, file }: { tariffaId: string; file: File }, thunkAPI) => {
+    try {
+      const updated = await settingsService.uploadTariffaTemplate(
+        tariffaId,
+        file,
+      );
+      return updated as Tariffa;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const deleteTemplateAsync = createAsyncThunk(
+  "settings/deleteTemplate",
+  async (tariffaId: string, thunkAPI) => {
+    try {
+      await settingsService.deleteTariffaTemplate(tariffaId);
+      return tariffaId;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const saveTemplateFieldsAsync = createAsyncThunk(
+  "settings/saveTemplateFields",
+  async (
+    { tariffaId, fields }: { tariffaId: string; fields: TemplateField[] },
+    thunkAPI,
+  ) => {
+    try {
+      const updated = await settingsService.saveTariffaTemplateFields(
+        tariffaId,
+        JSON.stringify(fields),
+      );
+      return updated as Tariffa;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const fetchTemplateImageAsync = createAsyncThunk(
+  "settings/fetchTemplateImage",
+  async (tariffaId: string, thunkAPI) => {
+    try {
+      const blob = await settingsService.getTariffaTemplateImage(tariffaId);
+      return blob;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error?.response?.status ?? error.message);
+    }
+  },
+);
 
 // Slice
 const settingsSlice = createSlice({
-  name: 'settings',
+  name: "settings",
   initialState,
   reducers: {
     setTariffe: (state, action: PayloadAction<Tariffa[]>) => {
@@ -142,7 +197,7 @@ const settingsSlice = createSlice({
       .addCase(updateTariffaAsync.fulfilled, (state, action) => {
         state.loading = false;
         const updated = action.payload;
-        const index = state.tariffe.findIndex(t => t.id === updated.id);
+        const index = state.tariffe.findIndex((t) => t.id === updated.id);
         if (index !== -1) {
           state.tariffe[index] = updated;
         }
@@ -159,14 +214,33 @@ const settingsSlice = createSlice({
       })
       .addCase(removeTariffaAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.tariffe = state.tariffe.filter(t => t.id !== action.payload);
+        state.tariffe = state.tariffe.filter((t) => t.id !== action.payload);
       })
       .addCase(removeTariffaAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(getFotoHomeAsync.fulfilled, (state, action)=> {
+      .addCase(getFotoHomeAsync.fulfilled, (state, action) => {
         state.foto = action.payload as string;
+      })
+      .addCase(uploadTemplateAsync.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.tariffe.findIndex((t) => t.id === updated.id);
+        if (index !== -1) state.tariffe[index] = updated;
+      })
+      .addCase(deleteTemplateAsync.fulfilled, (state, action) => {
+        const id = action.payload;
+        const index = state.tariffe.findIndex((t) => t.id === id);
+        if (index !== -1)
+          state.tariffe[index] = {
+            ...state.tariffe[index],
+            hasTemplate: false,
+          };
+      })
+      .addCase(saveTemplateFieldsAsync.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.tariffe.findIndex((t) => t.id === updated.id);
+        if (index !== -1) state.tariffe[index] = updated;
       });
   },
 });

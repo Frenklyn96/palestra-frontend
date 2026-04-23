@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -12,13 +12,17 @@ import {
   Tooltip,
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import DesktopWindowsIcon from "@mui/icons-material/DesktopWindows";
+import DownloadIcon from "@mui/icons-material/Download";
 import ClienteCard from "../../features/components/clienteCard/ClienteCard";
 import WebcamSelector from "./WebcamSelector";
+import QrDeviceSelector from "./QrDeviceSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import {
   fetchClienteById,
   removeSelectCliente,
+  selectCliente,
 } from "../../features/slice/clientiSlice";
 import { processQrScanAsync } from "../../features/slice/entrancesSlice";
 import { decrementPeopleCounter } from "../../features/api/AICounterService";
@@ -29,6 +33,13 @@ const ScannerPage: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.userId);
+  const isElectron = !!(window as any).electronAPI;
+
+  const ghOwner = import.meta.env.VITE_GITHUB_OWNER || "Frenklyn96";
+  const ghRepo = import.meta.env.VITE_GITHUB_REPO || "palestra-frontend";
+  const appVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
+  const downloadDesktopUrl = `https://github.com/${ghOwner}/${ghRepo}/releases/latest/download/GymProject-Desktop-Setup-${appVersion}.exe`;
+
   const cliente = useSelector(
     (state: RootState) => state.clienti.selectedCliente,
   );
@@ -36,7 +47,6 @@ const ScannerPage: React.FC = () => {
     (state: RootState) => state.clienti.loadingSelectedCliente,
   );
   const [error, setError] = useState<string | null>(null);
-  const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [decrementFeedback, setDecrementFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -44,18 +54,83 @@ const ScannerPage: React.FC = () => {
 
   const [scannedCode, setScannedCode] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastScannedRef = useRef<string | null>(null);
 
-  // Maintain focus on the input to ensure the scanner works
+  // Listener IPC Electron: qr-processed
+  // Il main process ha già registrato l'ingresso e recuperato i dati — qui aggiorniamo solo la UI
+  useEffect(() => {
+    const electronAPI = (window as any).electronAPI;
+    if (!electronAPI?.onQrProcessed) return;
+
+    const unsub = electronAPI.onQrProcessed((result: any) => {
+      const id = String(result.code ?? "")
+        .trim()
+        .replace(/'/g, "-");
+      if (!id) return;
+      if (id === lastScannedRef.current) return; // dedup
+      lastScannedRef.current = id;
+      setError(null);
+
+      if (result.cliente) {
+        dispatch(selectCliente(result.cliente));
+      } else {
+        dispatch(removeSelectCliente());
+      }
+
+      if (!result.success && result.errorMessage) {
+        setError(result.errorMessage);
+      }
+
+      if (result.success) {
+        setPeopleCount((prev) => Math.max(0, prev - 1));
+      }
+    });
+
+    return unsub;
+  }, [dispatch]);
+
+  // Listener DOM keydown — fallback per browser/non-Electron o quando la pagina è in focus
+  // In modalità Electron le chiamate BE vengono fatte dal main process via processQrCode (sopra).
+  // Qui manteniamo il fallback per garantire funzionamento in tutti gli ambienti.
+  const processQrCode = useCallback(
+    async (id: string) => {
+      if (!id) return;
+      if (id === lastScannedRef.current) return;
+      lastScannedRef.current = id;
+      setError(null);
+      dispatch(removeSelectCliente());
+
+      try {
+        await dispatch(fetchClienteById(id)).unwrap();
+        const result = await dispatch(
+          processQrScanAsync({ clienteId: id, userId: userId! }),
+        ).unwrap();
+
+        if (result.success && result.entrance) {
+          setPeopleCount((prev) => Math.max(0, prev - 1));
+          try {
+            await decrementPeopleCounter();
+          } catch (err) {
+            console.error(t("scanner.errorDecrement"), err);
+          }
+        } else if (!result.success && result.errorMessage) {
+          setError(result.errorMessage);
+        }
+      } catch (err: any) {
+        console.error(t("scanner.errorFetchCliente"), err);
+        setError(t("scanner.notFound"));
+      }
+    },
+    [dispatch, userId, t],
+  );
+
+  // Listener DOM keydown — fallback per browser o quando Electron è in focus sulla pagina
   useEffect(() => {
     inputRef.current?.focus();
-
-    // Gestione globale dell'ascolto della tastiera per far funzionare lo scanner ovunque
     let buffer = "";
     let timeoutId: NodeJS.Timeout;
 
     const handleGlobalKeyDown = async (e: KeyboardEvent) => {
-      // Ignora l'input se l'utente sta digitando dentro un vero campo di input (es. un campo di ricerca da un'altra parte)
-      // ma consentiamo al nostro input nascosto di funzionare
       if (
         e.target instanceof HTMLInputElement &&
         e.target !== inputRef.current
@@ -65,63 +140,14 @@ const ScannerPage: React.FC = () => {
 
       if (e.key === "Enter") {
         e.preventDefault();
-
-        // Se il buffer è vuoto, ignoriamo (potrebbe essere un enter casuale)
         if (!buffer) return;
-
-        // Rimuovi gli apici singoli scansionati accidentalmente a causa del layout tastiera dello scanner
-        const rawId = buffer.trim();
-        const id = rawId.replace(/'/g, "-");
-
-        // Pulizia dello stato per la prossima scansione
+        const id = buffer.trim().replace(/'/g, "-");
         buffer = "";
         setScannedCode("");
-
-        if (!id) return;
-        if (id === lastScanned) return;
-
-        console.log(t("=====> scanner.extractedId"), id);
-        setLastScanned(id);
-        setError(null);
-
-        // Reset del cliente precedente per mostrare il caricamento
-        dispatch(removeSelectCliente());
-
-        try {
-          // Prima recupera SEMPRE i dati del cliente per mostrare la card
-          await dispatch(fetchClienteById(id)).unwrap();
-
-          // Poi chiama l'endpoint qr-scan per validare e registrare l'ingresso
-          const result = await dispatch(
-            processQrScanAsync({ clienteId: id, userId: userId! }),
-          ).unwrap();
-
-          if (result.success && result.entrance) {
-            // Ingresso effettuato con successo
-            // Decrementa il contatore persone
-            setPeopleCount((prev) => Math.max(0, prev - 1));
-            try {
-              await decrementPeopleCounter();
-            } catch (err) {
-              console.error(t("scanner.errorDecrement"), err);
-            }
-          } else if (!result.success && result.errorMessage) {
-            // Mostra l'errore (abbonamento scaduto o ingresso recente)
-            // La card del cliente è già visualizzata
-            setError(result.errorMessage);
-          }
-        } catch (err: any) {
-          console.error(t("scanner.errorFetchCliente"), err);
-          setError(t("scanner.notFound"));
-        }
+        await processQrCode(id);
       } else {
-        // Accumula i caratteri solo se non sono tasti speciali
         if (e.key.length === 1) {
           buffer += e.key;
-
-          // Imposta un timeout per svuotare il buffer se passano più di 500ms fra i tasti.
-          // Lo scanner è molto veloce (<20ms per carattere), gli umani sono lenti.
-          // Questo previene che digitazioni accidentali si sovrappongano alla scansione.
           clearTimeout(timeoutId);
           timeoutId = setTimeout(() => {
             buffer = "";
@@ -131,12 +157,11 @@ const ScannerPage: React.FC = () => {
     };
 
     window.addEventListener("keydown", handleGlobalKeyDown);
-
     return () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
       clearTimeout(timeoutId);
     };
-  }, [dispatch, lastScanned, t, userId]);
+  }, [processQrCode]);
 
   // WebSocket states
   const [peopleCount, setPeopleCount] = useState<number>(0);
@@ -193,11 +218,42 @@ const ScannerPage: React.FC = () => {
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            console.log(t("scanner.wsReceived"), data);
 
-            // Update people count from the 'enter' field
-            if (typeof data.enter === "number") {
+            // People count update
+            if (
+              data.type === "people_count" ||
+              typeof data.enter === "number"
+            ) {
               setPeopleCount(data.enter);
+            }
+
+            // QR processato da Python (BE già chiamato, solo aggiornamento UI)
+            if (data.type === "qr_processed" && typeof data.code === "string") {
+              const id = data.code.trim().replace(/'/g, "-");
+              if (id && id !== lastScannedRef.current) {
+                lastScannedRef.current = id;
+                setError(null);
+
+                if (data.cliente) {
+                  dispatch(selectCliente(data.cliente));
+                } else {
+                  dispatch(removeSelectCliente());
+                }
+
+                if (!data.success && data.errorMessage) {
+                  setError(data.errorMessage);
+                }
+
+                if (data.success) {
+                  setPeopleCount((prev) => Math.max(0, prev - 1));
+                }
+              }
+            }
+
+            // Fallback legacy: qr_scan senza be_url configurato in Python
+            if (data.type === "qr_scan" && typeof data.code === "string") {
+              const id = data.code.trim().replace(/'/g, "-");
+              processQrCode(id);
             }
           } catch (err) {
             console.error(t("scanner.wsParseError"), err);
@@ -292,11 +348,56 @@ const ScannerPage: React.FC = () => {
     };
   }, []);
 
+  if (!isElectron) {
+    return (
+      <Paper
+        className="scanner-page-paper"
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+          gap: 3,
+          p: 4,
+          textAlign: "center",
+        }}
+      >
+        <DesktopWindowsIcon sx={{ fontSize: 80, color: "primary.main" }} />
+        <Typography variant="h4" gutterBottom>
+          {t(
+            "scanner.electronRequired",
+            "Funzionalità Scanner non disponibile nel browser",
+          )}
+        </Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ maxWidth: 600, mb: 2 }}
+        >
+          {t(
+            "scanner.electronDescription",
+            "Per utilizzare lo scanner QR e l'intercettazione hardware della webcam, è necessario scaricare ed utilizzare l'applicazione Desktop ufficiale della Palestra.",
+          )}
+        </Typography>
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<DownloadIcon />}
+          href={downloadDesktopUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t("scanner.downloadApp", "Scarica l'App Desktop")}
+        </Button>
+      </Paper>
+    );
+  }
+
   return (
     <Paper
       className="scanner-page-paper"
       onClick={() => inputRef.current?.focus()}
-      // Rimuoviamo gli eventi tastiera locali che si basavano sull'input singolo, stiamo gestendo tutto globally
       tabIndex={0}
       style={{ outline: "none" }}
     >
@@ -323,6 +424,9 @@ const ScannerPage: React.FC = () => {
         <Box className="scanner-center-panel">
           {/* Selettore Webcam */}
           {aiServiceReachable && <WebcamSelector />}
+
+          {/* Selettore dispositivo scanner QR (solo Electron) */}
+          <QrDeviceSelector />
 
           {!aiServiceReachable && (
             <Alert severity="warning" className="scanner-ai-warning">

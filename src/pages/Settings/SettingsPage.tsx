@@ -19,6 +19,9 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import ClearIcon from "@mui/icons-material/Clear";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import { RootState } from "../../store/store";
 import {
   addTariffaAsync,
@@ -27,12 +30,17 @@ import {
   fetchTariffe,
   uploadFotoAsync,
   getFotoHomeAsync,
+  uploadTemplateAsync,
+  deleteTemplateAsync,
+  saveTemplateFieldsAsync,
 } from "../../features/slice/settingsSlice";
-import { Tariffa } from "../../features/class/Tariffa";
+import { Tariffa, TemplateField } from "../../features/class/Tariffa";
 import { AppDispatch } from "../../store/store";
 import TariffaFormDialog from "../../features/components/settingsDialog/SettingsDialog";
 import ConfirmDialog from "../../features/components/generic/ConfirmDialog";
 import ImageUploader from "../../features/components/ImageUploader/ImageUploader";
+import TemplateFieldEditor from "../../features/components/templateFieldEditor/TemplateFieldEditor";
+import TuneIcon from "@mui/icons-material/Tune";
 import { useTranslation } from "react-i18next";
 
 import "./SettingsPage.css"; // <-- Importa qui il CSS esterno
@@ -50,6 +58,8 @@ const SettingsPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [tariffaToDelete, setTariffaToDelete] = useState<Tariffa | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorTariffa, setEditorTariffa] = useState<Tariffa | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -78,7 +88,7 @@ const SettingsPage: React.FC = () => {
     const isEdit = !!selectedTariffa;
     const action = isEdit ? updateTariffaAsync : addTariffaAsync;
     const resultAction = await dispatch(
-      action({ ...tariffa, userId: userId! })
+      action({ ...tariffa, userId: userId! }),
     );
 
     if (resultAction.meta.requestStatus === "rejected") {
@@ -96,7 +106,7 @@ const SettingsPage: React.FC = () => {
   const handleDeleteConfirmed = async () => {
     if (tariffaToDelete) {
       const resultAction = await dispatch(
-        removeTariffaAsync(tariffaToDelete.id)
+        removeTariffaAsync(tariffaToDelete.id),
       );
 
       if (resultAction.meta.requestStatus === "rejected") {
@@ -106,6 +116,22 @@ const SettingsPage: React.FC = () => {
       }
       setDeleteDialogOpen(false);
     }
+  };
+
+  const handleUploadTemplate = async (tariffa: Tariffa, file: File) => {
+    await dispatch(uploadTemplateAsync({ tariffaId: tariffa.id, file }));
+  };
+
+  const handleDeleteTemplate = async (tariffa: Tariffa) => {
+    await dispatch(deleteTemplateAsync(tariffa.id));
+  };
+
+  const handleSaveFields = async (fields: TemplateField[]) => {
+    if (!editorTariffa) return;
+    await dispatch(
+      saveTemplateFieldsAsync({ tariffaId: editorTariffa.id, fields }),
+    );
+    setEditorOpen(false);
   };
 
   return (
@@ -135,6 +161,7 @@ const SettingsPage: React.FC = () => {
                   <TableCell>{t("settings_page.table.nome_tariffa")}</TableCell>
                   <TableCell>{t("settings_page.table.durata")}</TableCell>
                   <TableCell>{t("settings_page.table.costo")}</TableCell>
+                  <TableCell>Template</TableCell>
                   <TableCell align="right">
                     {t("settings_page.table.azioni")}
                   </TableCell>
@@ -148,6 +175,71 @@ const SettingsPage: React.FC = () => {
                       {tariffa.durata} {tariffa.unitaDurata}
                     </TableCell>
                     <TableCell>{tariffa.costo.toFixed(2)} €</TableCell>
+                    <TableCell>
+                      {tariffa.hasTemplate ? (
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <InsertDriveFileIcon
+                            fontSize="small"
+                            color="primary"
+                          />
+                          <Typography
+                            variant="body2"
+                            noWrap
+                            sx={{ maxWidth: 120 }}
+                          >
+                            Template caricato
+                          </Typography>
+                          <Tooltip title="Configura posizioni campi">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                setEditorTariffa(tariffa);
+                                setEditorOpen(true);
+                              }}
+                            >
+                              <TuneIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Rimuovi template">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleDeleteTemplate(tariffa)}
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      ) : (
+                        <>
+                          <input
+                            id={`template-upload-${tariffa.id}`}
+                            type="file"
+                            accept=".png,.jpg,.jpeg"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUploadTemplate(tariffa, file);
+                              e.target.value = "";
+                            }}
+                          />
+                          <label htmlFor={`template-upload-${tariffa.id}`}>
+                            <Tooltip title="Carica template PNG/JPG">
+                              <IconButton
+                                component="span"
+                                size="small"
+                                color="primary"
+                              >
+                                <UploadFileIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </label>
+                        </>
+                      )}
+                    </TableCell>
                     <TableCell align="right">
                       <Tooltip title={t("settings_page.actions.edit")}>
                         <IconButton
@@ -198,6 +290,15 @@ const SettingsPage: React.FC = () => {
           </Backdrop>
         </>
       </Paper>
+
+      {editorTariffa && (
+        <TemplateFieldEditor
+          open={editorOpen}
+          tariffa={editorTariffa}
+          onClose={() => setEditorOpen(false)}
+          onSave={handleSaveFields}
+        />
+      )}
 
       <Paper className="settings-paper mt-4">
         <Typography variant="h4" gutterBottom textAlign="left">

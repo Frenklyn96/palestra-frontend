@@ -1,0 +1,864 @@
+/**
+ * ELECTRON MAIN PROCESS - GymProject Desktop App
+ *
+ * Responsabilità:
+ * - Gestione finestra principale e tray icon
+ * - Avvio automatico servizio Python AI
+ * - Intercettazione globale scanner QR via keyboard hooks
+ * - Comunicazione IPC con Renderer
+ * - Lifecycle management
+ */
+
+const {
+  app,
+  BrowserWindow,
+  Tray,
+  Menu,
+  ipcMain,
+  dialog,
+  shell,
+} = require("electron");
+const path = require("path");
+const http = require("http");
+const { autoUpdater } = require("electron-updater");
+const isDev = require("electron-is-dev");
+const logger = require("./utils/logger");
+const KeyboardHookManager = require("./keyboardHookManager");
+const PythonServiceManager = require("./pythonServiceManager");
+
+let store;
+
+// Carica variabili d'ambiente dal file .env.electron
+try {
+  const envPath = path.join(__dirname, "..", ".env.electron");
+  require("dotenv").config({ path: envPath });
+} catch (error) {
+  console.warn(
+    "dotenv not available or .env file not found - using process.env defaults",
+  );
+}
+
+// Helper per estrarre porta da URL
+function extractPortFromUrl(url, defaultPort) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.port || defaultPort;
+  } catch {
+    return defaultPort;
+  }
+}
+
+// Helper per estrarre host da URL
+function extractHostFromUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch {
+    return "localhost";
+  }
+}
+
+// Registra custom protocol per OAuth callback (es. gymproject://sso-callback?...)
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("gymproject", process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient("gymproject");
+}
+
+// Single instance lock
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  logger.warn("Another instance is already running. Quitting...");
+  app.quit();
+} else {
+  // Global references
+  let mainWindow = null;
+  let tray = null;
+  let keyboardHookManager = null;
+  let pythonServiceManager = null;
+
+  // Configuration from environment variables
+  const APP_CONFIG = {
+    window: {
+      width: 1400,
+      height: 900,
+      minWidth: 1200,
+      minHeight: 700,
+    },
+    python: {
+      // In development, usa il percorso relativo al progetto
+      // In production, python sara embedded nell'installer
+      scriptPath: isDev
+        ? path.join(__dirname, "..", "AI", "ai-service", "app.py")
+        : path.join(process.resourcesPath, "ai-service", "app.py"),
+      pythonExecutable:
+        isDev ||
+        !require("fs").existsSync(
+          path.join(process.resourcesPath, "python", "python.exe"),
+        )
+          ? (() => {
+              // Su Windows usa py launcher per selezionare 3.12 esplicitamente (numpy 1.26.x non supporta 3.13+)
+              if (process.platform === "win32") {
+                const { spawnSync } = require("child_process");
+                if (
+                  spawnSync("py", ["-3.12", "--version"], { encoding: "utf8" })
+                    .status === 0
+                )
+                  return "py";
+              }
+              return "python";
+            })()
+          : path.join(process.resourcesPath, "python", "python.exe"),
+      pythonArgs:
+        process.platform === "win32" &&
+        (() => {
+          const { spawnSync } = require("child_process");
+          return (
+            spawnSync("py", ["-3.12", "--version"], { encoding: "utf8" })
+              .status === 0
+          );
+        })()
+          ? ["-3.12"]
+          : [],
+      port: extractPortFromUrl(process.env.VITE_AI_API_URL, 8001),
+    },
+    urls: {
+      viteDevServer: process.env.VITE_DEV_SERVER_URL || "http://localhost:5173",
+      backend: process.env.VITE_BE_URL_LOCAL,
+      aiWebSocket: process.env.VITE_WS_PEOPLE_COUNTER_URL,
+      aiApi: process.env.VITE_AI_API_URL,
+    },
+  };
+
+  /**
+   * Crea la finestra principale dell'applicazione
+   */
+  function createWindow() {
+    logger.info("Creating main window...");
+
+    mainWindow = new BrowserWindow({
+      width: APP_CONFIG.window.width,
+      height: APP_CONFIG.window.height,
+      minWidth: APP_CONFIG.window.minWidth,
+      minHeight: APP_CONFIG.window.minHeight,
+      show: false, // Mostriamo dopo il 'ready-to-show'
+      icon: path.join(__dirname, "assets", "icon.png"),
+      webPreferences: {
+        preload: path.join(__dirname, "preload.js"),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+        webSecurity: true,
+        backgroundThrottling: false, // Consenti JS (WebSocket, fetch) anche con finestra minimizzata
+      },
+    });
+
+    // Carica subito un piccolo file HTML statico di "Loading..."
+    mainWindow.loadFile(path.join(__dirname, "assets", "splash.html"));
+
+    // Open DevTools in development (or if DEBUG flag is set)
+    if (isDev || process.env.ELECTRON_DEBUG === "1") {
+      mainWindow.webContents.openDevTools();
+    }
+
+    // Filtra errori noti irrilevanti dalla console del renderer (es. bug interni librerie)
+    mainWindow.webContents.on("console-message", (event, level, message) => {
+      if (message.includes("dragEvent is not defined")) return; // bug noto uiohook/MUI
+      if (level >= 3) {
+        // 3 = error
+        logger.debug(`[Renderer console error] ${message}`);
+      }
+    });
+
+    // Show window when ready
+    mainWindow.once("ready-to-show", () => {
+      logger.info("Main window ready to show");
+      mainWindow.show();
+      mainWindow.focus();
+    });
+
+    // Handle window close
+    mainWindow.on("close", (event) => {
+      if (!app.isQuitting) {
+        event.preventDefault();
+        mainWindow.hide();
+        logger.info("Window hidden to tray");
+      }
+    });
+
+    mainWindow.on("closed", () => {
+      mainWindow = null;
+    });
+
+    // Evita che un crash del renderer chiuda silenziosamente la finestra
+    mainWindow.webContents.on("render-process-gone", (event, details) => {
+      logger.error("Renderer process crashed:", details);
+      dialog.showErrorBox(
+        "Errore Applicazione",
+        `Il processo UI è andato in crash (${details.reason}).\n\nRiavvia l'applicazione.`,
+      );
+    });
+
+    mainWindow.webContents.on(
+      "did-fail-load",
+      (event, errorCode, errorDescription, validatedURL) => {
+        logger.error("Page failed to load:", {
+          errorCode,
+          errorDescription,
+          validatedURL,
+        });
+        if (errorCode !== -3) {
+          // -3 = ERR_ABORTED (navigazione annullata, normale)
+          dialog.showErrorBox(
+            "Errore Caricamento",
+            `Impossibile caricare l'applicazione.\n\nErrore: ${errorDescription} (${errorCode})`,
+          );
+        }
+      },
+    );
+
+    // CSP Headers per sicurezza (da configurazione .env)
+    mainWindow.webContents.session.webRequest.onHeadersReceived(
+      (details, callback) => {
+        // Costruisci connect-src dinamicamente da .env
+        const aiWsUrl = APP_CONFIG.urls.aiWebSocket || "";
+        const aiApiUrl = APP_CONFIG.urls.aiApi || "";
+        const backendUrl = APP_CONFIG.urls.backend || "";
+
+        // Estrai protocol e host per CSP
+        const wsProtocols = aiWsUrl
+          ? `ws://${extractHostFromUrl(aiWsUrl)}:${extractPortFromUrl(aiWsUrl, 8001)} wss://${extractHostFromUrl(aiWsUrl)}:${extractPortFromUrl(aiWsUrl, 8001)}`
+          : "";
+        const httpProtocols = aiApiUrl
+          ? `http://${extractHostFromUrl(aiApiUrl)}:${extractPortFromUrl(aiApiUrl, 8001)}`
+          : "";
+
+        const clerkSrc =
+          "https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com https://*.clerkinc.com https://*.clerkstage.dev";
+
+        callback({
+          responseHeaders: {
+            ...details.responseHeaders,
+            "Content-Security-Policy": [
+              `default-src 'self'; ` +
+                `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${clerkSrc}; ` +
+                `style-src 'self' 'unsafe-inline' ${clerkSrc} https://fonts.googleapis.com; ` +
+                `img-src 'self' data: https: blob: ${httpProtocols}; ` +
+                `font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com ${clerkSrc}; ` +
+                `worker-src 'self' blob: ${clerkSrc}; ` +
+                `frame-src 'self' ${clerkSrc}; ` +
+                `connect-src 'self' ${wsProtocols} ${httpProtocols} ${backendUrl} ${clerkSrc} https:;`,
+            ],
+          },
+        });
+      },
+    );
+
+    logger.info("Main window created successfully");
+  }
+
+  /**
+   * Crea la tray icon con menu contestuale
+   */
+  function createTray() {
+    logger.info("Creating tray icon...");
+    if (tray) {
+      tray.destroy();
+    }
+
+    const iconPath = path.join(__dirname, "assets", "tray-icon.png");
+    tray = new Tray(iconPath);
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: "Mostra GymProject",
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        },
+      },
+      {
+        type: "separator",
+      },
+      {
+        label: "Scanner QR",
+        type: "submenu",
+        submenu: [
+          {
+            label: "Attivo",
+            type: "checkbox",
+            checked: keyboardHookManager?.isActive() || false,
+            click: (menuItem) => {
+              if (menuItem.checked) {
+                keyboardHookManager?.resume();
+              } else {
+                keyboardHookManager?.pause();
+              }
+            },
+          },
+          {
+            label: "Test Scansione",
+            click: () => {
+              // Simula una scansione per testing
+              if (mainWindow) {
+                mainWindow.webContents.send("qr-scanned", {
+                  code: "TEST-" + Date.now(),
+                  timestamp: new Date().toISOString(),
+                  source: "manual-test",
+                });
+                logger.info("Test scan triggered");
+              }
+            },
+          },
+        ],
+      },
+      {
+        label: "Servizio AI Python",
+        type: "submenu",
+        submenu: [
+          {
+            label: "Stato",
+            enabled: false,
+          },
+          {
+            label: pythonServiceManager?.isRunning()
+              ? "🟢 In Esecuzione"
+              : "🔴 Arrestato",
+            enabled: false,
+          },
+          {
+            type: "separator",
+          },
+          {
+            label: "Riavvia Servizio",
+            click: async () => {
+              try {
+                await pythonServiceManager?.restart();
+                dialog.showMessageBox(mainWindow, {
+                  type: "info",
+                  title: "Servizio Riavviato",
+                  message:
+                    "Il servizio AI Python è stato riavviato con successo.",
+                });
+              } catch (error) {
+                logger.error("Failed to restart Python service:", error);
+                dialog.showErrorBox(
+                  "Errore Riavvio",
+                  "Impossibile riavviare il servizio AI.",
+                );
+              }
+            },
+          },
+        ],
+      },
+      {
+        type: "separator",
+      },
+      {
+        label: "Info",
+        click: () => {
+          dialog.showMessageBox(mainWindow, {
+            type: "info",
+            title: "GymProject Desktop",
+            message: "GymProject Desktop App",
+            detail:
+              `Versione: ${app.getVersion()}\n` +
+              `Electron: ${process.versions.electron}\n` +
+              `Node: ${process.versions.node}\n` +
+              `Chrome: ${process.versions.chrome}\n\n` +
+              `Scanner QR: ${keyboardHookManager?.isActive() ? "Attivo" : "Disattivo"}\n` +
+              `Python Service: ${pythonServiceManager?.isRunning() ? "Attivo" : "Disattivo"}`,
+          });
+        },
+      },
+      {
+        type: "separator",
+      },
+      {
+        label: "Esci",
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setContextMenu(contextMenu);
+    tray.setToolTip("GymProject - Scanner Attivo");
+
+    // Double-click per mostrare finestra
+    tray.on("double-click", () => {
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    });
+
+    logger.info("Tray icon created successfully");
+  }
+
+  /**
+   * Inizializza il keyboard hook manager per intercettare scanner QR
+   */
+  async function initializeKeyboardHook() {
+    logger.info("Initializing keyboard hook manager...");
+
+    keyboardHookManager = new KeyboardHookManager({
+      onQrScanned: async (qrData) => {
+        const code = qrData.code.trim().replace(/'/g, "-");
+        logger.info("QR Code scanned (keyboard hook):", code);
+        // Delega a Python che gestisce BE + decrement + broadcast WS
+        const port = APP_CONFIG.python.port;
+        try {
+          await axios.post(
+            `http://localhost:${port}/api/qr-trigger`,
+            { code },
+            { headers: { "Content-Type": "application/json" }, timeout: 3000 },
+          );
+        } catch (e) {
+          logger.warn("[QR] Could not reach Python qr-trigger:", e.message);
+        }
+        // Porta la finestra in primo piano
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          if (!mainWindow.isVisible()) mainWindow.show();
+          mainWindow.focus();
+          mainWindow.setAlwaysOnTop(true);
+          mainWindow.setAlwaysOnTop(false);
+        }
+      },
+      onError: (error) => {
+        logger.error("Keyboard hook error:", error);
+      },
+    });
+
+    try {
+      await keyboardHookManager.start();
+      logger.info("Keyboard hook started successfully");
+    } catch (error) {
+      logger.error("Failed to start keyboard hook:", error);
+
+      // Mostra dialogo di errore su macOS (permessi Accessibilità)
+      if (process.platform === "darwin") {
+        dialog.showErrorBox(
+          "Permessi Richiesti",
+          "GymProject necessita dei permessi di Accessibilità per intercettare lo scanner QR.\n\n" +
+            "Vai in Preferenze di Sistema > Sicurezza e Privacy > Privacy > Accessibilità\n" +
+            "e abilita GymProject.",
+        );
+      }
+    }
+  }
+
+  /**
+   * Inizializza il Python service manager
+   */
+  async function initializePythonService() {
+    logger.info("Initializing Python service manager...");
+
+    pythonServiceManager = new PythonServiceManager({
+      pythonExecutable: APP_CONFIG.python.pythonExecutable,
+      pythonArgs: APP_CONFIG.python.pythonArgs,
+      scriptPath: APP_CONFIG.python.scriptPath,
+      port: APP_CONFIG.python.port,
+      startupTimeout: 120000, // 2 minuti di timeout per il boot (spesso lento a caricare PyTorch in RAM)
+      onStatusChange: (status) => {
+        logger.info("Python service status changed:", status);
+
+        // Aggiorna tray menu
+        if (tray) {
+          createTray(); // Ricrea menu con nuovo stato
+        }
+
+        // Notifica renderer
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send("python-service-status", status);
+        }
+      },
+      onError: (error) => {
+        logger.error("Python service error:", error);
+      },
+    });
+
+    try {
+      await pythonServiceManager.start();
+      logger.info("Python service started successfully");
+    } catch (error) {
+      logger.error("Failed to start Python service:", error);
+
+      // Mostra notifica all'utente
+      dialog.showErrorBox(
+        "Servizio AI Non Disponibile",
+        "Il servizio AI per il riconoscimento persone non è disponibile.\n\n" +
+          "Alcune funzionalità potrebbero non funzionare correttamente.\n\n" +
+          `Dettagli: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Setup IPC handlers
+   */
+  function setupIpcHandlers() {
+    // Handler per richieste dal renderer
+    ipcMain.handle("get-app-version", () => {
+      return app.getVersion();
+    });
+
+    ipcMain.handle("get-scanner-status", () => {
+      return {
+        active: keyboardHookManager?.isActive() || false,
+        platform: process.platform,
+      };
+    });
+
+    ipcMain.handle("get-python-service-status", () => {
+      return {
+        running: pythonServiceManager?.isRunning() || false,
+        port: APP_CONFIG.python.port,
+      };
+    });
+
+    ipcMain.handle("toggle-scanner", (event, enable) => {
+      if (enable) {
+        keyboardHookManager?.resume();
+      } else {
+        keyboardHookManager?.pause();
+      }
+      return keyboardHookManager?.isActive() || false;
+    });
+
+    ipcMain.handle("simulate-qr-scan", async (event, code) => {
+      // Delega a Python — stesso flusso del vero scanner
+      const port = APP_CONFIG.python.port;
+      try {
+        await axios.post(
+          `http://localhost:${port}/api/qr-trigger`,
+          { code },
+          { headers: { "Content-Type": "application/json" }, timeout: 3000 },
+        );
+        return true;
+      } catch (e) {
+        logger.warn("[QR] simulate-qr-scan: Python not reachable:", e.message);
+        return false;
+      }
+    });
+
+    ipcMain.handle("get-store-value", async (event, key) => {
+      if (!store) {
+        const electronStoreModule = await import("electron-store");
+        const StoreClass = electronStoreModule.default;
+        store = new StoreClass();
+      }
+      return store.get(key);
+    });
+
+    ipcMain.handle("set-store-value", async (event, key, value) => {
+      if (!store) {
+        const electronStoreModule = await import("electron-store");
+        const StoreClass = electronStoreModule.default;
+        store = new StoreClass();
+      }
+      store.set(key, value);
+      return true;
+    });
+
+    // Apri il browser di sistema per autenticazione OAuth
+    ipcMain.handle("open-auth-browser", (event, url) => {
+      shell.openExternal(url);
+    });
+
+    logger.info("IPC handlers registered");
+  }
+
+  /**
+   * Avvia HTTP server locale per ricevere il callback di autenticazione Electron.
+   * La pagina web electron-auth chiama POST /auth-callback con userId, email, token.
+   */
+  const AUTH_CALLBACK_PORT = 7654;
+  let authCallbackServer = null;
+
+  function startAuthCallbackServer() {
+    if (authCallbackServer) return;
+
+    authCallbackServer = http.createServer((req, res) => {
+      // CORS: permetti solo la web app deployata
+      res.setHeader(
+        "Access-Control-Allow-Origin",
+        "https://gymprojectfe-dev.up.railway.app",
+      );
+      res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+      if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      if (req.method === "POST" && req.url === "/auth-callback") {
+        let body = "";
+        req.on("data", (chunk) => {
+          body += chunk.toString();
+        });
+        req.on("end", () => {
+          try {
+            const data = JSON.parse(body);
+            const { userId, email, token } = data;
+
+            if (!userId) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "userId required" }));
+              return;
+            }
+
+            logger.info("Electron auth callback received", { userId, email });
+
+            // Invia le credenziali al renderer via IPC
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send("electron-auth-success", {
+                userId,
+                email,
+                token,
+              });
+              // Porta la finestra in primo piano
+              if (!mainWindow.isVisible()) mainWindow.show();
+              mainWindow.focus();
+            }
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: true }));
+          } catch (err) {
+            logger.error("Auth callback parse error:", err);
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "invalid JSON" }));
+          }
+        });
+        return;
+      }
+
+      res.writeHead(404);
+      res.end();
+    });
+
+    authCallbackServer.listen(AUTH_CALLBACK_PORT, "127.0.0.1", () => {
+      logger.info(
+        `Auth callback server listening on port ${AUTH_CALLBACK_PORT}`,
+      );
+    });
+
+    authCallbackServer.on("error", (err) => {
+      logger.error("Auth callback server error:", err.message);
+    });
+  }
+
+  /**
+   * App ready event
+   */
+  app.whenReady().then(async () => {
+    logger.info("Electron app ready");
+
+    // Setup IPC
+    setupIpcHandlers();
+    // Avvia server HTTP per callback autenticazione Electron
+    startAuthCallbackServer();
+    // Configura e controlla gli aggiornamenti (se non in dev)
+    if (!isDev) {
+      autoUpdater.logger = logger;
+      autoUpdater.autoDownload = true; // Scarica automaticamente l'aggiornamento quando trovato
+
+      autoUpdater.on("update-available", (info) => {
+        logger.info(`Update available: ${info.version}`);
+        if (mainWindow)
+          mainWindow.webContents.send(
+            "update-status",
+            "available",
+            info.version,
+          );
+      });
+
+      autoUpdater.on("update-downloaded", (info) => {
+        logger.info("Update downloaded. Ready to install.");
+        if (mainWindow)
+          mainWindow.webContents.send(
+            "update-status",
+            "downloaded",
+            info.version,
+          );
+
+        dialog
+          .showMessageBox({
+            type: "info",
+            title: "Aggiornamento Pronto",
+            message: `La versione ${info.version} e' stata scaricata ed e' pronta per l'installazione.`,
+            buttons: ["Installa e Riavvia", "PiÃ¹ Tardi"],
+          })
+          .then((buttonIndex) => {
+            if (buttonIndex.response === 0) {
+              app.isQuitting = true;
+              autoUpdater.quitAndInstall(false, true); // (isSilent, isForceRunAfter)
+            }
+          });
+      });
+
+      try {
+        autoUpdater.checkForUpdatesAndNotify();
+      } catch (err) {
+        logger.error("Error checking for updates:", err);
+      }
+    }
+
+    // 0. Crea finestra e mostra subito lo splash screen
+    createWindow();
+    createTray();
+
+    // 1. Avvia servizio Python (può richiedere tempo)
+    await initializePythonService();
+
+    // 2. Inizializza keyboard hook
+    await initializeKeyboardHook();
+
+    // 3. Sposta la navigazione all'app Web React (solo dopo che Python ha finito di svegliarsi)
+    if (isDev) {
+      mainWindow
+        .loadURL(APP_CONFIG.urls.viteDevServer || "http://localhost:5173")
+        .catch((e) => logger.error("ViteDevServer load failed:", e));
+    } else {
+      mainWindow
+        .loadFile(path.join(__dirname, "..", "dist", "index.html"))
+        .catch((e) => logger.error("Local file load failed:", e));
+    }
+
+    logger.info("App initialization complete");
+  });
+
+  /**
+   * Handle second instance (single instance lock)
+   * Su Windows, il deep link (gymproject://...) arriva qui come argv
+   */
+  app.on("second-instance", (event, commandLine) => {
+    logger.warn("Second instance detected, focusing main window");
+
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+
+    // Gestisci deep link OAuth callback (Windows)
+    const deepLink = commandLine.find((arg) => arg.startsWith("gymproject://"));
+    if (deepLink && mainWindow) {
+      logger.info("OAuth deep link received (second-instance):", deepLink);
+      handleOAuthDeepLink(deepLink);
+    }
+  });
+
+  // Gestisci deep link OAuth callback (macOS)
+  app.on("open-url", (event, url) => {
+    event.preventDefault();
+    logger.info("OAuth deep link received (open-url):", url);
+    handleOAuthDeepLink(url);
+  });
+
+  /**
+   * Naviga la finestra principale alla route di OAuth callback
+   */
+  function handleOAuthDeepLink(deepLinkUrl) {
+    if (!mainWindow) return;
+    mainWindow.show();
+    mainWindow.focus();
+    // Estrai i query params dal deep link e navigali come hash route
+    const urlObj = new URL(deepLinkUrl);
+    const params = urlObj.searchParams.toString();
+    if (isDev) {
+      mainWindow.loadURL(
+        `${APP_CONFIG.urls.viteDevServer}/#/oauth-callback?${params}`,
+      );
+    } else {
+      mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"), {
+        hash: `/oauth-callback?${params}`,
+      });
+    }
+  }
+
+  /**
+   * All windows closed (non-macOS)
+   */
+  app.on("window-all-closed", () => {
+    // Su macOS, le app restano attive fino a Cmd+Q
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+
+  /**
+   * Activate (macOS)
+   */
+  app.on("activate", () => {
+    if (mainWindow === null) {
+      createWindow();
+    } else {
+      mainWindow.show();
+    }
+  });
+
+  let isShuttingDown = false;
+
+  /**
+   * Before quit - cleanup
+   */
+  app.on("before-quit", async (event) => {
+    if (isShuttingDown) return;
+
+    logger.info("App quitting, cleaning up...");
+    event.preventDefault();
+    isShuttingDown = true;
+    app.isQuitting = true;
+
+    try {
+      // Stop keyboard hook
+      if (keyboardHookManager) {
+        await keyboardHookManager.stop();
+        logger.info("Keyboard hook stopped");
+      }
+
+      // Stop Python service
+      if (pythonServiceManager) {
+        await pythonServiceManager.stop();
+        logger.info("Python service stopped");
+      }
+
+      // Stop auth callback server
+      if (authCallbackServer) {
+        authCallbackServer.close();
+        logger.info("Auth callback server stopped");
+      }
+    } catch (e) {
+      logger.error("Error during cleanup:", e);
+    }
+
+    logger.info("Cleanup complete");
+    app.quit();
+  });
+
+  /**
+   * Unhandled errors
+   */
+  process.on("uncaughtException", (error) => {
+    logger.error("Uncaught exception:", error);
+    dialog.showErrorBox(
+      "Errore Critico",
+      `Si è verificato un errore:\n\n${error.message}`,
+    );
+  });
+
+  process.on("unhandledRejection", (reason, promise) => {
+    logger.error("Unhandled rejection at:", promise, "reason:", reason);
+  });
+}
