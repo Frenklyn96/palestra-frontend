@@ -398,7 +398,6 @@ const ScannerPage: React.FC = () => {
     <Paper
       className="scanner-page-paper"
       onClick={() => inputRef.current?.focus()}
-      // Rimuoviamo gli eventi tastiera locali che si basavano sull'input singolo, stiamo gestendo tutto globally
       tabIndex={0}
       style={{ outline: "none" }}
     >
