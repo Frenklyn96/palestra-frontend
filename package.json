@@ -2,7 +2,7 @@
   "name": "gymproject-desktop",
   "productName": "GymProject Desktop",
   "private": true,
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "GymProject Desktop App con scanner QR globale e AI people counter",
   "author": "GymProject Team",
   "license": "MIT",
