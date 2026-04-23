@@ -11,7 +11,11 @@ import {
   FormControlLabel,
   Typography,
   Chip,
+  CircularProgress,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../store/store";
+import { fetchTemplateImageAsync } from "../../slice/settingsSlice";
 import { Tariffa, TemplateField } from "../../class/Tariffa";
 
 interface Props {
@@ -124,7 +128,10 @@ const TemplateFieldEditor: React.FC<Props> = ({
   const [displaySize, setDisplaySize] = useState({ w: 1, h: 1 });
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [imageBlobUrl, setImageBlobUrl] = useState<string | null>(null);
 
+  const dispatch = useDispatch<AppDispatch>();
   const imageRef = useRef<HTMLImageElement>(null);
   const draggingRef = useRef<{
     key: string;
@@ -135,7 +142,42 @@ const TemplateFieldEditor: React.FC<Props> = ({
   } | null>(null);
   const scaleRef = useRef(1);
 
-  const imageUrl = `${import.meta.env.VITE_BE_URL_LOCAL}/api/Tariffe/${tariffa.id}/template-image`;
+  // Fetch immagine template tramite thunk (settingsSlice → settingsService → axios)
+  useEffect(() => {
+    if (!open) return;
+
+    setImageBlobUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setImageLoaded(false);
+    setImageError(null);
+
+    let cancelled = false;
+    dispatch(fetchTemplateImageAsync(tariffa.id))
+      .unwrap()
+      .then((blob) => {
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        setImageBlobUrl(url);
+      })
+      .catch((statusOrMsg: any) => {
+        if (cancelled) return;
+        if (statusOrMsg === 404) {
+          setImageError(
+            "Template non trovato sul server. Ricarica il template nelle impostazioni.",
+          );
+        } else {
+          setImageError(
+            `Errore caricamento immagine (${statusOrMsg ?? "rete"}).`,
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, tariffa.id]);
 
   // Always keep scaleRef up-to-date
   scaleRef.current = naturalSize.w > 0 ? displaySize.w / naturalSize.w : 1;
@@ -221,12 +263,23 @@ const TemplateFieldEditor: React.FC<Props> = ({
   useEffect(() => {
     if (open) {
       setImageLoaded(false);
+      setImageError(null);
       setSelectedKey(null);
       setFields([]);
       setNaturalSize({ w: 1, h: 1 });
       setDisplaySize({ w: 1, h: 1 });
     }
   }, [open]);
+
+  // Cleanup blob URL allo smontaggio
+  useEffect(() => {
+    return () => {
+      setImageBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, []);
 
   const updateField = (key: string, updates: Partial<TemplateField>) => {
     setFields((prev) =>
@@ -257,25 +310,65 @@ const TemplateFieldEditor: React.FC<Props> = ({
           <Box
             sx={{
               position: "relative",
-              width: displaySize.w,
-              height: displaySize.h,
+              width: imageLoaded ? displaySize.w : 480,
+              height: imageLoaded ? displaySize.h : 300,
               flexShrink: 0,
               border: "1px solid #ccc",
               userSelect: "none",
               bgcolor: "#f5f5f5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <img
-              ref={imageRef}
-              src={imageUrl}
-              alt="template"
-              onLoad={handleImageLoad}
-              style={{
-                width: displaySize.w,
-                height: displaySize.h,
-                display: "block",
-              }}
-            />
+            {/* Spinner mentre l'immagine non è ancora caricata */}
+            {!imageLoaded && !imageError && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <CircularProgress size={32} />
+                <Typography variant="caption" color="text.secondary">
+                  Caricamento template...
+                </Typography>
+              </Box>
+            )}
+
+            {/* Errore caricamento */}
+            {imageError && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 2,
+                  textAlign: "center",
+                }}
+              >
+                <Typography variant="body2" color="error">
+                  {imageError}
+                </Typography>
+              </Box>
+            )}
+
+            {imageBlobUrl && (
+              <img
+                ref={imageRef}
+                src={imageBlobUrl}
+                alt="template"
+                onLoad={handleImageLoad}
+                style={{
+                  width: displaySize.w || "100%",
+                  height: displaySize.h || "auto",
+                  display: imageLoaded ? "block" : "none",
+                }}
+              />
+            )}
 
             {imageLoaded &&
               fields.map((field) => {

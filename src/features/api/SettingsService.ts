@@ -122,3 +122,13 @@ export const saveTariffaTemplateFields = async (
   );
   return response.data;
 };
+
+export const getTariffaTemplateImage = async (
+  tariffaId: string,
+): Promise<Blob> => {
+  const response = await axios.get<Blob>(
+    `${API_URL}/${tariffaId}/template-image`,
+    { responseType: "blob" },
+  );
+  return response.data;
+};

@@ -138,6 +138,18 @@ export const saveTemplateFieldsAsync = createAsyncThunk(
   },
 );
 
+export const fetchTemplateImageAsync = createAsyncThunk(
+  "settings/fetchTemplateImage",
+  async (tariffaId: string, thunkAPI) => {
+    try {
+      const blob = await settingsService.getTariffaTemplateImage(tariffaId);
+      return blob;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error?.response?.status ?? error.message);
+    }
+  },
+);
+
 // Slice
 const settingsSlice = createSlice({
   name: "settings",
@@ -222,7 +234,7 @@ const settingsSlice = createSlice({
         if (index !== -1)
           state.tariffe[index] = {
             ...state.tariffe[index],
-            templatePath: undefined,
+            hasTemplate: false,
           };
       })
       .addCase(saveTemplateFieldsAsync.fulfilled, (state, action) => {

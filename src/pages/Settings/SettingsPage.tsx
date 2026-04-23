@@ -176,7 +176,7 @@ const SettingsPage: React.FC = () => {
                     </TableCell>
                     <TableCell>{tariffa.costo.toFixed(2)} €</TableCell>
                     <TableCell>
-                      {tariffa.templatePath ? (
+                      {tariffa.hasTemplate ? (
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 1 }}
                         >
@@ -189,7 +189,7 @@ const SettingsPage: React.FC = () => {
                             noWrap
                             sx={{ maxWidth: 120 }}
                           >
-                            {tariffa.templatePath.split(/[\\/]/).pop()}
+                            Template caricato
                           </Typography>
                           <Tooltip title="Configura posizioni campi">
                             <IconButton

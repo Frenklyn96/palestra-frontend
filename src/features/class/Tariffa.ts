@@ -19,7 +19,7 @@ export interface Tariffa {
   costo: number;
   userId: string;
   toCount: boolean;
-  templatePath?: string;
+  hasTemplate?: boolean;
   templateFieldsJson?: string;
 }
 
