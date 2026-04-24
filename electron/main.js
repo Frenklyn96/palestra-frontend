@@ -587,12 +587,14 @@ if (!gotTheLock) {
   function startAuthCallbackServer() {
     if (authCallbackServer) return;
 
+    // Deriva l'origin CORS dall'env (es. https://gymprojectfe-production.up.railway.app/electron-auth → https://gymprojectfe-production.up.railway.app)
+    const authOrigin = process.env.VITE_ELECTRON_AUTH_URL
+      ? new URL(process.env.VITE_ELECTRON_AUTH_URL).origin
+      : "https://gymprojectfe-dev.up.railway.app";
+
     authCallbackServer = http.createServer((req, res) => {
-      // CORS: permetti solo la web app deployata
-      res.setHeader(
-        "Access-Control-Allow-Origin",
-        "https://gymprojectfe-dev.up.railway.app",
-      );
+      // CORS: permetti solo la web app configurata in VITE_ELECTRON_AUTH_URL
+      res.setHeader("Access-Control-Allow-Origin", authOrigin);
       res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
