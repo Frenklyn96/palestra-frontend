@@ -325,5 +325,10 @@
   "common": {
     "cancel": "Annulla",
     "apply": "Applica"
+  },
+  "login": {
+    "title": "GymProject",
+    "subtitle": "Accedi per continuare",
+    "button": "Accedi con il browser"
   }
 }

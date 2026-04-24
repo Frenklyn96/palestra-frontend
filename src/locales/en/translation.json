@@ -328,5 +328,10 @@
   },
   "generic_search": {
     "search_placeholder": "Search..."
+  },
+  "login": {
+    "title": "GymProject",
+    "subtitle": "Sign in to continue",
+    "button": "Sign in with browser"
   }
 }
