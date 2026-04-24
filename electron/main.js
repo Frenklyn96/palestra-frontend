@@ -593,7 +593,7 @@ if (!gotTheLock) {
       // CORS: permetti solo la web app configurata in VITE_ELECTRON_AUTH_URL
       res.setHeader(
         "Access-Control-Allow-Origin",
-        "https://gymprojectfe-production.up.railway.app",
+        "https://gymprojectfe-dev.up.railway.app",
       );
       res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
