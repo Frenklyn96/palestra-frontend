@@ -2,14 +2,15 @@
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { PropsWithChildren } from "react";
 import { Box, Button, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useAppSelector } from "./store/hooks";
 
-// URL dell'app web deployata: mostra il login Clerk e poi chiama localhost:7654
-const ELECTRON_AUTH_URL =
-  "https://gymprojectfe-dev.up.railway.app/electron-auth";
+const ELECTRON_AUTH_URL = import.meta.env.VITE_ELECTRON_AUTH_URL as string;
 const isElectron = !!(window as any).electronAPI;
 
 function ElectronLoginScreen() {
+  const { t } = useTranslation();
+
   const handleLogin = () => {
     (window as any).electronAPI.openAuthBrowser(ELECTRON_AUTH_URL);
   };
@@ -26,13 +27,13 @@ function ElectronLoginScreen() {
       }}
     >
       <Typography variant="h4" fontWeight={700}>
-        GymProject
+        {t("login.title")}
       </Typography>
       <Typography variant="body1" color="text.secondary">
-        Accedi per continuare
+        {t("login.subtitle")}
       </Typography>
       <Button variant="contained" size="large" onClick={handleLogin}>
-        Accedi con il browser
+        {t("login.button")}
       </Button>
     </Box>
   );
