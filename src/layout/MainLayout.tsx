@@ -31,6 +31,10 @@ import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { useClerk } from "@clerk/clerk-react";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import "../styles/MainLayout.css";
+import { useAppDispatch } from "../store/hooks";
+import { clearUserInfo } from "../features/slice/userSlice";
+
+const isElectron = !!(window as any).electronAPI;
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
@@ -41,6 +45,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const toggleDrawer = () => setOpen(!open);
   const clerk = useClerk();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
   const menuItems = [
@@ -89,8 +94,11 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     handleLanguageMenuClose();
   };
   const handleLogout = () => {
-    // logica di logout (es. pulizia token, redirect, ecc.)
-    clerk.signOut();
+    // In Electron l'auth è gestita da Redux: bisogna pulire userId oltre a fare signOut da Clerk
+    dispatch(clearUserInfo());
+    if (!isElectron) {
+      clerk.signOut();
+    }
   };
 
   return (

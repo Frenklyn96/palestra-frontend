@@ -588,13 +588,13 @@ if (!gotTheLock) {
     if (authCallbackServer) return;
 
     // Deriva l'origin CORS dall'env (es. https://gymprojectfe-production.up.railway.app/electron-auth → https://gymprojectfe-production.up.railway.app)
-    const authOrigin = process.env.VITE_ELECTRON_AUTH_URL
-      ? new URL(process.env.VITE_ELECTRON_AUTH_URL).origin
-      : "https://gymprojectfe-dev.up.railway.app";
 
     authCallbackServer = http.createServer((req, res) => {
       // CORS: permetti solo la web app configurata in VITE_ELECTRON_AUTH_URL
-      res.setHeader("Access-Control-Allow-Origin", authOrigin);
+      res.setHeader(
+        "Access-Control-Allow-Origin",
+        "https://gymprojectfe-production.up.railway.app",
+      );
       res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -775,8 +775,27 @@ if (!gotTheLock) {
     if (!mainWindow) return;
     mainWindow.show();
     mainWindow.focus();
-    // Estrai i query params dal deep link e navigali come hash route
+
     const urlObj = new URL(deepLinkUrl);
+
+    // Caso: gymproject://auth-callback?userId=...&email=...&token=...
+    // Fallback per browser che bloccano la fetch HTTP da pagina HTTPS (Mixed Content)
+    if (urlObj.hostname === "auth-callback") {
+      const userId = urlObj.searchParams.get("userId");
+      const email = urlObj.searchParams.get("email") ?? "";
+      const token = urlObj.searchParams.get("token") ?? "";
+      if (userId && !mainWindow.isDestroyed()) {
+        logger.info("Electron auth via deep link fallback", { userId, email });
+        mainWindow.webContents.send("electron-auth-success", {
+          userId,
+          email,
+          token,
+        });
+      }
+      return;
+    }
+
+    // Caso standard OAuth (gymproject://sso-callback?...)
     const params = urlObj.searchParams.toString();
     if (isDev) {
       mainWindow.loadURL(
